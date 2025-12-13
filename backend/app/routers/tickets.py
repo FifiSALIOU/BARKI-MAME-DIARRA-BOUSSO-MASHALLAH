@@ -187,6 +187,78 @@ def get_ticket(
     return ticket
 
 
+@router.put("/{ticket_id}", response_model=schemas.TicketRead)
+def edit_ticket(
+    ticket_id: UUID,
+    ticket_in: schemas.TicketEdit,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    ticket = db.query(models.Ticket).filter(models.Ticket.id == ticket_id).first()
+    if not ticket:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
+
+    if ticket.creator_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+
+    if ticket.technician_id is not None or ticket.status in [models.TicketStatus.ASSIGNE_TECHNICIEN, models.TicketStatus.EN_COURS]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Le ticket est déjà en cours de traitement")
+
+    if ticket_in.title is not None:
+        ticket.title = ticket_in.title
+    if ticket_in.description is not None:
+        ticket.description = ticket_in.description
+    if ticket_in.type is not None:
+        ticket.type = ticket_in.type
+    if ticket_in.priority is not None:
+        ticket.priority = ticket_in.priority
+    if ticket_in.category is not None:
+        ticket.category = ticket_in.category
+
+    history = models.TicketHistory(
+        ticket_id=ticket.id,
+        old_status=ticket.status,
+        new_status=ticket.status,
+        user_id=current_user.id,
+        reason="Ticket modifié par l'utilisateur",
+    )
+    db.add(history)
+
+    db.commit()
+    db.refresh(ticket)
+
+    ticket = (
+        db.query(models.Ticket)
+        .options(
+            joinedload(models.Ticket.creator),
+            joinedload(models.Ticket.technician)
+        )
+        .filter(models.Ticket.id == ticket.id)
+        .first()
+    )
+    return ticket
+
+
+@router.delete("/{ticket_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_ticket(
+    ticket_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    ticket = db.query(models.Ticket).filter(models.Ticket.id == ticket_id).first()
+    if not ticket:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
+
+    if ticket.creator_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+
+    if ticket.technician_id is not None or ticket.status in [models.TicketStatus.ASSIGNE_TECHNICIEN, models.TicketStatus.EN_COURS]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Le ticket est déjà en cours de traitement")
+
+    db.delete(ticket)
+    db.commit()
+
+
 @router.put("/{ticket_id}/assign", response_model=schemas.TicketRead)
 def assign_ticket(
     ticket_id: UUID,
@@ -726,6 +798,15 @@ def validate_ticket_resolution(
                 read=False
             )
             db.add(notification)
+            technician = db.query(models.User).filter(models.User.id == ticket.technician_id).first()
+            if technician and technician.email and technician.email.strip():
+                email_service.send_ticket_rejected_notification(
+                    ticket_number=ticket.number,
+                    ticket_title=ticket.title,
+                    technician_email=technician.email,
+                    technician_name=technician.full_name,
+                    rejection_reason=validation.rejection_reason
+                )
         
         # Construire la raison pour l'historique avec le motif
         history_reason = f"Validation utilisateur: Rejeté. Motif: {validation.rejection_reason}"

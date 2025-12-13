@@ -8,6 +8,7 @@ interface Ticket {
   id: string;
   number: number;
   title: string;
+  description?: string;
   creator_id: string;
   creator?: {
     full_name: string;
@@ -39,6 +40,16 @@ interface Notification {
   ticket_id?: string | null;
 }
 
+interface TicketHistory {
+  id: string;
+  ticket_id: string;
+  old_status?: string | null;
+  new_status: string;
+  user_id: string;
+  reason?: string | null;
+  changed_at: string;
+}
+
 interface UserRead {
   full_name: string;
   email: string;
@@ -54,6 +65,9 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
   const [reopenTicketId, setReopenTicketId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState<string>("");
   const [loadingRejectionReason, setLoadingRejectionReason] = useState<boolean>(false);
+  const [viewTicketDetails, setViewTicketDetails] = useState<string | null>(null);
+  const [ticketDetails, setTicketDetails] = useState<Ticket | null>(null);
+  const [ticketHistory, setTicketHistory] = useState<TicketHistory[]>([]);
   const [showReopenModal, setShowReopenModal] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
   const [roleName, setRoleName] = useState<string>("");
@@ -326,6 +340,44 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
       alert("Erreur lors de l'assignation");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadTicketDetails(ticketId: string) {
+    try {
+      const res = await fetch(`http://localhost:8000/tickets/${ticketId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTicketDetails(data);
+        await loadTicketHistory(ticketId);
+        setViewTicketDetails(ticketId);
+      } else {
+        alert("Erreur lors du chargement des détails du ticket");
+      }
+    } catch {
+      alert("Erreur lors du chargement des détails");
+    }
+  }
+
+  async function loadTicketHistory(ticketId: string) {
+    try {
+      const res = await fetch(`http://localhost:8000/tickets/${ticketId}/history`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTicketHistory(Array.isArray(data) ? data : []);
+      } else {
+        setTicketHistory([]);
+      }
+    } catch {
+      setTicketHistory([]);
     }
   }
 
@@ -1173,6 +1225,13 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
                       </div>
                     ) : (
                       <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                        <button
+                          onClick={() => loadTicketDetails(t.id)}
+                          disabled={loading}
+                          style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+                        >
+                          Voir détails
+                        </button>
                         {!t.technician_id && (
                           <button
                             onClick={() => setSelectedTicket(t.id)}
@@ -1319,6 +1378,13 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
                       </div>
                     ) : (
                       <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                        <button
+                          onClick={() => loadTicketDetails(t.id)}
+                          disabled={loading}
+                          style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+                        >
+                          Voir détails
+                        </button>
                         <button
                           onClick={() => setSelectedTicket(t.id)}
                           disabled={loading}
@@ -1636,7 +1702,14 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
                                 </div>
                               </div>
                             ) : (
-                              <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                            <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                              <button
+                                onClick={() => loadTicketDetails(t.id)}
+                                disabled={loading}
+                                style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+                              >
+                                Voir détails
+                              </button>
                                 {!t.technician_id && (
                                   <button
                                     onClick={() => setSelectedTicket(t.id)}
@@ -1696,6 +1769,13 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
                             ) : (
                               <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
                                 <button
+                                  onClick={() => loadTicketDetails(t.id)}
+                                  disabled={loading}
+                                  style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+                                >
+                                  Voir détails
+                                </button>
+                                <button
                                   onClick={() => setSelectedTicket(t.id)}
                                   disabled={loading}
                                   style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "4px", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1 }}
@@ -1739,9 +1819,102 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
                     ))
                   )}
                 </tbody>
-              </table>
-            </>
-          )}
+      </table>
+    </>
+  )}
+
+      {viewTicketDetails && ticketDetails && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "rgba(0,0,0,0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: "white",
+            padding: "24px",
+            borderRadius: "8px",
+            maxWidth: "700px",
+            width: "90%",
+            maxHeight: "90vh",
+            overflowY: "auto"
+          }}>
+            <h3 style={{ marginBottom: "16px" }}>Détails du ticket #{ticketDetails.number}</h3>
+            <div style={{ marginBottom: "16px" }}>
+              <strong>Titre :</strong>
+              <p style={{ marginTop: "4px", padding: "8px", background: "#f8f9fa", borderRadius: "4px" }}>
+                {ticketDetails.title}
+              </p>
+            </div>
+            <div style={{ marginBottom: "16px" }}>
+              <strong>Description :</strong>
+              <p style={{ marginTop: "4px", padding: "8px", background: "#f8f9fa", borderRadius: "4px", whiteSpace: "pre-wrap" }}>
+                {ticketDetails.description || ""}
+              </p>
+            </div>
+            <div style={{ display: "flex", gap: "16px", marginBottom: "16px" }}>
+              <div>
+                <strong>Priorité :</strong>
+                <span style={{
+                  marginLeft: "8px",
+                  padding: "4px 8px",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                  fontWeight: "500",
+                  background: ticketDetails.priority === "critique" ? "#f44336" : ticketDetails.priority === "haute" ? "#ff9800" : ticketDetails.priority === "moyenne" ? "#ffc107" : "#9e9e9e",
+                  color: "white"
+                }}>
+                  {ticketDetails.priority}
+                </span>
+              </div>
+              {ticketDetails.creator && (
+                <div>
+                  <strong>Créateur :</strong>
+                  <span style={{ marginLeft: "8px" }}>
+                    {ticketDetails.creator.full_name}
+                  </span>
+                </div>
+              )}
+            </div>
+            <div style={{ marginTop: "16px" }}>
+              <strong>Historique :</strong>
+              <div style={{ marginTop: "8px" }}>
+                {ticketHistory.length === 0 ? (
+                  <p style={{ color: "#999", fontStyle: "italic" }}>Aucun historique</p>
+                ) : (
+                  ticketHistory.map((h) => (
+                    <div key={h.id} style={{ padding: "8px", marginTop: "4px", background: "#f8f9fa", borderRadius: "4px" }}>
+                      <div style={{ fontSize: "12px", color: "#555" }}>
+                        {new Date(h.changed_at).toLocaleString("fr-FR")}
+                      </div>
+                      <div style={{ marginTop: "4px", fontWeight: 500 }}>
+                        {h.old_status ? `${h.old_status} → ${h.new_status}` : h.new_status}
+                      </div>
+                      {h.reason && (
+                        <div style={{ marginTop: "4px", color: "#666" }}>{h.reason}</div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
+              <button
+                onClick={() => setViewTicketDetails(null)}
+                style={{ padding: "8px 12px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
           {activeSection === "reports" && (roleName === "Adjoint DSI" || roleName === "DSI" || roleName === "Admin") && (
             <>

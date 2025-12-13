@@ -65,7 +65,10 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
   const [ticketHistory, setTicketHistory] = useState<TicketHistory[]>([]);
   const [activeSection, setActiveSection] = useState<string>("dashboard");
   const [availabilityStatus, setAvailabilityStatus] = useState<string>("disponible");
+  const [rejectionReasons, setRejectionReasons] = useState<Record<string, string>>({});
+  const [hoveredMotifId, setHoveredMotifId] = useState<string | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState<boolean>(false);
+  const [resumedFlags, setResumedFlags] = useState<Record<string, boolean>>({});
 
   async function loadNotifications() {
     if (!token || token.trim() === "") {
@@ -503,6 +506,54 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
   const inProgressTickets = allTickets.filter((t) => t.status === "en_cours");
   // Tickets résolus : inclure les tickets avec statut "resolu" ou "cloture" qui ont été assignés au technicien
   const resolvedTickets = allTickets.filter((t) => t.status === "resolu" || t.status === "cloture");
+  const rejectedTickets = allTickets.filter((t) => t.status === "rejete");
+
+  useEffect(() => {
+    if (activeSection !== "tickets-rejetes") return;
+    const toFetch = rejectedTickets.filter((t) => !(t.id in rejectionReasons));
+    toFetch.forEach(async (t) => {
+      try {
+        const res = await fetch(`http://localhost:8000/tickets/${t.id}/history`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const entry = Array.isArray(data) ? data.find((h: any) => h.new_status === "rejete" && h.reason) : null;
+          const reason = entry?.reason || "";
+          setRejectionReasons((prev) => ({ ...prev, [t.id]: reason }));
+        } else {
+          setRejectionReasons((prev) => ({ ...prev, [t.id]: "" }));
+        }
+      } catch {
+        setRejectionReasons((prev) => ({ ...prev, [t.id]: "" }));
+      }
+    });
+  }, [activeSection, rejectedTickets, token]);
+
+  // Détecter les tickets en cours qui ont été repris après un rejet
+  useEffect(() => {
+    const toCheck = inProgressTickets.filter((t) => !(String(t.id) in resumedFlags));
+    if (toCheck.length === 0 || !token || token.trim() === "") return;
+
+    toCheck.forEach(async (t) => {
+      try {
+        const res = await fetch(`http://localhost:8000/tickets/${t.id}/history`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) {
+          setResumedFlags((prev) => ({ ...prev, [String(t.id)]: false }));
+          return;
+        }
+        const data = await res.json();
+        const isResumed = Array.isArray(data)
+          ? data.some((h: any) => (h.old_status === "rejete") && h.new_status === "en_cours")
+          : false;
+        setResumedFlags((prev) => ({ ...prev, [String(t.id)]: !!isResumed }));
+      } catch {
+        setResumedFlags((prev) => ({ ...prev, [String(t.id)]: false }));
+      }
+    });
+  }, [inProgressTickets, token, resumedFlags]);
 
   const assignedCount = assignedTickets.length;
   const inProgressCount = inProgressTickets.length;
@@ -573,6 +624,27 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
             </svg>
           </div>
           <div>Tickets Résolus</div>
+        </div>
+        <div 
+          onClick={() => setActiveSection("tickets-rejetes")}
+          style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "12px", 
+            padding: "12px", 
+            background: activeSection === "tickets-rejetes" ? "rgba(255,255,255,0.1)" : "transparent", 
+            borderRadius: "8px",
+            cursor: "pointer",
+            transition: "background 0.2s"
+          }}
+        >
+          <div style={{ width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+            </svg>
+          </div>
+          <div>Tickets Rejetés</div>
         </div>
       </div>
 
@@ -813,8 +885,8 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                                 borderRadius: "4px",
                                 fontSize: "12px",
                                 fontWeight: "500",
-                                background: t.priority === "critique" ? "#f44336" : t.priority === "haute" ? "#ff9800" : t.priority === "moyenne" ? "#ffc107" : "#9e9e9e",
-                                color: "white"
+                                background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fef3c7" : t.priority === "moyenne" ? "#dbeafe" : "#e5e7eb",
+                                color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#1e40af" : "#374151"
                               }}>
                                 {t.priority}
                               </span>
@@ -840,7 +912,10 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                                   disabled={loading}
                                   style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
                                 >
-                                  Voir détails
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                  </svg>
                                 </button>
                                 <button
                                   onClick={() => handleTakeCharge(t.id)}
@@ -877,8 +952,8 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                                 borderRadius: "4px",
                                 fontSize: "12px",
                                 fontWeight: "500",
-                                background: t.priority === "critique" ? "#f44336" : t.priority === "haute" ? "#ff9800" : t.priority === "moyenne" ? "#ffc107" : "#9e9e9e",
-                                color: "white"
+                                background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fef3c7" : t.priority === "moyenne" ? "#dbeafe" : "#e5e7eb",
+                                color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#1e40af" : "#374151"
                               }}>
                                 {t.priority}
                               </span>
@@ -904,7 +979,10 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                                   disabled={loading}
                                   style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
                                 >
-                                  Voir détails
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                  </svg>
                                 </button>
                                 <button
                                   onClick={() => setSelectedTicket(t.id)}
@@ -955,6 +1033,7 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                         <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", color: "#333" }}>Statut</th>
                         <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", color: "#333" }}>Priorité</th>
                         <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", color: "#333" }}>Type</th>
+                        <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", color: "#333" }}>Motif</th>
                         <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", color: "#333" }}>Assigné le</th>
                         <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", color: "#333" }}>Actions</th>
                       </tr>
@@ -991,8 +1070,152 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                                 borderRadius: "4px",
                                 fontSize: "12px",
                                 fontWeight: "500",
-                                background: t.priority === "critique" ? "#f44336" : t.priority === "haute" ? "#ff9800" : t.priority === "moyenne" ? "#ffc107" : "#9e9e9e",
-                                color: "white"
+                                background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fef3c7" : t.priority === "moyenne" ? "#dbeafe" : "#e5e7eb",
+                                color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#1e40af" : "#374151"
+                              }}>
+                                {t.priority}
+                              </span>
+                            </td>
+                            <td style={{ padding: "12px 16px" }}>
+                              <span style={{
+                                padding: "4px 8px",
+                                borderRadius: "4px",
+                                fontSize: "12px",
+                                background: "#e3f2fd",
+                                color: "#1976d2"
+                              }}>
+                                {t.type === "materiel" ? "Matériel" : "Applicatif"}
+                              </span>
+                            </td>
+                            <td style={{ padding: "12px 16px", color: "#444", position: "relative" }}>
+                              {(() => {
+                                const r = rejectionReasons[t.id];
+                                const full = r ? (r.includes("Motif:") ? r.split("Motif:").pop()?.trim() || "" : r) : "Motif non fourni";
+                                const short = full.length > 60 ? full.slice(0, 60) + "…" : full;
+                                return (
+                                  <div
+                                    onMouseEnter={() => setHoveredMotifId(t.id)}
+                                    onMouseLeave={() => setHoveredMotifId(null)}
+                                    title={full}
+                                    style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+                                  >
+                                    <span style={{ padding: "4px 8px", borderRadius: "4px", background: "#fff5f5", color: "#991b1b", border: "1px solid #fecaca" }}>
+                                      {short}
+                                    </span>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#991b1b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      <circle cx="12" cy="12" r="10"></circle>
+                                      <line x1="12" y1="8" x2="12" y2="12"></line>
+                                      <line x1="12" y1="16" x2="12" y2="16"></line>
+                                    </svg>
+                                    {hoveredMotifId === t.id && (
+                                      <div style={{
+                                        position: "absolute",
+                                        top: "100%",
+                                        left: 0,
+                                        marginTop: "8px",
+                                        background: "#fff5f5",
+                                        color: "#991b1b",
+                                        border: "1px solid #fecaca",
+                                        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                                        borderRadius: "6px",
+                                        padding: "10px 12px",
+                                        maxWidth: "480px",
+                                        zIndex: 10
+                                      }}>
+                                        {full}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })()}
+                            </td>
+                            <td style={{ padding: "12px 16px", color: "#666" }}>
+                              {t.assigned_at ? new Date(t.assigned_at).toLocaleString("fr-FR") : "N/A"}
+                            </td>
+                            <td style={{ padding: "12px 16px" }}>
+                              <button
+                                onClick={() => loadTicketDetails(t.id)}
+                                disabled={loading}
+                                style={{ 
+                                  fontSize: "12px", 
+                                  padding: "6px 12px", 
+                                  backgroundColor: "#6c757d", 
+                                  color: "white", 
+                                  border: "none", 
+                                  borderRadius: "4px", 
+                                  cursor: "pointer" 
+                                }}
+                              >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
+                                  <circle cx="12" cy="12" r="3" />
+                                </svg>
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {activeSection === "tickets-rejetes" && (
+              <div>
+                <h2 style={{ marginBottom: "24px" }}>Tickets Rejetés</h2>
+                <div style={{ 
+                  background: "white", 
+                  borderRadius: "8px", 
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  overflow: "hidden"
+                }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr style={{ background: "#f8f9fa", borderBottom: "2px solid #dee2e6" }}>
+                        <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", color: "#333" }}>ID</th>
+                        <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", color: "#333" }}>Titre</th>
+                        <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", color: "#333" }}>Statut</th>
+                        <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", color: "#333" }}>Priorité</th>
+                        <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", color: "#333" }}>Type</th>
+                        <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", color: "#333" }}>Assigné le</th>
+                        <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", color: "#333" }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rejectedTickets.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} style={{ textAlign: "center", padding: "40px", color: "#999" }}>
+                            Aucun ticket rejeté
+                          </td>
+                        </tr>
+                      ) : (
+                        rejectedTickets.map((t) => (
+                          <tr key={t.id} style={{ borderBottom: "1px solid #dee2e6" }}>
+                            <td style={{ padding: "12px 16px" }}>#{t.number}</td>
+                            <td style={{ padding: "12px 16px" }}>{t.title}</td>
+                            <td style={{ padding: "12px 16px" }}>
+                              <span style={{
+                                padding: "4px 8px",
+                                borderRadius: "4px",
+                                fontSize: "12px",
+                                fontWeight: "500",
+                                background: "#fee2e2",
+                                color: "#991b1b",
+                                whiteSpace: "nowrap",
+                                display: "inline-block"
+                              }}>
+                                Rejeté
+                              </span>
+                            </td>
+                            <td style={{ padding: "12px 16px" }}>
+                              <span style={{
+                                padding: "4px 8px",
+                                borderRadius: "4px",
+                                fontSize: "12px",
+                                fontWeight: "500",
+                                background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fef3c7" : t.priority === "moyenne" ? "#dbeafe" : "#e5e7eb",
+                                color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#1e40af" : "#374151"
                               }}>
                                 {t.priority}
                               </span>
@@ -1012,21 +1235,25 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                               {t.assigned_at ? new Date(t.assigned_at).toLocaleString("fr-FR") : "N/A"}
                             </td>
                             <td style={{ padding: "12px 16px" }}>
-                              <button
-                                onClick={() => loadTicketDetails(t.id)}
-                                disabled={loading}
-                                style={{ 
-                                  fontSize: "12px", 
-                                  padding: "6px 12px", 
-                                  backgroundColor: "#6c757d", 
-                                  color: "white", 
-                                  border: "none", 
-                                  borderRadius: "4px", 
-                                  cursor: "pointer" 
-                                }}
-                              >
-                                Voir détails
-                              </button>
+                              <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                                <button
+                                  onClick={() => loadTicketDetails(t.id)}
+                                  disabled={loading}
+                                  style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+                                >
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={() => handleTakeCharge(t.id)}
+                                  disabled={loading}
+                                  style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+                                >
+                                  Reprendre
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))
@@ -1239,7 +1466,22 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
             maxHeight: "90vh",
             overflowY: "auto"
           }}>
-            <h3 style={{ marginBottom: "16px" }}>Détails du ticket #{ticketDetails.number}</h3>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <h3 style={{ margin: 0 }}>Détails du ticket #{ticketDetails.number}</h3>
+              {ticketDetails.status === "rejete" && (
+                <span style={{
+                  padding: "6px 10px",
+                  borderRadius: "16px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  background: "#fee2e2",
+                  color: "#991b1b",
+                  border: "1px solid #fecaca"
+                }}>
+                  Rejeté
+                </span>
+              )}
+            </div>
             
             <div style={{ marginBottom: "16px" }}>
               <strong>Titre :</strong>
@@ -1277,6 +1519,30 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                 </span>
               </div>
             </div>
+
+            {ticketDetails.status === "rejete" && (
+              <div style={{ marginBottom: "16px" }}>
+                <strong>Motif du rejet :</strong>
+                <p style={{ marginTop: "4px", padding: "8px", background: "#fff5f5", borderRadius: "4px", color: "#991b1b" }}>
+                  {(() => {
+                    const entry = ticketHistory.find((h) => h.new_status === "rejete" && h.reason);
+                    if (!entry || !entry.reason) return "Motif non fourni";
+                    return entry.reason.includes("Motif:") ? (entry.reason.split("Motif:").pop() || "").trim() : entry.reason;
+                  })()}
+                </p>
+                {(() => {
+                  const entry = ticketHistory.find((h) => h.new_status === "rejete");
+                  if (!entry) return null;
+                  const when = new Date(entry.changed_at).toLocaleString("fr-FR");
+                  const who = ticketDetails.creator?.full_name || "Utilisateur";
+                  return (
+                    <div style={{ fontSize: "12px", color: "#555" }}>
+                      {`Par: ${who} • Le: ${when}`}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
 
             {ticketDetails.creator && (
               <div style={{ marginBottom: "16px" }}>

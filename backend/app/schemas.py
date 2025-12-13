@@ -81,6 +81,14 @@ class TicketCreate(TicketBase):
     pass
 
 
+class TicketEdit(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    type: Optional[TicketType] = None
+    priority: Optional[TicketPriority] = None
+    category: Optional[str] = None
+
+
 class TicketUpdate(BaseModel):
     status: Optional[TicketStatus] = None
     priority: Optional[TicketPriority] = None

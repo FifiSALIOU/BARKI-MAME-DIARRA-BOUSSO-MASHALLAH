@@ -239,6 +239,56 @@ Cordialement,
         
         return self.send_email([technician_email], subject, body, html_body)
 
+    def send_ticket_rejected_notification(
+        self,
+        ticket_number: int,
+        ticket_title: str,
+        technician_email: str,
+        technician_name: str,
+        rejection_reason: Optional[str] = None
+    ) -> bool:
+        subject = f"Ticket #{ticket_number} rejeté par l'utilisateur: {ticket_title}"
+        body = f"""
+Bonjour {technician_name},
+
+L'utilisateur a rejeté la résolution du ticket.
+
+Détails du ticket :
+• Numéro : #{ticket_number}
+• Titre : {ticket_title}
+"""
+        if rejection_reason:
+            body += f"• Motif du rejet : {rejection_reason}\n"
+
+        body += f"""
+Veuillez vous connecter à l'application et reprendre le ticket si nécessaire.
+
+Cordialement,
+{self.sender_name}
+"""
+
+        html_body = f"""
+<html>
+<body>
+    <h2>Ticket rejeté</h2>
+    <p>Bonjour {technician_name},</p>
+    <p>L'utilisateur a rejeté la résolution du ticket.</p>
+    <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+        <p><strong>Détails du ticket :</strong></p>
+        <ul>
+            <li><strong>Numéro :</strong> #{ticket_number}</li>
+            <li><strong>Titre :</strong> {ticket_title}</li>
+        </ul>
+    </div>
+    {('<p><strong>Motif du rejet :</strong> ' + rejection_reason + '</p>') if rejection_reason else ''}
+    <p>Veuillez vous connecter à l'application et reprendre le ticket si nécessaire.</p>
+    <p>Cordialement,<br>{self.sender_name}</p>
+    </body>
+</html>
+"""
+
+        return self.send_email([technician_email], subject, body, html_body)
+
 
 # Instance globale du service email
 email_service = EmailService()

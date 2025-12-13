@@ -26,6 +26,16 @@ interface Ticket {
   assigned_at?: string | null;
 }
 
+interface TicketHistory {
+  id: string;
+  ticket_id: string;
+  old_status?: string | null;
+  new_status: string;
+  user_id: string;
+  reason?: string | null;
+  changed_at: string;
+}
+
 interface Notification {
   id: string;
   type: string;
@@ -88,9 +98,20 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
   const [feedbackTicket, setFeedbackTicket] = useState<string | null>(null);
   const [feedbackScore, setFeedbackScore] = useState<number>(5);
   const [feedbackComment, setFeedbackComment] = useState<string>("");
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  const [editTicketId, setEditTicketId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState<string>("");
+  const [editDescription, setEditDescription] = useState<string>("");
+  const [editPriority, setEditPriority] = useState<string>("moyenne");
+  const [editType, setEditType] = useState<string>("materiel");
+  const [editCategory, setEditCategory] = useState<string>("");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
+  const [viewTicketDetails, setViewTicketDetails] = useState<string | null>(null);
+  const [ticketDetails, setTicketDetails] = useState<Ticket | null>(null);
+  const [ticketHistory, setTicketHistory] = useState<TicketHistory[]>([]);
+  const [resumedFlags, setResumedFlags] = useState<Record<string, boolean>>({});
   
   // Mettre à jour le token si le prop change
   useEffect(() => {
@@ -156,6 +177,32 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
     }
   }
 
+  // Détecter les tickets "repris" après un rejet pour afficher un badge informatif
+  useEffect(() => {
+    const enCours = tickets.filter((t) => t.status === "en_cours");
+    const toCheck = enCours.filter((t) => !(String(t.id) in resumedFlags));
+    if (toCheck.length === 0 || !actualToken || actualToken.trim() === "") return;
+
+    toCheck.forEach(async (t) => {
+      try {
+        const res = await fetch(`http://localhost:8000/tickets/${t.id}/history`, {
+          headers: { Authorization: `Bearer ${actualToken}` },
+        });
+        if (!res.ok) {
+          setResumedFlags((prev) => ({ ...prev, [String(t.id)]: false }));
+          return;
+        }
+        const data = await res.json();
+        const isResumed = Array.isArray(data)
+          ? data.some((h: any) => (h.old_status === "rejete") && h.new_status === "en_cours")
+          : false;
+        setResumedFlags((prev) => ({ ...prev, [String(t.id)]: !!isResumed }));
+      } catch {
+        setResumedFlags((prev) => ({ ...prev, [String(t.id)]: false }));
+      }
+    });
+  }, [tickets, actualToken, resumedFlags]);
+
   async function loadUnreadCount() {
     if (!actualToken || actualToken.trim() === "") {
       return;
@@ -173,6 +220,76 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
       }
     } catch (err) {
       console.error("Erreur lors du chargement du nombre de notifications non lues:", err);
+    }
+  }
+
+  function openEditModal(ticket: Ticket) {
+    if (ticket.status === "assigne_technicien" || ticket.status === "en_cours") {
+      alert("Le ticket est déjà en cours de traitement");
+      return;
+    }
+    setEditTicketId(ticket.id);
+    setEditTitle(ticket.title);
+    setEditDescription(ticket.description || "");
+    setEditPriority(ticket.priority);
+    setEditType((ticket as any).type || "materiel");
+    setEditCategory((ticket as any).category || "");
+    setShowEditModal(true);
+  }
+
+  async function handleEditSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!actualToken || !editTicketId) return;
+    try {
+      const res = await fetch(`http://localhost:8000/tickets/${editTicketId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${actualToken}`,
+        },
+        body: JSON.stringify({
+          title: editTitle,
+          description: editDescription,
+          priority: editPriority,
+          type: editType,
+          category: editCategory || null,
+        }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setTickets(prev => prev.map(t => t.id === updated.id ? { ...t, ...updated } : t));
+        setShowEditModal(false);
+        setEditTicketId(null);
+      } else if (res.status === 403) {
+        const errText = await res.text();
+        alert(errText || "Le ticket est déjà en cours de traitement");
+      }
+    } catch (err) {
+      console.error("Erreur lors de la modification du ticket:", err);
+    }
+  }
+
+  async function handleDelete(ticket: Ticket) {
+    if (ticket.status === "assigne_technicien" || ticket.status === "en_cours") {
+      alert("Le ticket est déjà en cours de traitement");
+      return;
+    }
+    if (!actualToken) return;
+    try {
+      const res = await fetch(`http://localhost:8000/tickets/${ticket.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${actualToken}`,
+        },
+      });
+      if (res.ok || res.status === 204) {
+        setTickets(prev => prev.filter(t => t.id !== ticket.id));
+      } else if (res.status === 403) {
+        const errText = await res.text();
+        alert(errText || "Le ticket est déjà en cours de traitement");
+      }
+    } catch (err) {
+      console.error("Erreur lors de la suppression du ticket:", err);
     }
   }
 
@@ -207,6 +324,44 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
     }
     setActualToken("");
     window.location.href = "/";
+  }
+
+  async function loadTicketDetails(ticketId: string) {
+    try {
+      const res = await fetch(`http://localhost:8000/tickets/${ticketId}`, {
+        headers: {
+          Authorization: `Bearer ${actualToken}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTicketDetails(data);
+        await loadTicketHistory(ticketId);
+        setViewTicketDetails(ticketId);
+      } else {
+        alert("Erreur lors du chargement des détails du ticket");
+      }
+    } catch (err) {
+      alert("Erreur lors du chargement des détails");
+    }
+  }
+
+  async function loadTicketHistory(ticketId: string) {
+    try {
+      const res = await fetch(`http://localhost:8000/tickets/${ticketId}/history`, {
+        headers: {
+          Authorization: `Bearer ${actualToken}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTicketHistory(Array.isArray(data) ? data : []);
+      } else {
+        setTicketHistory([]);
+      }
+    } catch {
+      setTicketHistory([]);
+    }
   }
 
   useEffect(() => {
@@ -1663,7 +1818,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                          t.status === "en_cours" ? "En cours" :
                          t.status === "resolu" ? "Résolu" :
                          t.status === "rejete" ? "Rejeté" :
-                         t.status === "cloture" ? "Clôturé" : t.status}
+                       t.status === "cloture" ? "Clôturé" : t.status}
                       </span>
                     </td>
                     <td style={{ padding: "16px" }}>
@@ -1683,6 +1838,45 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                     </td>
                     <td style={{ padding: "16px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); loadTicketDetails(t.id); }}
+                          disabled={loading}
+                          title="Voir détails"
+                          aria-label="Voir détails"
+                          style={{ width: 28, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center", backgroundColor: "#f8fafc", border: "1px solid #e5e7eb", borderRadius: 6, cursor: "pointer" }}
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
+                            <circle cx="12" cy="12" r="3" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); openEditModal(t); }}
+                          disabled={loading}
+                          title="Modifier"
+                          aria-label="Modifier"
+                          style={{ width: 28, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center", backgroundColor: "#f8fafc", border: "1px solid #e5e7eb", borderRadius: 6, cursor: "pointer" }}
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 20h9" />
+                            <path d="M16.5 3.5l4 4L7 21H3v-4L16.5 3.5z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDelete(t); }}
+                          disabled={loading}
+                          title="Supprimer"
+                          aria-label="Supprimer"
+                          style={{ width: 28, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center", backgroundColor: "#f8fafc", border: "1px solid #e5e7eb", borderRadius: 6, cursor: loading ? "not-allowed" : "pointer" }}
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6l-1 14H6L5 6" />
+                            <path d="M10 11v6" />
+                            <path d="M14 11v6" />
+                            <path d="M9 6V4h6v2" />
+                          </svg>
+                        </button>
                         {t.status === "resolu" ? (
                           <div style={{ display: "flex", gap: "4px" }}>
                             <button
@@ -1731,11 +1925,159 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
             </tbody>
           </table>
         </div>
-          </div>
-        )}
+        </div>
+      )}
 
-        {/* Create Ticket Modal */}
-        {showCreateModal && (
+      {showEditModal && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+          <div style={{ background: "white", padding: "32px", borderRadius: "12px", maxWidth: "600px", width: "90%", maxHeight: "90vh", overflowY: "auto" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+              <h3 style={{ fontSize: "24px", fontWeight: "700", color: "#333" }}>Modifier le ticket</h3>
+              <button
+                onClick={() => { setShowEditModal(false); setEditTicketId(null); }}
+                style={{ background: "none", border: "none", fontSize: "24px", cursor: "pointer", color: "#999" }}
+              >
+                ×
+              </button>
+            </div>
+            <form onSubmit={async (e) => { await handleEditSubmit(e); }}>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>Titre</label>
+                <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} required style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }} />
+              </div>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>Description</label>
+                <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} required rows={4} style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "4px", resize: "vertical" }} />
+              </div>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>Type</label>
+                <select value={editType} onChange={(e) => { setEditType(e.target.value); setEditCategory(""); }} style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}>
+                  <option value="materiel">Matériel</option>
+                  <option value="applicatif">Applicatif</option>
+                </select>
+              </div>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>Catégorie</label>
+                <select value={editCategory} onChange={(e) => setEditCategory(e.target.value)} style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}>
+                  <option value="">Sélectionner une catégorie...</option>
+                  {(editType === "materiel" ? CATEGORIES_MATERIEL : CATEGORIES_APPLICATIF).map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>Priorité</label>
+                <select value={editPriority} onChange={(e) => setEditPriority(e.target.value)} style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}>
+                  <option value="faible">Faible</option>
+                  <option value="moyenne">Moyenne</option>
+                  <option value="haute">Haute</option>
+                  <option value="critique">Critique</option>
+                </select>
+              </div>
+              <div style={{ display: "flex", gap: "12px", marginTop: "24px" }}>
+                <button type="submit" style={{ flex: 1, padding: "8px 16px", backgroundColor: "#3b82f6", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "500" }}>Enregistrer</button>
+                <button type="button" onClick={() => { setShowEditModal(false); setEditTicketId(null); }} style={{ flex: 1, padding: "8px 16px", backgroundColor: "#6b7280", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "500" }}>Annuler</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {viewTicketDetails && ticketDetails && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "rgba(0,0,0,0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: "white",
+            padding: "24px",
+            borderRadius: "8px",
+            maxWidth: "700px",
+            width: "90%",
+            maxHeight: "90vh",
+            overflowY: "auto"
+          }}>
+            <h3 style={{ marginBottom: "16px" }}>Détails du ticket #{ticketDetails.number}</h3>
+            <div style={{ marginBottom: "16px" }}>
+              <strong>Titre :</strong>
+              <p style={{ marginTop: "4px", padding: "8px", background: "#f8f9fa", borderRadius: "4px" }}>
+                {ticketDetails.title}
+              </p>
+            </div>
+            <div style={{ marginBottom: "16px" }}>
+              <strong>Description :</strong>
+              <p style={{ marginTop: "4px", padding: "8px", background: "#f8f9fa", borderRadius: "4px", whiteSpace: "pre-wrap" }}>
+                {ticketDetails.description || ""}
+              </p>
+            </div>
+            <div style={{ display: "flex", gap: "16px", marginBottom: "16px" }}>
+              <div>
+                <strong>Priorité :</strong>
+                <span style={{
+                  marginLeft: "8px",
+                  padding: "4px 8px",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                  fontWeight: "500",
+                  background: ticketDetails.priority === "critique" ? "#f44336" : ticketDetails.priority === "haute" ? "#ff9800" : ticketDetails.priority === "moyenne" ? "#ffc107" : "#9e9e9e",
+                  color: "white"
+                }}>
+                  {ticketDetails.priority}
+                </span>
+              </div>
+              {ticketDetails.creator && (
+                <div>
+                  <strong>Créateur :</strong>
+                  <span style={{ marginLeft: "8px" }}>
+                    {ticketDetails.creator.full_name}
+                  </span>
+                </div>
+              )}
+            </div>
+            <div style={{ marginTop: "16px" }}>
+              <strong>Historique :</strong>
+              <div style={{ marginTop: "8px" }}>
+                {ticketHistory.length === 0 ? (
+                  <p style={{ color: "#999", fontStyle: "italic" }}>Aucun historique</p>
+                ) : (
+                  ticketHistory.map((h) => (
+                    <div key={h.id} style={{ padding: "8px", marginTop: "4px", background: "#f8f9fa", borderRadius: "4px" }}>
+                      <div style={{ fontSize: "12px", color: "#555" }}>
+                        {new Date(h.changed_at).toLocaleString("fr-FR")}
+                      </div>
+                      <div style={{ marginTop: "4px", fontWeight: 500 }}>
+                        {h.old_status ? `${h.old_status} → ${h.new_status}` : h.new_status}
+                      </div>
+                      {h.reason && (
+                        <div style={{ marginTop: "4px", color: "#666" }}>{h.reason}</div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
+              <button
+                onClick={() => setViewTicketDetails(null)}
+                style={{ padding: "8px 12px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Ticket Modal */}
+      {showCreateModal && (
           <div style={{
             position: "fixed",
             top: 0,
@@ -2267,5 +2609,3 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
 }
 
 export default UserDashboard;
-
-
