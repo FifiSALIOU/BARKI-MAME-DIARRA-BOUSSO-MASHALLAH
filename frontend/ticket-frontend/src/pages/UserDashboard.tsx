@@ -1175,6 +1175,16 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
             }}>
             {/* Header retiré */}
 
+            {/* Message d'accueil */}
+            <div style={{ marginBottom: "30px" }}>
+              <div style={{ fontSize: "24px", fontWeight: "700", color: "#111827", marginBottom: "8px" }}>
+                Bonjour {userInfo?.full_name ? userInfo.full_name.split(' ')[0] : 'Jean'} 👋
+              </div>
+              <div style={{ fontSize: "16px", color: "#4b5563", lineHeight: "1.5" }}>
+                Comment pouvons-nous vous aider aujourd'hui ? Notre équipe technique est là pour vous.
+              </div>
+            </div>
+
             {/* Liste des statuts */}
             <div style={{ 
               display: "grid", 

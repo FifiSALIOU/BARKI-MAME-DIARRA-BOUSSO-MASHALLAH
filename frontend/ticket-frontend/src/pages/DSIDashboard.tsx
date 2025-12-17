@@ -238,6 +238,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [openActionsMenuFor, setOpenActionsMenuFor] = useState<string | null>(null);
+  const [actionsMenuPosition, setActionsMenuPosition] = useState<{ top: number; left: number } | null>(null);
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
   const [userInfo, setUserInfo] = useState<UserRead | null>(null);
   const [allUsers, setAllUsers] = useState<any[]>([]);
@@ -528,7 +529,8 @@ function DSIDashboard({ token }: DSIDashboardProps) {
     confirmPassword: "",
     generateRandomPassword: true,
     sendEmail: true,
-    work_hours: "08:30-12:30 / 14:00-17:30",
+    // Par défaut : 08h-13h / 14h-17h avec une heure de pause déjeuner
+    work_hours: "08:00-13:00 / 14:00-17:00",
     availability_status: "disponible"
   });
   const [editUser, setEditUser] = useState({
@@ -538,7 +540,8 @@ function DSIDashboard({ token }: DSIDashboardProps) {
     agency: "",
     role: "",
     status: "actif",
-    work_hours: "08:30-12:30 / 14:00-17:30",
+    // Par défaut : 08h-13h / 14h-17h avec une heure de pause déjeuner
+    work_hours: "08:00-13:00 / 14:00-17:00",
     availability_status: "disponible"
   });
 
@@ -563,7 +566,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
       agency: user.agency || "",
       role: roleName,
       status: statusValue,
-      work_hours: user.work_hours || "08:30-12:30 / 14:00-17:30",
+      work_hours: user.work_hours || "08:00-13:00 / 14:00-17:00",
       availability_status: user.availability_status || "disponible"
     });
     setShowEditUserModal(true);
@@ -1092,7 +1095,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
               } catch (err) {
                 console.error(`Erreur stats pour ${tech.id}:`, err);
               }
-              return { ...tech, work_hours: "08h - 17h", workload_ratio: "0/5", resolved_today: 0, avg_response_time_minutes: 0 };
+              return { ...tech, work_hours: "08:00-13:00 / 14:00-17:00", workload_ratio: "0/5", resolved_today: 0, avg_response_time_minutes: 0 };
             })
           );
           setTechnicians(techsWithStats);
@@ -2686,6 +2689,16 @@ function DSIDashboard({ token }: DSIDashboardProps) {
         <div style={{ flex: 1, padding: "30px", overflow: "auto" }}>
           {activeSection === "dashboard" && (
             <>
+      {/* En-tête centre d'assignation */}
+      <div style={{ marginTop: "8px", marginBottom: "20px" }}>
+        <div style={{ fontSize: "22px", fontWeight: 700, color: "#111827", marginBottom: "4px" }}>
+          Centre d'Assignation
+        </div>
+        <div style={{ fontSize: "15px", color: "#4b5563" }}>
+          Répartissez les tickets à votre équipe technique
+        </div>
+      </div>
+
       {/* Métriques principales DSI */}
       <div
         style={{
@@ -2994,10 +3007,13 @@ function DSIDashboard({ token }: DSIDashboardProps) {
       </div>
 
       {/* Tableau des tickets récents */}
+      <h3 style={{ marginTop: "8px", marginBottom: "12px", fontSize: "22px", fontWeight: "600", color: "#333" }}>
+        Tickets Récents
+      </h3>
       <div style={{ 
         display: "flex", 
         gap: "16px", 
-        marginTop: "32px",
+        marginTop: "0",
         marginBottom: "16px", 
         flexWrap: "wrap",
         background: "white",
@@ -3066,8 +3082,6 @@ function DSIDashboard({ token }: DSIDashboardProps) {
           </select>
         </div>
       </div>
-      <h3 style={{ marginTop: "0", marginBottom: "16px", fontSize: "22px", fontWeight: "600", color: "#333" }}>Tickets Récents</h3>
-      
       <table style={{ width: "100%", borderCollapse: "collapse", background: "white", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
         <thead>
           <tr style={{ background: "#f8f9fa" }}>
@@ -3165,7 +3179,30 @@ function DSIDashboard({ token }: DSIDashboardProps) {
                       <button
                         onClick={(e) => { 
                           e.stopPropagation(); 
-                          setOpenActionsMenuFor(openActionsMenuFor === t.id ? null : t.id);
+                          
+                          const isOpen = openActionsMenuFor === t.id;
+                          if (isOpen) {
+                            setOpenActionsMenuFor(null);
+                            setActionsMenuPosition(null);
+                            return;
+                          }
+
+                          const buttonRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                          const viewportHeight = window.innerHeight;
+                          const menuWidth = 220;
+                          const menuHeight = 220; // hauteur approximative
+
+                          let top = buttonRect.bottom + 4; // par défaut en dessous
+                          // Si pas assez d'espace en bas mais assez en haut, afficher vers le haut
+                          if (viewportHeight - buttonRect.bottom < menuHeight && buttonRect.top > menuHeight) {
+                            top = buttonRect.top - menuHeight - 4;
+                          }
+
+                          let left = buttonRect.right - menuWidth;
+                          if (left < 8) left = 8;
+
+                          setActionsMenuPosition({ top, left });
+                          setOpenActionsMenuFor(t.id);
                         }}
                         disabled={loading}
                         title="Actions"
@@ -3188,46 +3225,22 @@ function DSIDashboard({ token }: DSIDashboardProps) {
                           backgroundSize: "18px 18px"
                         }}
                       />
-                      {openActionsMenuFor === t.id && (
+                      {openActionsMenuFor === t.id && actionsMenuPosition && (
                         <div
                           style={{
-                            position: "absolute",
-                            top: "100%",
-                            right: 0,
-                            marginTop: "4px",
+                            position: "fixed",
+                            top: actionsMenuPosition.top,
+                            left: actionsMenuPosition.left,
                             background: "white",
                             border: "1px solid #e5e7eb",
                             borderRadius: 8,
                             boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
                             minWidth: 180,
                             zIndex: 1000,
-                            overflow: "visible"
+                            maxHeight: 280,
+                            overflowY: "auto"
                           }}
                           onClick={(e) => e.stopPropagation()}
-                          ref={(el) => {
-                            if (el) {
-                              const button = el.previousElementSibling as HTMLElement;
-                              if (button) {
-                                const rect = button.getBoundingClientRect();
-                                const viewportHeight = window.innerHeight;
-                                const menuHeight = el.offsetHeight || 200;
-                                const spaceBelow = viewportHeight - rect.bottom;
-                                const spaceAbove = rect.top;
-                                
-                                if (spaceBelow < menuHeight && spaceAbove > menuHeight) {
-                                  el.style.bottom = "100%";
-                                  el.style.top = "auto";
-                                  el.style.marginBottom = "4px";
-                                  el.style.marginTop = "0";
-                                } else {
-                                  el.style.top = "100%";
-                                  el.style.bottom = "auto";
-                                  el.style.marginTop = "4px";
-                                  el.style.marginBottom = "0";
-                                }
-                              }
-                            }
-                          }}
                         >
                           {t.status === "en_attente_analyse" && (
                             <>
@@ -3738,7 +3751,30 @@ function DSIDashboard({ token }: DSIDashboardProps) {
                               <button
                                 onClick={(e) => { 
                                   e.stopPropagation(); 
-                                  setOpenActionsMenuFor(openActionsMenuFor === t.id ? null : t.id);
+                                  
+                                  const isOpen = openActionsMenuFor === t.id;
+                                  if (isOpen) {
+                                    setOpenActionsMenuFor(null);
+                                    setActionsMenuPosition(null);
+                                    return;
+                                  }
+
+                                  const buttonRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                  const viewportHeight = window.innerHeight;
+                                  const menuWidth = 220;
+                                  const menuHeight = 220; // hauteur approximative
+
+                                  let top = buttonRect.bottom + 4; // par défaut en dessous
+                                  // Si pas assez d'espace en bas mais assez en haut, afficher vers le haut
+                                  if (viewportHeight - buttonRect.bottom < menuHeight && buttonRect.top > menuHeight) {
+                                    top = buttonRect.top - menuHeight - 4;
+                                  }
+
+                                  let left = buttonRect.right - menuWidth;
+                                  if (left < 8) left = 8;
+
+                                  setActionsMenuPosition({ top, left });
+                                  setOpenActionsMenuFor(t.id);
                                 }}
                                 disabled={loading}
                                 title="Actions"
@@ -3761,46 +3797,22 @@ function DSIDashboard({ token }: DSIDashboardProps) {
                                   backgroundSize: "18px 18px"
                                 }}
                               />
-                              {openActionsMenuFor === t.id && (
+                              {openActionsMenuFor === t.id && actionsMenuPosition && (
                                 <div
                                   style={{
-                                    position: "absolute",
-                                    top: "100%",
-                                    right: 0,
-                                    marginTop: "4px",
+                                    position: "fixed",
+                                    top: actionsMenuPosition.top,
+                                    left: actionsMenuPosition.left,
                                     background: "white",
                                     border: "1px solid #e5e7eb",
                                     borderRadius: 8,
                                     boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
                                     minWidth: 180,
                                     zIndex: 1000,
-                                    overflow: "visible"
+                                    maxHeight: 280,
+                                    overflowY: "auto"
                                   }}
                                   onClick={(e) => e.stopPropagation()}
-                                  ref={(el) => {
-                                    if (el) {
-                                      const button = el.previousElementSibling as HTMLElement;
-                                      if (button) {
-                                        const rect = button.getBoundingClientRect();
-                                        const viewportHeight = window.innerHeight;
-                                        const menuHeight = el.offsetHeight || 200;
-                                        const spaceBelow = viewportHeight - rect.bottom;
-                                        const spaceAbove = rect.top;
-                                        
-                                        if (spaceBelow < menuHeight && spaceAbove > menuHeight) {
-                                          el.style.bottom = "100%";
-                                          el.style.top = "auto";
-                                          el.style.marginBottom = "4px";
-                                          el.style.marginTop = "0";
-                                        } else {
-                                          el.style.top = "100%";
-                                          el.style.bottom = "auto";
-                                          el.style.marginTop = "4px";
-                                          el.style.marginBottom = "0";
-                                        }
-                                      }
-                                    }
-                                  }}
                                 >
                                   {t.status === "en_attente_analyse" && (
                                     <>
@@ -5720,7 +5732,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
                     <option value="materiel">Matériel</option>
                     <option value="applicatif">Applicatif</option>
                     <option value="disponible">Disponible</option>
-                    <option value="en_pause">En pause</option>
+                    <option value="en pause">En pause</option>
                     <option value="occupé">Occupé</option>
                     <option value="indisponible">Indisponible</option>
                   </select>
@@ -5875,7 +5887,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
                                <line x1="8" y1="2" x2="8" y2="6" />
                                <line x1="3" y1="10" x2="21" y2="10" />
                              </svg>
-                             <span>{tech.work_hours || "08h - 17h"}</span>
+                            <span>{tech.work_hours || "08:00-13:00 / 14:00-17:00"}</span>
                            </div>
                            
                            {/* Statistiques visuelles */}
@@ -6398,7 +6410,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
                              } catch (err) {
                                console.error(`Erreur stats pour ${tech.id}:`, err);
                              }
-                             return { ...tech, work_hours: "08h - 17h", workload_ratio: "0/5", resolved_today: 0, avg_response_time_minutes: 0 };
+                            return { ...tech, work_hours: "08:00-13:00 / 14:00-17:00", workload_ratio: "0/5", resolved_today: 0, avg_response_time_minutes: 0 };
                            })
                          );
                          setTechnicians(techsWithStats);
@@ -6730,7 +6742,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
                              } catch (err) {
                                console.error(`Erreur stats pour ${tech.id}:`, err);
                              }
-                             return { ...tech, work_hours: "08h - 17h", workload_ratio: "0/5", resolved_today: 0, avg_response_time_minutes: 0 };
+                            return { ...tech, work_hours: "08:00-13:00 / 14:00-17:00", workload_ratio: "0/5", resolved_today: 0, avg_response_time_minutes: 0 };
                            })
                          );
                          setTechnicians(techsWithStats);
@@ -7024,7 +7036,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
                                  } catch (err) {
                                    console.error(`Erreur stats pour ${tech.id}:`, err);
                                  }
-                                 return { ...tech, work_hours: "08h - 17h", workload_ratio: "0/5", resolved_today: 0, avg_response_time_minutes: 0 };
+                                return { ...tech, work_hours: "08:00-13:00 / 14:00-17:00", workload_ratio: "0/5", resolved_today: 0, avg_response_time_minutes: 0 };
                                })
                              );
                              setTechnicians(techsWithStats);
@@ -9638,19 +9650,19 @@ function DSIDashboard({ token }: DSIDashboardProps) {
                    <h3 style={{ marginBottom: "16px", fontSize: "18px", fontWeight: "600", color: "#333" }}>Informations Technicien</h3>
                    <div style={{ border: "1px solid #ddd", borderRadius: "8px", padding: "16px", borderLeft: "4px solid #17a2b8", background: "#f8f9fa" }}>
                      <div style={{ marginBottom: "16px" }}>
-                       <label style={{ display: "block", marginBottom: "8px", color: "#333", fontWeight: "500" }}>
-                         Horaires de Travail
-                       </label>
+                      <label style={{ display: "block", marginBottom: "8px", color: "#333", fontWeight: "500" }}>
+                        Horaires de Travail (incluent automatiquement la pause)
+                      </label>
                        <input
                          type="text"
-                         value={newUser.work_hours}
+                        value={newUser.work_hours}
                          onChange={(e) => setNewUser({ ...newUser, work_hours: e.target.value })}
                          style={{ width: "100%", padding: "8px 12px", border: "1px solid #ddd", borderRadius: "4px", fontSize: "14px" }}
-                         placeholder="Ex: 08:30-12:30 / 14:00-17:30"
+                        placeholder='Ex: 08:00-13:00 / 14:00-17:00 (pause 13h-14h)'
                        />
-                       <small style={{ display: "block", marginTop: "4px", color: "#666", fontSize: "12px" }}>
-                         Format recommandé: "08:30-12:30 / 14:00-17:30" ou "9h-18h"
-                       </small>
+                      <small style={{ display: "block", marginTop: "4px", color: "#666", fontSize: "12px" }}>
+                        Format recommandé: "08:00-13:00 / 14:00-17:00". La période entre les deux plages (ici 13h-14h) sera affichée automatiquement comme "En pause".
+                      </small>
                      </div>
                      <div style={{ marginBottom: "0" }}>
                        <label style={{ display: "block", marginBottom: "8px", color: "#333", fontWeight: "500" }}>
@@ -9661,10 +9673,10 @@ function DSIDashboard({ token }: DSIDashboardProps) {
                          onChange={(e) => setNewUser({ ...newUser, availability_status: e.target.value })}
                          style={{ width: "100%", padding: "8px 12px", border: "1px solid #ddd", borderRadius: "4px", fontSize: "14px" }}
                        >
-                         <option value="disponible">Disponible</option>
-                         <option value="occupé">Occupé</option>
-                         <option value="en_pause">En pause</option>
-                         <option value="hors_service">Hors service</option>
+                        <option value="disponible">Disponible</option>
+                        <option value="occupé">Occupé</option>
+                        <option value="en pause">En pause</option>
+                        <option value="hors_service">Hors service</option>
                        </select>
                        <small style={{ display: "block", marginTop: "4px", color: "#666", fontSize: "12px" }}>
                          Le statut peut être modifié ultérieurement par le technicien ou l'admin
@@ -9951,19 +9963,19 @@ function DSIDashboard({ token }: DSIDashboardProps) {
                    <h3 style={{ marginBottom: "16px", fontSize: "18px", fontWeight: "600", color: "#333" }}>Informations Technicien</h3>
                    <div style={{ border: "1px solid #ddd", borderRadius: "8px", padding: "16px", borderLeft: "4px solid #17a2b8", background: "#f8f9fa" }}>
                      <div style={{ marginBottom: "16px" }}>
-                       <label style={{ display: "block", marginBottom: "8px", color: "#333", fontWeight: "500" }}>
-                         Horaires de Travail
-                       </label>
+                      <label style={{ display: "block", marginBottom: "8px", color: "#333", fontWeight: "500" }}>
+                        Horaires de Travail (incluent automatiquement la pause)
+                      </label>
                        <input
                          type="text"
-                         value={editUser.work_hours}
+                        value={editUser.work_hours}
                          onChange={(e) => setEditUser({ ...editUser, work_hours: e.target.value })}
                          style={{ width: "100%", padding: "8px 12px", border: "1px solid #ddd", borderRadius: "4px", fontSize: "14px" }}
-                         placeholder="Ex: 08:30-12:30 / 14:00-17:30"
+                        placeholder='Ex: 08:00-13:00 / 14:00-17:00 (pause 13h-14h)'
                        />
-                       <small style={{ display: "block", marginTop: "4px", color: "#666", fontSize: "12px" }}>
-                         Format recommandé: "08:30-12:30 / 14:00-17:30" ou "9h-18h"
-                       </small>
+                      <small style={{ display: "block", marginTop: "4px", color: "#666", fontSize: "12px" }}>
+                        Format recommandé: "08:00-13:00 / 14:00-17:00". La période entre les deux plages (ici 13h-14h) sera affichée automatiquement comme "En pause".
+                      </small>
                      </div>
                      <div style={{ marginBottom: "0" }}>
                        <label style={{ display: "block", marginBottom: "8px", color: "#333", fontWeight: "500" }}>
@@ -9974,10 +9986,10 @@ function DSIDashboard({ token }: DSIDashboardProps) {
                          onChange={(e) => setEditUser({ ...editUser, availability_status: e.target.value })}
                          style={{ width: "100%", padding: "8px 12px", border: "1px solid #ddd", borderRadius: "4px", fontSize: "14px" }}
                        >
-                         <option value="disponible">Disponible</option>
-                         <option value="occupé">Occupé</option>
-                         <option value="en_pause">En pause</option>
-                         <option value="hors_service">Hors service</option>
+                        <option value="disponible">Disponible</option>
+                        <option value="occupé">Occupé</option>
+                        <option value="en pause">En pause</option>
+                        <option value="hors_service">Hors service</option>
                        </select>
                        <small style={{ display: "block", marginTop: "4px", color: "#666", fontSize: "12px" }}>
                          Le statut peut être modifié ultérieurement par le technicien ou l'admin

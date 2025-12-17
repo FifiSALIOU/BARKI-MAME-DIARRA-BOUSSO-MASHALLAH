@@ -20,7 +20,7 @@ function LoginPage({ onLogin }: LoginPageProps) {
     setLoading(true);
     try {
       console.log("Connexion: démarrage");
-      const base = "http://127.0.0.1:8000";
+      const base = "http://localhost:8000";
       const body = new URLSearchParams();
       body.append("username", username);
       body.append("password", password);
@@ -37,7 +37,14 @@ function LoginPage({ onLogin }: LoginPageProps) {
       console.log("Réponse /auth/token:", res.status, res.statusText);
 
       if (!res.ok) {
-        throw new Error("Identifiants invalides");
+        let errorMessage = "Identifiants invalides";
+        try {
+          const errorData = await res.json();
+          errorMessage = errorData.detail || errorMessage;
+        } catch (e) {
+          // Si la réponse n'est pas du JSON, utiliser le message par défaut
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await res.json();

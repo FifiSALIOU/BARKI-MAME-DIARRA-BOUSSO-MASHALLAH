@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { PanelLeft } from "lucide-react";
+import { PanelLeft, Clock3, Users, CheckCircle2, FileBarChart, ChevronRight, ChevronDown } from "lucide-react";
 
 interface SecretaryDashboardProps {
   token: string;
@@ -772,11 +772,7 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
           }}
         >
           <div style={{ width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <rect x="4" y="11" width="3" height="7" rx="1" fill="white" />
-              <rect x="10.5" y="8" width="3" height="10" rx="1" fill="white" />
-              <rect x="17" y="5" width="3" height="13" rx="1" fill="white" />
-            </svg>
+            <Clock3 size={18} color="white" />
           </div>
           <div>Tableau de Bord</div>
         </div>
@@ -803,7 +799,13 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
               </svg>
             </div>
             <div style={{ flex: 1 }}>Tickets</div>
-            <div style={{ fontSize: "12px" }}>{showTicketsDropdown ? "▼" : "▶"}</div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", transition: "transform 0.2s ease" }}>
+              {showTicketsDropdown ? (
+                <ChevronDown size={16} color="white" />
+              ) : (
+                <ChevronRight size={16} color="white" />
+              )}
+            </div>
           </div>
           {showTicketsDropdown && (
             <div style={{ 
@@ -915,15 +917,16 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
               }}
             >
               <div style={{ width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14,2 14,8 20,8" />
-                  <line x1="16" y1="13" x2="8" y2="13" />
-                  <line x1="16" y1="17" x2="8" y2="17" />
-                </svg>
+                <FileBarChart size={18} color="white" />
               </div>
               <div style={{ flex: 1 }}>Rapports</div>
-              <div style={{ fontSize: "12px" }}>{showReportsDropdown ? "▼" : "▶"}</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", transition: "transform 0.2s ease" }}>
+                {showReportsDropdown ? (
+                  <ChevronDown size={16} color="white" />
+                ) : (
+                  <ChevronRight size={16} color="white" />
+                )}
+              </div>
             </div>
             {showReportsDropdown && (
               <div style={{ 
@@ -942,8 +945,7 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
                     padding: "8px 12px", 
                     borderRadius: "4px", 
                     cursor: "pointer",
-                    background: selectedReport === "statistiques" ? "rgba(255,255,255,0.1)" : "transparent",
-                    whiteSpace: "nowrap"
+                    background: selectedReport === "statistiques" ? "rgba(255,255,255,0.1)" : "transparent"
                   }}
                 >
                   Statistiques générales
@@ -957,8 +959,7 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
                     padding: "8px 12px", 
                     borderRadius: "4px", 
                     cursor: "pointer",
-                    background: selectedReport === "metriques" ? "rgba(255,255,255,0.1)" : "transparent",
-                    whiteSpace: "nowrap"
+                    background: selectedReport === "metriques" ? "rgba(255,255,255,0.1)" : "transparent"
                   }}
                 >
                   Métriques de performance
@@ -972,8 +973,7 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
                     padding: "8px 12px", 
                     borderRadius: "4px", 
                     cursor: "pointer",
-                    background: selectedReport === "agence" ? "rgba(255,255,255,0.1)" : "transparent",
-                    whiteSpace: "nowrap"
+                    background: selectedReport === "agence" ? "rgba(255,255,255,0.1)" : "transparent"
                   }}
                 >
                   Analyses par agence
@@ -987,8 +987,7 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
                     padding: "8px 12px", 
                     borderRadius: "4px", 
                     cursor: "pointer",
-                    background: selectedReport === "technicien" ? "rgba(255,255,255,0.1)" : "transparent",
-                    whiteSpace: "nowrap"
+                    background: selectedReport === "technicien" ? "rgba(255,255,255,0.1)" : "transparent"
                   }}
                 >
                   Analyses par technicien
@@ -1002,8 +1001,7 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
                     padding: "8px 12px", 
                     borderRadius: "4px", 
                     cursor: "pointer",
-                    background: selectedReport === "evolutions" ? "rgba(255,255,255,0.1)" : "transparent",
-                    whiteSpace: "nowrap"
+                    background: selectedReport === "evolutions" ? "rgba(255,255,255,0.1)" : "transparent"
                   }}
                 >
                   Évolutions dans le temps
@@ -1217,21 +1215,154 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
         {/* Contenu principal avec scroll */}
         <div style={{ flex: 1, padding: "30px", overflow: "auto" }}>
           {activeSection === "dashboard" && (
-            <>
-              <h2 style={{ marginBottom: "24px", fontSize: "28px", fontWeight: "600", color: "#333" }}>Tableau de bord - Secrétaire/Adjoint DSI</h2>
+          <>
+              <div style={{ marginBottom: "24px" }}>
+                <div style={{ fontSize: "28px", fontWeight: "600", color: "#333", marginBottom: "4px" }}>
+                  Centre d'Assignation
+                </div>
+                <div style={{ fontSize: "15px", color: "#4b5563" }}>
+                  Répartissez les tickets à votre équipe technique
+                </div>
+              </div>
 
-      <div style={{ display: "flex", gap: "16px", margin: "24px 0" }}>
-        <div style={{ padding: "16px", background: "white", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", flex: 1 }}>
-          <div style={{ fontSize: "32px", fontWeight: "bold", color: "#ff9800" }}>{pendingCount}</div>
-          <div style={{ color: "#666", marginTop: "4px" }}>Tickets en attente</div>
+      {/* Métriques principales */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, minmax(200px, 1fr))",
+          gap: "10px",
+          margin: "20px 0",
+        }}
+      >
+        {/* Tickets en attente */}
+        <div
+          style={{
+            background: "white",
+            borderRadius: "12px",
+            padding: "10px 12px",
+            boxShadow: "0 6px 18px rgba(15,23,42,0.08)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "8px",
+            }}
+          >
+            <div
+              style={{
+                width: "36px",
+                height: "36px",
+                borderRadius: "10px",
+                background: "#fff4e6",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Clock3 size={18} color="#ff8a3c" />
+            </div>
+          </div>
+          <div
+            style={{
+              fontSize: "20px",
+              fontWeight: 700,
+              color: "#111827",
+              marginBottom: "3px",
+            }}
+          >
+            {pendingCount}
+          </div>
+          <div style={{ fontSize: "11px", fontWeight: 500, color: "#374151" }}>
+            Tickets en attente
+          </div>
+          <div style={{ marginTop: "2px", fontSize: "10px", color: "#6b7280" }}>
+            Action requise
+          </div>
         </div>
-        <div style={{ padding: "16px", background: "white", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", flex: 1 }}>
-          <div style={{ fontSize: "32px", fontWeight: "bold", color: "#2196f3" }}>{assignedCount}</div>
-          <div style={{ color: "#666", marginTop: "4px" }}>Tickets assignés</div>
+
+        {/* Tickets assignés */}
+        <div
+          style={{
+            background: "white",
+            borderRadius: "12px",
+            padding: "10px 12px",
+            boxShadow: "0 6px 18px rgba(15,23,42,0.08)",
+          }}
+        >
+          <div
+            style={{
+              width: "36px",
+              height: "36px",
+              borderRadius: "10px",
+              background: "#e5f0ff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: "8px",
+            }}
+          >
+            <Users size={18} color="#2563eb" />
+          </div>
+          <div
+            style={{
+              fontSize: "20px",
+              fontWeight: 700,
+              color: "#111827",
+              marginBottom: "3px",
+            }}
+          >
+            {assignedCount}
+          </div>
+          <div style={{ fontSize: "11px", fontWeight: 500, color: "#374151" }}>
+            Tickets assignés
+          </div>
+          <div style={{ marginTop: "2px", fontSize: "10px", color: "#6b7280" }}>
+            En traitement
+          </div>
         </div>
-        <div style={{ padding: "16px", background: "white", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", flex: 1 }}>
-          <div style={{ fontSize: "32px", fontWeight: "bold", color: "#4caf50" }}>{resolvedCount}</div>
-          <div style={{ color: "#666", marginTop: "4px" }}>Tickets résolus</div>
+
+        {/* Tickets résolus */}
+        <div
+          style={{
+            background: "white",
+            borderRadius: "12px",
+            padding: "10px 12px",
+            boxShadow: "0 6px 18px rgba(15,23,42,0.08)",
+          }}
+        >
+          <div
+            style={{
+              width: "36px",
+              height: "36px",
+              borderRadius: "10px",
+              background: "#dcfce7",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: "8px",
+            }}
+          >
+            <CheckCircle2 size={18} color="#16a34a" />
+          </div>
+          <div
+            style={{
+              fontSize: "20px",
+              fontWeight: 700,
+              color: "#111827",
+              marginBottom: "3px",
+            }}
+          >
+            {resolvedCount}
+          </div>
+          <div style={{ fontSize: "11px", fontWeight: 500, color: "#374151" }}>
+            Tickets résolus
+          </div>
+          <div style={{ marginTop: "2px", fontSize: "10px", color: "#6b7280" }}>
+            Aujourd&apos;hui
+          </div>
         </div>
       </div>
 

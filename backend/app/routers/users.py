@@ -77,12 +77,15 @@ def list_technicians(
             "role": {
                 "id": tech.role.id,
                 "name": tech.role.name,
-                "description": tech.role.description
+                "description": tech.role.description,
             },
             "status": tech.status,
             "specialization": tech.specialization,
+            # Statut de disponibilité et horaires tels que définis pour le technicien
+            "availability_status": tech.availability_status,
+            "work_hours": tech.work_hours,
             "assigned_tickets_count": assigned_count,
-            "in_progress_tickets_count": in_progress_count
+            "in_progress_tickets_count": in_progress_count,
         }
         result.append(tech_dict)
     
@@ -172,8 +175,10 @@ def get_technician_stats(
         .count()
     )
     
-    # Logique simple : disponible si moins de 3 tickets en cours, occupé sinon
-    availability_status = "disponible" if in_progress_count < 3 else "occupé"
+    # Logique simple par défaut : disponible si moins de 3 tickets en cours, occupé sinon.
+    # Mais si un statut manuel est défini pour le technicien, il est prioritaire.
+    auto_availability_status = "disponible" if in_progress_count < 3 else "occupé"
+    effective_availability_status = technician.availability_status or auto_availability_status
     
     # Calculer le temps de réponse moyen (temps entre assignation et première action du technicien)
     # Le temps de réponse = temps entre assigned_at et le moment où le ticket passe à "en_cours"
@@ -228,8 +233,8 @@ def get_technician_stats(
         .count()
     )
     
-    # Horaires de travail (par défaut 08h-17h, peut être personnalisé plus tard)
-    work_hours = "08h - 17h"
+    # Horaires de travail : utiliser ceux du technicien, sinon une valeur par défaut (08:00-13:00 / 14:00-17:00)
+    work_hours = technician.work_hours or "08:00-13:00 / 14:00-17:00"
     
     return {
         "id": str(technician.id),
@@ -249,7 +254,8 @@ def get_technician_stats(
         "avg_resolution_time_days": avg_resolution_time,
         "avg_response_time_minutes": avg_response_time_minutes,
         "success_rate": success_rate,
-        "availability_status": availability_status,
+        # Statut de disponibilité effectif (manuel prioritaire, sinon calculé automatiquement)
+        "availability_status": effective_availability_status,
         "workload_ratio": workload_ratio,
         "work_hours": work_hours
     }

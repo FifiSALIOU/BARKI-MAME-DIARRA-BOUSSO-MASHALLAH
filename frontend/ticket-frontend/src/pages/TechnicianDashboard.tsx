@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { PanelLeft } from "lucide-react";
+import { PanelLeft, ClipboardList, Clock3, CheckCircle2 } from "lucide-react";
 
 interface Notification {
   id: string;
@@ -69,6 +69,12 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
   const [updatingStatus, setUpdatingStatus] = useState<boolean>(false);
   const [resumedFlags, setResumedFlags] = useState<Record<string, boolean>>({});
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  const [dateFilter, setDateFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [openActionsMenuFor, setOpenActionsMenuFor] = useState<string | null>(null);
+  const [actionsMenuPosition, setActionsMenuPosition] = useState<{ top: number; left: number } | null>(null);
 
   async function loadNotifications() {
     if (!token || token.trim() === "") {
@@ -452,6 +458,49 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
   const resolvedTickets = allTickets.filter((t) => t.status === "resolu" || t.status === "cloture");
   const rejectedTickets = allTickets.filter((t) => t.status === "rejete");
 
+  const matchesFilters = (t: Ticket) => {
+    if (statusFilter !== "all" && t.status !== statusFilter) {
+      return false;
+    }
+
+    if (priorityFilter !== "all" && t.priority !== priorityFilter) {
+      return false;
+    }
+
+    if (typeFilter !== "all" && t.type !== typeFilter) {
+      return false;
+    }
+
+    if (dateFilter !== "all") {
+      if (!t.assigned_at) {
+        return false;
+      }
+      const assignedDate = new Date(t.assigned_at);
+      const now = new Date();
+
+      if (dateFilter === "today") {
+        if (assignedDate.toDateString() !== now.toDateString()) {
+          return false;
+        }
+      } else if (dateFilter === "last7") {
+        const diffMs = now.getTime() - assignedDate.getTime();
+        if (diffMs > 7 * 24 * 60 * 60 * 1000) {
+          return false;
+        }
+      } else if (dateFilter === "last30") {
+        const diffMs = now.getTime() - assignedDate.getTime();
+        if (diffMs > 30 * 24 * 60 * 60 * 1000) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  };
+
+  const filteredAssignedTickets = assignedTickets.filter(matchesFilters);
+  const filteredInProgressTickets = inProgressTickets.filter(matchesFilters);
+
   useEffect(() => {
     if (activeSection !== "tickets-rejetes") return;
     const toFetch = rejectedTickets.filter((t) => !(t.id in rejectionReasons));
@@ -603,10 +652,10 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
           }}
         >
           <div style={{ width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <rect x="4" y="11" width="3" height="7" rx="1" fill="white" />
-              <rect x="10.5" y="8" width="3" height="10" rx="1" fill="white" />
-              <rect x="17" y="5" width="3" height="13" rx="1" fill="white" />
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="9" />
+              <line x1="12" y1="12" x2="12" y2="7" />
+              <line x1="12" y1="12" x2="15" y2="14" />
             </svg>
           </div>
           <div>Tableau de Bord</div>
@@ -626,7 +675,8 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
         >
           <div style={{ width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="20 6 9 17 4 12"></polyline>
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="8 12 11 15 16 9"></polyline>
             </svg>
           </div>
           <div>Tickets Résolus</div>
@@ -648,6 +698,7 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10"></circle>
               <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
             </svg>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -769,11 +820,49 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
           <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             {/* Partie gauche - Titre */}
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ fontSize: "18px", fontWeight: "600", color: "white" }}> </div>
+              <div style={{ fontSize: "18px", fontWeight: "600", color: "white" }}>
+              </div>
             </div>
             
             {/* Partie droite - Actions */}
-            <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              {/* Message de bienvenue */}
+              {userInfo && (
+                <span style={{ 
+                  color: "white", 
+                  fontSize: "14px", 
+                  fontWeight: "400",
+                  fontFamily: "system-ui, -apple-system, sans-serif",
+                  marginRight: "8px"
+                }}>
+                  Bienvenue Dans Votre Espace Technicien, {userInfo.full_name.toUpperCase()}
+                </span>
+              )}
+
+              {/* Statut technicien */}
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "white", fontSize: "13px" }}>
+                <span>Statut :</span>
+                <select
+                  value={availabilityStatus}
+                  onChange={(e) => updateAvailabilityStatus(e.target.value)}
+                  disabled={updatingStatus}
+                  style={{
+                    padding: "4px 10px",
+                    borderRadius: "999px",
+                    border: "1px solid rgba(148, 163, 184, 0.6)",
+                    background: "rgba(15, 23, 42, 0.9)",
+                    color: "white",
+                    fontSize: "13px",
+                    outline: "none",
+                    cursor: updatingStatus ? "not-allowed" : "pointer"
+                  }}
+                >
+                  <option value="disponible">Disponible</option>
+                  <option value="occupé">Occupé</option>
+                  <option value="en pause">En pause</option>
+                </select>
+              </div>
+
               {/* Icône panier - tickets à résoudre */}
               <div
                 style={{
@@ -870,50 +959,324 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
         {/* Contenu principal avec scroll */}
         <div style={{ flex: 1, padding: "30px", overflow: "auto" }}>
           <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-            <div style={{ display: "flex", justifyContent: "flex-end", margin: "12px 0" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span style={{ fontSize: "14px", color: "#333" }}>Statut :</span>
-                <select
-                  value={availabilityStatus}
-                  onChange={(e) => updateAvailabilityStatus(e.target.value)}
-                  disabled={updatingStatus}
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: "6px",
-                    border: "1px solid #ddd",
-                    background: "white",
-                    color: "#333",
-                    fontSize: "14px",
-                    outline: "none"
-                  }}
-                >
-                  <option value="disponible">Disponible</option>
-                  <option value="occupé">Occupé</option>
-                  <option value="en pause">En pause</option>
-                </select>
+            {activeSection === "dashboard" && (
+              <div style={{ marginTop: "8px", marginBottom: "20px" }}>
+                <div style={{ fontSize: "22px", fontWeight: 700, color: "#111827", marginBottom: "4px" }}>
+                  Mes Interventions
+                </div>
+                <div style={{ fontSize: "15px", color: "#4b5563" }}>
+                  Traitez vos tickets et aidez vos collègues
+                </div>
               </div>
-            </div>
+            )}
             {activeSection === "dashboard" && (
               <>
-                <h2>Tableau de bord - Technicien</h2>
+                <h2></h2>
 
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, 1fr)",
+                    gap: "16px",
+                    alignItems: "stretch",
+                    margin: "0 0 24px",
+                  }}
+                >
+                  {/* KPI Tickets assignés */}
+                  <div
+                    style={{
+                      position: "relative",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      justifyContent: "space-between",
+                      padding: "14px",
+                      borderRadius: "12px",
+                      background: "white",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      minHeight: "100px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        width: "100%",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          borderRadius: "8px",
+                          background: "#e0edff",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <ClipboardList size={16} color="#2563eb" />
+                      </div>
+                    </div>
+                    <span
+                      style={{
+                        fontSize: "28px",
+                        fontWeight: "bold",
+                        color: "#111827",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      {assignedCount}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "13px",
+                        fontWeight: "500",
+                        color: "#374151",
+                      }}
+                    >
+                      Tickets assignés
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        color: "#6b7280",
+                        marginTop: "2px",
+                      }}
+                    >
+                      Nouveaux tickets reçus
+                    </span>
+                  </div>
 
-                <div style={{ display: "flex", gap: "16px", margin: "24px 0" }}>
-                  <div style={{ padding: "16px", background: "white", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", flex: 1 }}>
-                    <div style={{ fontSize: "32px", fontWeight: "bold", color: "#2196f3" }}>{assignedCount}</div>
-                    <div style={{ color: "#666", marginTop: "4px" }}>Tickets assignés</div>
+                  {/* KPI Tickets en cours */}
+                  <div
+                    style={{
+                      position: "relative",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      justifyContent: "space-between",
+                      padding: "14px",
+                      borderRadius: "12px",
+                      background: "white",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      minHeight: "100px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        width: "100%",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          borderRadius: "8px",
+                          background: "#fff4e6",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Clock3 size={16} color="#ea580c" />
                   </div>
-                  <div style={{ padding: "16px", background: "white", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", flex: 1 }}>
-                    <div style={{ fontSize: "32px", fontWeight: "bold", color: "#ff9800" }}>{inProgressCount}</div>
-                    <div style={{ color: "#666", marginTop: "4px" }}>Tickets en cours</div>
                   </div>
-                  <div style={{ padding: "16px", background: "white", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", flex: 1 }}>
-                    <div style={{ fontSize: "32px", fontWeight: "bold", color: "#4caf50" }}>{resolvedCount}</div>
-                    <div style={{ color: "#666", marginTop: "4px" }}>Tickets résolus</div>
+                    <span
+                      style={{
+                        fontSize: "28px",
+                        fontWeight: "bold",
+                        color: "#111827",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      {inProgressCount}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "13px",
+                        fontWeight: "500",
+                        color: "#374151",
+                      }}
+                    >
+                      Tickets en cours
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        color: "#6b7280",
+                        marginTop: "2px",
+                      }}
+                    >
+                      En cours de traitement
+                    </span>
+                  </div>
+
+                  {/* KPI Tickets résolus */}
+                  <div
+                    style={{
+                      position: "relative",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      justifyContent: "space-between",
+                      padding: "14px",
+                      borderRadius: "12px",
+                      background: "white",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      minHeight: "100px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        width: "100%",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          borderRadius: "8px",
+                          background: "#dcfce7",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <CheckCircle2 size={16} color="#16a34a" />
+                      </div>
+                    </div>
+                    <span
+                      style={{
+                        fontSize: "28px",
+                        fontWeight: "bold",
+                        color: "#111827",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      {resolvedCount}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "13px",
+                        fontWeight: "500",
+                        color: "#374151",
+                      }}
+                    >
+                      Tickets résolus
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        color: "#6b7280",
+                        marginTop: "2px",
+                      }}
+                    >
+                      Aujourd'hui
+                    </span>
                   </div>
                 </div>
 
                 <h3 style={{ marginTop: "32px" }}>Mes tickets assignés</h3>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "12px",
+                    margin: "12px 0 16px",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      color: "#374151",
+                      marginRight: "4px",
+                      alignSelf: "center",
+                    }}
+                  >
+                    Filtrer par :
+                  </span>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    style={{
+                      padding: "6px 10px",
+                      borderRadius: "6px",
+                      border: "1px solid #d1d5db",
+                      fontSize: "13px",
+                      background: "white",
+                    }}
+                  >
+                    <option value="all">Tous les statuts</option>
+                    <option value="assigne_technicien">Assigné</option>
+                    <option value="en_cours">En cours</option>
+                    <option value="resolu">Résolu</option>
+                    <option value="rejete">Rejeté</option>
+                  </select>
+
+                  <select
+                    value={priorityFilter}
+                    onChange={(e) => setPriorityFilter(e.target.value)}
+                    style={{
+                      padding: "6px 10px",
+                      borderRadius: "6px",
+                      border: "1px solid #d1d5db",
+                      fontSize: "13px",
+                      background: "white",
+                    }}
+                  >
+                    <option value="all">Toutes les priorités</option>
+                    <option value="critique">Critique</option>
+                    <option value="haute">Haute</option>
+                    <option value="moyenne">Moyenne</option>
+                    <option value="faible">Faible</option>
+                  </select>
+
+                  <select
+                    value={dateFilter}
+                    onChange={(e) => setDateFilter(e.target.value)}
+                    style={{
+                      padding: "6px 10px",
+                      borderRadius: "6px",
+                      border: "1px solid #d1d5db",
+                      fontSize: "13px",
+                      background: "white",
+                    }}
+                  >
+                    <option value="all">Toutes les dates</option>
+                    <option value="today">Aujourd'hui</option>
+                    <option value="last7">7 derniers jours</option>
+                    <option value="last30">30 derniers jours</option>
+                  </select>
+
+                  <select
+                    value={typeFilter}
+                    onChange={(e) => setTypeFilter(e.target.value)}
+                    style={{
+                      padding: "6px 10px",
+                      borderRadius: "6px",
+                      border: "1px solid " +
+                        "#d1d5db",
+                      fontSize: "13px",
+                      background: "white",
+                    }}
+                  >
+                    <option value="all">Toutes les catégories</option>
+                    <option value="materiel">Matériel</option>
+                    <option value="applicatif">Applicatif</option>
+                  </select>
+                </div>
                 <table>
                   <thead>
                     <tr>
@@ -926,7 +1289,7 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                     </tr>
                   </thead>
                   <tbody>
-                    {assignedTickets.length === 0 && inProgressTickets.length === 0 ? (
+                    {filteredAssignedTickets.length === 0 && filteredInProgressTickets.length === 0 ? (
                       <tr>
                         <td colSpan={6} style={{ textAlign: "center", padding: "20px", color: "#999" }}>
                           Aucun ticket assigné
@@ -934,7 +1297,7 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                       </tr>
                     ) : (
                       <>
-                        {assignedTickets.map((t) => (
+                        {filteredAssignedTickets.map((t) => (
                           <tr key={t.id}>
                             <td>#{t.number}</td>
                             <td>{t.title}</td>
@@ -965,43 +1328,163 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                             </td>
                             <td>{t.assigned_at ? new Date(t.assigned_at).toLocaleString("fr-FR") : "N/A"}</td>
                             <td>
-                              <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: "8px", position: "relative" }}>
                                 <button
-                                  onClick={() => loadTicketDetails(t.id)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+
+                                    const isOpen = openActionsMenuFor === t.id;
+                                    if (isOpen) {
+                                      setOpenActionsMenuFor(null);
+                                      setActionsMenuPosition(null);
+                                      return;
+                                    }
+
+                                    const buttonRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                    const menuWidth = 220;
+                                    const menuHeight = 180; // Hauteur approximative du menu (4 boutons)
+                                    const viewportHeight = window.innerHeight;
+                                    const viewportWidth = window.innerWidth;
+
+                                    // Toujours essayer d'afficher le menu en dessous du bouton d'abord
+                                    let top = buttonRect.bottom + 4;
+                                    const spaceBelow = viewportHeight - buttonRect.bottom - 8;
+                                    const spaceAbove = buttonRect.top - 8;
+
+                                    // Si pas assez de place en dessous ET plus de place au-dessus, afficher au-dessus
+                                    if (spaceBelow < menuHeight && spaceAbove >= menuHeight) {
+                                      top = buttonRect.top - menuHeight - 4;
+                                    } else if (spaceBelow < menuHeight) {
+                                      // Si pas assez de place ni en dessous ni au-dessus, ajuster pour rester visible
+                                      if (spaceBelow < menuHeight) {
+                                        top = Math.max(8, viewportHeight - menuHeight - 8);
+                                      }
+                                    }
+
+                                    // S'assurer que le menu ne dépasse pas en bas
+                                    if (top + menuHeight > viewportHeight - 8) {
+                                      top = viewportHeight - menuHeight - 8;
+                                    }
+
+                                    // Positionner horizontalement - aligner à droite du bouton
+                                    let left = buttonRect.right - menuWidth;
+                                    if (left < 8) {
+                                      left = buttonRect.left;
+                                    }
+                                    if (left + menuWidth > viewportWidth - 8) {
+                                      left = viewportWidth - menuWidth - 8;
+                                    }
+
+                                    setActionsMenuPosition({ top, left });
+                                    setOpenActionsMenuFor(t.id);
+                                  }}
                                   disabled={loading}
-                                  style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
-                                >
-                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
-                                    <circle cx="12" cy="12" r="3" />
-                                  </svg>
+                                  title="Actions"
+                                  aria-label="Actions"
+                                  style={{
+                                    width: 28,
+                                    height: 28,
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    background: "transparent",
+                                    border: "none",
+                                    borderRadius: 0,
+                                    cursor: "pointer",
+                                    color: "#475569",
+                                    backgroundImage:
+                                      "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='5' r='2' fill='%23475569'/><circle cx='12' cy='12' r='2' fill='%23475569'/><circle cx='12' cy='19' r='2' fill='%23475569'/></svg>\")",
+                                    backgroundRepeat: "no-repeat",
+                                    backgroundPosition: "center",
+                                    backgroundSize: "18px 18px"
+                                  }}
+                                />
+                                {openActionsMenuFor === t.id && actionsMenuPosition && (
+                                  <div
+                                    style={{
+                                      position: "fixed",
+                                      top: actionsMenuPosition.top,
+                                      left: actionsMenuPosition.left,
+                                      background: "white",
+                                      border: "1px solid #e5e7eb",
+                                      borderRadius: 8,
+                                      boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
+                                      minWidth: 220,
+                                      zIndex: 2000
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <button
+                                      onClick={() => { loadTicketDetails(t.id); setOpenActionsMenuFor(null); }}
+                                      disabled={loading}
+                                      style={{
+                                        width: "100%",
+                                        padding: "8px 12px",
+                                        border: "none",
+                                        background: "white",
+                                        textAlign: "left",
+                                        fontSize: "13px",
+                                        color: "#111827",
+                                        cursor: "pointer"
+                                      }}
+                                    >
+                                      Voir le ticket
                                 </button>
                                 <button
-                                  onClick={() => handleTakeCharge(t.id)}
+                                      onClick={() => { handleTakeCharge(t.id); setOpenActionsMenuFor(null); }}
                                   disabled={loading}
-                                  style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+                                      style={{
+                                        width: "100%",
+                                        padding: "8px 12px",
+                                        border: "none",
+                                        background: "white",
+                                        textAlign: "left",
+                                        fontSize: "13px",
+                                        color: "#111827",
+                                        cursor: "pointer"
+                                      }}
                                 >
                                   Prendre en charge
                                 </button>
                                 <button
-                                  onClick={() => setSelectedTicket(t.id)}
+                                      onClick={() => { setSelectedTicket(t.id); setOpenActionsMenuFor(null); }}
                                   disabled={loading}
-                                  style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+                                      style={{
+                                        width: "100%",
+                                        padding: "8px 12px",
+                                        border: "none",
+                                        background: "white",
+                                        textAlign: "left",
+                                        fontSize: "13px",
+                                        color: "#111827",
+                                        cursor: "pointer"
+                                      }}
                                 >
                                   Ajouter commentaire
                                 </button>
                                 <button
-                                  onClick={() => setRequestInfoTicket(t.id)}
+                                      onClick={() => { setRequestInfoTicket(t.id); setOpenActionsMenuFor(null); }}
                                   disabled={loading}
-                                  style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#17a2b8", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+                                      style={{
+                                        width: "100%",
+                                        padding: "8px 12px",
+                                        border: "none",
+                                        background: "white",
+                                        textAlign: "left",
+                                        fontSize: "13px",
+                                        color: "#111827",
+                                        cursor: "pointer"
+                                      }}
                                 >
                                   Demander info
                                 </button>
+                                  </div>
+                                )}
                               </div>
                             </td>
                           </tr>
                         ))}
-                        {inProgressTickets.map((t) => (
+                        {filteredInProgressTickets.map((t) => (
                           <tr key={t.id}>
                             <td>#{t.number}</td>
                             <td>{t.title}</td>
@@ -1032,38 +1515,158 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                             </td>
                             <td>{t.assigned_at ? new Date(t.assigned_at).toLocaleString("fr-FR") : "N/A"}</td>
                             <td>
-                              <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: "8px", position: "relative" }}>
                                 <button
-                                  onClick={() => loadTicketDetails(t.id)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+
+                                    const isOpen = openActionsMenuFor === t.id;
+                                    if (isOpen) {
+                                      setOpenActionsMenuFor(null);
+                                      setActionsMenuPosition(null);
+                                      return;
+                                    }
+
+                                    const buttonRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                    const menuWidth = 220;
+                                    const menuHeight = 180; // Hauteur approximative du menu (4 boutons)
+                                    const viewportHeight = window.innerHeight;
+                                    const viewportWidth = window.innerWidth;
+
+                                    // Toujours essayer d'afficher le menu en dessous du bouton d'abord
+                                    let top = buttonRect.bottom + 4;
+                                    const spaceBelow = viewportHeight - buttonRect.bottom - 8;
+                                    const spaceAbove = buttonRect.top - 8;
+
+                                    // Si pas assez de place en dessous ET plus de place au-dessus, afficher au-dessus
+                                    if (spaceBelow < menuHeight && spaceAbove >= menuHeight) {
+                                      top = buttonRect.top - menuHeight - 4;
+                                    } else if (spaceBelow < menuHeight) {
+                                      // Si pas assez de place ni en dessous ni au-dessus, ajuster pour rester visible
+                                      if (spaceBelow < menuHeight) {
+                                        top = Math.max(8, viewportHeight - menuHeight - 8);
+                                      }
+                                    }
+
+                                    // S'assurer que le menu ne dépasse pas en bas
+                                    if (top + menuHeight > viewportHeight - 8) {
+                                      top = viewportHeight - menuHeight - 8;
+                                    }
+
+                                    // Positionner horizontalement - aligner à droite du bouton
+                                    let left = buttonRect.right - menuWidth;
+                                    if (left < 8) {
+                                      left = buttonRect.left;
+                                    }
+                                    if (left + menuWidth > viewportWidth - 8) {
+                                      left = viewportWidth - menuWidth - 8;
+                                    }
+
+                                    setActionsMenuPosition({ top, left });
+                                    setOpenActionsMenuFor(t.id);
+                                  }}
                                   disabled={loading}
-                                  style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
-                                >
-                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
-                                    <circle cx="12" cy="12" r="3" />
-                                  </svg>
-                                </button>
-                                <button
-                                  onClick={() => setSelectedTicket(t.id)}
-                                  disabled={loading}
-                                  style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
-                                >
-                                  Ajouter commentaire
-                                </button>
-                                <button
-                                  onClick={() => setRequestInfoTicket(t.id)}
-                                  disabled={loading}
-                                  style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#17a2b8", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
-                                >
-                                  Demander info
-                                </button>
-                                <button
-                                  onClick={() => handleMarkResolved(t.id)}
-                                  disabled={loading}
-                                  style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
-                                >
-                                  Marquer résolu
-                                </button>
+                                  title="Actions"
+                                  aria-label="Actions"
+                                  style={{
+                                    width: 28,
+                                    height: 28,
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    background: "transparent",
+                                    border: "none",
+                                    borderRadius: 0,
+                                    cursor: "pointer",
+                                    color: "#475569",
+                                    backgroundImage:
+                                      "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='5' r='2' fill='%23475569'/><circle cx='12' cy='12' r='2' fill='%23475569'/><circle cx='12' cy='19' r='2' fill='%23475569'/></svg>\")",
+                                    backgroundRepeat: "no-repeat",
+                                    backgroundPosition: "center",
+                                    backgroundSize: "18px 18px"
+                                  }}
+                                />
+                                {openActionsMenuFor === t.id && actionsMenuPosition && (
+                                  <div
+                                    style={{
+                                      position: "fixed",
+                                      top: actionsMenuPosition.top,
+                                      left: actionsMenuPosition.left,
+                                      background: "white",
+                                      border: "1px solid #e5e7eb",
+                                      borderRadius: 8,
+                                      boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
+                                      minWidth: 220,
+                                      zIndex: 2000
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <button
+                                      onClick={() => { loadTicketDetails(t.id); setOpenActionsMenuFor(null); }}
+                                      disabled={loading}
+                                      style={{
+                                        width: "100%",
+                                        padding: "8px 12px",
+                                        border: "none",
+                                        background: "white",
+                                        textAlign: "left",
+                                        fontSize: "13px",
+                                        color: "#111827",
+                                        cursor: "pointer"
+                                      }}
+                                    >
+                                      Voir le ticket
+                                    </button>
+                                    <button
+                                      onClick={() => { setSelectedTicket(t.id); setOpenActionsMenuFor(null); }}
+                                      disabled={loading}
+                                      style={{
+                                        width: "100%",
+                                        padding: "8px 12px",
+                                        border: "none",
+                                        background: "white",
+                                        textAlign: "left",
+                                        fontSize: "13px",
+                                        color: "#111827",
+                                        cursor: "pointer"
+                                      }}
+                                    >
+                                      Ajouter commentaire
+                                    </button>
+                                    <button
+                                      onClick={() => { setRequestInfoTicket(t.id); setOpenActionsMenuFor(null); }}
+                                      disabled={loading}
+                                      style={{
+                                        width: "100%",
+                                        padding: "8px 12px",
+                                        border: "none",
+                                        background: "white",
+                                        textAlign: "left",
+                                        fontSize: "13px",
+                                        color: "#111827",
+                                        cursor: "pointer"
+                                      }}
+                                    >
+                                      Demander info
+                                    </button>
+                                    <button
+                                      onClick={() => { handleMarkResolved(t.id); setOpenActionsMenuFor(null); }}
+                                      disabled={loading}
+                                      style={{
+                                        width: "100%",
+                                        padding: "8px 12px",
+                                        border: "none",
+                                        background: "white",
+                                        textAlign: "left",
+                                        fontSize: "13px",
+                                        color: "#111827",
+                                        cursor: "pointer"
+                                      }}
+                                    >
+                                      Marquer résolu
+                                    </button>
+                                  </div>
+                                )}
                               </div>
                             </td>
                           </tr>
