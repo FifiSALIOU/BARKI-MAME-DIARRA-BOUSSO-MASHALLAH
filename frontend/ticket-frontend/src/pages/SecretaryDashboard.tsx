@@ -942,7 +942,8 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
                     padding: "8px 12px", 
                     borderRadius: "4px", 
                     cursor: "pointer",
-                    background: selectedReport === "statistiques" ? "rgba(255,255,255,0.1)" : "transparent"
+                    background: selectedReport === "statistiques" ? "rgba(255,255,255,0.1)" : "transparent",
+                    whiteSpace: "nowrap"
                   }}
                 >
                   Statistiques générales
@@ -956,7 +957,8 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
                     padding: "8px 12px", 
                     borderRadius: "4px", 
                     cursor: "pointer",
-                    background: selectedReport === "metriques" ? "rgba(255,255,255,0.1)" : "transparent"
+                    background: selectedReport === "metriques" ? "rgba(255,255,255,0.1)" : "transparent",
+                    whiteSpace: "nowrap"
                   }}
                 >
                   Métriques de performance
@@ -970,7 +972,8 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
                     padding: "8px 12px", 
                     borderRadius: "4px", 
                     cursor: "pointer",
-                    background: selectedReport === "agence" ? "rgba(255,255,255,0.1)" : "transparent"
+                    background: selectedReport === "agence" ? "rgba(255,255,255,0.1)" : "transparent",
+                    whiteSpace: "nowrap"
                   }}
                 >
                   Analyses par agence
@@ -984,7 +987,8 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
                     padding: "8px 12px", 
                     borderRadius: "4px", 
                     cursor: "pointer",
-                    background: selectedReport === "technicien" ? "rgba(255,255,255,0.1)" : "transparent"
+                    background: selectedReport === "technicien" ? "rgba(255,255,255,0.1)" : "transparent",
+                    whiteSpace: "nowrap"
                   }}
                 >
                   Analyses par technicien
@@ -998,7 +1002,8 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
                     padding: "8px 12px", 
                     borderRadius: "4px", 
                     cursor: "pointer",
-                    background: selectedReport === "evolutions" ? "rgba(255,255,255,0.1)" : "transparent"
+                    background: selectedReport === "evolutions" ? "rgba(255,255,255,0.1)" : "transparent",
+                    whiteSpace: "nowrap"
                   }}
                 >
                   Évolutions dans le temps
@@ -1115,9 +1120,60 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
           display: "flex",
           alignItems: "center",
           justifyContent: "flex-end",
-          gap: "24px",
+          gap: "20px",
           borderBottom: "1px solid #0f172a"
         }}>
+          {/* Icône panier - tickets à assigner */}
+          <div
+            style={{
+              cursor: "default",
+              width: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              position: "relative",
+              opacity: pendingCount > 0 ? 1 : 0.5,
+            }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M6 6h15l-1.5 9h-12L4 3H2"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <circle cx="10" cy="20" r="1.5" fill="white" />
+              <circle cx="17" cy="20" r="1.5" fill="white" />
+            </svg>
+            {pendingCount > 0 && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: "-4px",
+                  right: "-4px",
+                  minWidth: "18px",
+                  height: "18px",
+                  background: "#22c55e",
+                  borderRadius: "50%",
+                  border: "2px solid #1e293b",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "11px",
+                  fontWeight: "bold",
+                  color: "white",
+                  padding: "0 4px",
+                }}
+              >
+                {pendingCount > 99 ? "99+" : pendingCount}
+              </span>
+            )}
+          </div>
+
+          {/* Cloche notifications */}
           <div 
             onClick={() => setShowNotifications(!showNotifications)}
             style={{ 
@@ -1216,8 +1272,8 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
                     borderRadius: "4px",
                     fontSize: "12px",
                     fontWeight: "500",
-                    background: t.priority === "critique" ? "#f44336" : t.priority === "haute" ? "#ff9800" : t.priority === "moyenne" ? "#ffc107" : t.priority === "faible" ? "#fee2e2" : "#9e9e9e",
-                    color: t.priority === "faible" ? "#991b1b" : "white"
+                    background: t.priority === "critique" ? "#f44336" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "#ffc107" : t.priority === "faible" ? "#fee2e2" : "#9e9e9e",
+                    color: t.priority === "haute" ? "#92400e" : t.priority === "faible" ? "#991b1b" : "white"
                   }}>
                     {t.priority}
                   </span>
@@ -1695,8 +1751,8 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
                             borderRadius: "4px",
                             fontSize: "12px",
                             fontWeight: "500",
-                            background: t.priority === "critique" ? "#f44336" : t.priority === "haute" ? "#ff9800" : t.priority === "moyenne" ? "#ffc107" : "#9e9e9e",
-                            color: "white"
+                            background: t.priority === "critique" ? "#f44336" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "#ffc107" : "#9e9e9e",
+                            color: t.priority === "haute" ? "#92400e" : "white"
                           }}>
                             {t.priority}
                           </span>
@@ -1944,8 +2000,8 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
                   borderRadius: "4px",
                   fontSize: "12px",
                   fontWeight: "500",
-                  background: ticketDetails.priority === "critique" ? "#f44336" : ticketDetails.priority === "haute" ? "#ff9800" : ticketDetails.priority === "moyenne" ? "#ffc107" : ticketDetails.priority === "faible" ? "#fee2e2" : "#9e9e9e",
-                  color: ticketDetails.priority === "faible" ? "#991b1b" : "white"
+                  background: ticketDetails.priority === "critique" ? "#f44336" : ticketDetails.priority === "haute" ? "#fed7aa" : ticketDetails.priority === "moyenne" ? "#ffc107" : ticketDetails.priority === "faible" ? "#fee2e2" : "#9e9e9e",
+                  color: ticketDetails.priority === "haute" ? "#92400e" : ticketDetails.priority === "faible" ? "#991b1b" : "white"
                 }}>
                   {ticketDetails.priority}
                 </span>

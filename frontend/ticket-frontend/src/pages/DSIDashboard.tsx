@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { PanelLeft, Users, Clock3, TrendingUp, Award, UserCheck, Star } from "lucide-react";
+import { PanelLeft, Users, Clock3, Clock, TrendingUp, Award, UserCheck, Star } from "lucide-react";
 import React from "react";
 import {
   LineChart,
@@ -228,6 +228,8 @@ function DSIDashboard({ token }: DSIDashboardProps) {
   });
   const [activeSection, setActiveSection] = useState<string>("dashboard");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [agencyFilter, setAgencyFilter] = useState<string>("all");
+  const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const [showTicketsDropdown, setShowTicketsDropdown] = useState<boolean>(false);
   const [showReportsDropdown, setShowReportsDropdown] = useState<boolean>(false);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState<boolean>(false);
@@ -235,6 +237,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
   const [selectedReport, setSelectedReport] = useState<string>("");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [openActionsMenuFor, setOpenActionsMenuFor] = useState<string | null>(null);
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
   const [userInfo, setUserInfo] = useState<UserRead | null>(null);
   const [allUsers, setAllUsers] = useState<any[]>([]);
@@ -336,7 +339,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
     // Priorités par défaut
     return [
       { id: 1, priority: "Critique", level: 1, color: "#dc3545", maxTime: "1 heure", maxTimeValue: 1, maxTimeUnit: "heure" },
-      { id: 2, priority: "Haute", level: 2, color: "#ff9800", maxTime: "4 heures", maxTimeValue: 4, maxTimeUnit: "heures" },
+      { id: 2, priority: "Haute", level: 2, color: "#fed7aa", maxTime: "4 heures", maxTimeValue: 4, maxTimeUnit: "heures" },
       { id: 3, priority: "Moyenne", level: 3, color: "#ffc107", maxTime: "1 jour", maxTimeValue: 1, maxTimeUnit: "jour" },
       { id: 4, priority: "Basse", level: 4, color: "#28a745", maxTime: "3 jours", maxTimeValue: 3, maxTimeUnit: "jours" }
     ];
@@ -1886,6 +1889,11 @@ function DSIDashboard({ token }: DSIDashboardProps) {
       }));
   };
 
+  // Récupérer toutes les agences uniques
+  const allAgencies = Array.from(new Set(
+    allTickets.map((t) => t.creator?.agency || t.user_agency).filter(Boolean)
+  ));
+
   // Filtrer les tickets selon les filtres sélectionnés
   let filteredTickets = allTickets;
   
@@ -1895,6 +1903,17 @@ function DSIDashboard({ token }: DSIDashboardProps) {
     } else {
       filteredTickets = filteredTickets.filter((t) => t.status === statusFilter);
     }
+  }
+  
+  if (agencyFilter !== "all") {
+    filteredTickets = filteredTickets.filter((t) => {
+      const agency = t.creator?.agency || t.user_agency;
+      return agency === agencyFilter;
+    });
+  }
+  
+  if (priorityFilter !== "all") {
+    filteredTickets = filteredTickets.filter((t) => t.priority === priorityFilter);
   }
 
   return (
@@ -1992,11 +2011,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
           }}
         >
           <div style={{ width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <rect x="4" y="11" width="3" height="7" rx="1" fill="white" />
-              <rect x="10.5" y="8" width="3" height="10" rx="1" fill="white" />
-              <rect x="17" y="5" width="3" height="13" rx="1" fill="white" />
-            </svg>
+            <Clock size={20} color="white" strokeWidth="2.5" />
           </div>
           <div>Tableau de Bord</div>
         </div>
@@ -2014,16 +2029,24 @@ function DSIDashboard({ token }: DSIDashboardProps) {
             }}
           >
             <div style={{ width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14,2 14,8 20,8" />
-                <line x1="16" y1="13" x2="8" y2="13" />
-                <line x1="16" y1="17" x2="8" y2="17" />
-                <polyline points="10,9 9,9 8,9" />
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                <line x1="9" y1="3" x2="9" y2="21" />
+                <line x1="8" y1="8" x2="18" y2="8" />
+                <line x1="8" y1="12" x2="18" y2="12" />
+                <line x1="8" y1="16" x2="18" y2="16" />
               </svg>
             </div>
             <div style={{ flex: 1 }}>Tickets</div>
-            <div style={{ fontSize: "12px" }}>{showTicketsDropdown ? "▼" : "▶"}</div>
+            <div style={{ width: "16px", height: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                {showTicketsDropdown ? (
+                  <polyline points="6 9 12 15 18 9" />
+                ) : (
+                  <polyline points="9 18 15 12 9 6" />
+                )}
+              </svg>
+            </div>
           </div>
           {showTicketsDropdown && (
             <div style={{ 
@@ -2134,12 +2157,12 @@ function DSIDashboard({ token }: DSIDashboardProps) {
               background: activeSection === "technicians" ? "rgba(255,255,255,0.1)" : "transparent"
             }}
           >
-            <div style={{ width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            <div style={{ width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
             </div>
             <div style={{ flex: 1 }}>Techniciens</div>
@@ -2159,12 +2182,12 @@ function DSIDashboard({ token }: DSIDashboardProps) {
               background: activeSection === "users" ? "rgba(255,255,255,0.1)" : "transparent"
             }}
           >
-            <div style={{ width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            <div style={{ width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
             </div>
             <div style={{ flex: 1 }}>Utilisateurs</div>
@@ -2184,15 +2207,24 @@ function DSIDashboard({ token }: DSIDashboardProps) {
             }}
           >
             <div style={{ width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14,2 14,8 20,8" />
+                <polyline points="14 2 14 8 20 8" />
                 <line x1="16" y1="13" x2="8" y2="13" />
                 <line x1="16" y1="17" x2="8" y2="17" />
+                <line x1="10" y1="9" x2="8" y2="9" />
               </svg>
             </div>
             <div style={{ flex: 1 }}>Rapports</div>
-            <div style={{ fontSize: "12px" }}>{showReportsDropdown ? "▼" : "▶"}</div>
+            <div style={{ width: "16px", height: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                {showReportsDropdown ? (
+                  <polyline points="6 9 12 15 18 9" />
+                ) : (
+                  <polyline points="9 18 15 12 9 6" />
+                )}
+              </svg>
+            </div>
           </div>
           {showReportsDropdown && (
             <div style={{ 
@@ -2543,9 +2575,73 @@ function DSIDashboard({ token }: DSIDashboardProps) {
           display: "flex",
           alignItems: "center",
           justifyContent: "flex-end",
-          gap: "24px",
+          gap: "20px",
           borderBottom: "1px solid #0f172a"
         }}>
+          {/* Welcome message */}
+          {userInfo && (
+            <span style={{ 
+              color: "white", 
+              fontSize: "14px", 
+              fontWeight: "400",
+              fontFamily: "system-ui, -apple-system, sans-serif",
+              marginRight: "8px"
+            }}>
+              Bienvenue Dans Votre Espace DSI, {userInfo.full_name.toUpperCase()}
+            </span>
+          )}
+          
+          {/* Icône panier - tickets à assigner */}
+          <div
+            style={{
+              cursor: "default",
+              width: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              position: "relative",
+              opacity: pendingCount > 0 ? 1 : 0.5,
+            }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M6 6h15l-1.5 9h-12L4 3H2"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <circle cx="10" cy="20" r="1.5" fill="white" />
+              <circle cx="17" cy="20" r="1.5" fill="white" />
+            </svg>
+            {pendingCount > 0 && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: "-4px",
+                  right: "-4px",
+                  minWidth: "18px",
+                  height: "18px",
+                  background: "#22c55e",
+                  borderRadius: "50%",
+                  border: "2px solid #1e293b",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "11px",
+                  fontWeight: "bold",
+                  color: "white",
+                  padding: "0 4px",
+                }}
+              >
+                {pendingCount > 99 ? "99+" : pendingCount}
+              </span>
+            )}
+          </div>
+
+          {/* Cloche notifications */}
           <div 
             onClick={() => setShowNotifications(!showNotifications)}
             style={{ 
@@ -2590,14 +2686,12 @@ function DSIDashboard({ token }: DSIDashboardProps) {
         <div style={{ flex: 1, padding: "30px", overflow: "auto" }}>
           {activeSection === "dashboard" && (
             <>
-              <h2 style={{ marginBottom: "24px", fontSize: "28px", fontWeight: "600", color: "#333" }}>Tableau de bord - DSI</h2>
-
       {/* Métriques principales DSI */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(7, minmax(150px, 1fr))",
-          gap: "12px",
+          gridTemplateColumns: "repeat(7, minmax(130px, 1fr))",
+          gap: "10px",
           margin: "20px 0",
         }}
       >
@@ -2605,39 +2699,47 @@ function DSIDashboard({ token }: DSIDashboardProps) {
         <div
           style={{
             background: "white",
-            borderRadius: "14px",
-            padding: "12px 14px",
+            borderRadius: "12px",
+            padding: "10px 12px",
             boxShadow: "0 6px 18px rgba(15,23,42,0.08)",
           }}
         >
           <div
             style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "12px",
-              background: "#fff4e6",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              marginBottom: "10px",
+              gap: "8px",
+              marginBottom: "8px",
             }}
           >
-            <Clock3 size={20} color="#ff8a3c" />
+            <div
+              style={{
+                width: "36px",
+                height: "36px",
+                borderRadius: "10px",
+                background: "#fff4e6",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Clock3 size={18} color="#ff8a3c" />
+            </div>
           </div>
           <div
             style={{
-              fontSize: "22px",
+              fontSize: "20px",
               fontWeight: 700,
               color: "#111827",
-              marginBottom: "4px",
+              marginBottom: "3px",
             }}
           >
             {pendingCount}
           </div>
-          <div style={{ fontSize: "12px", fontWeight: 500, color: "#374151" }}>
+          <div style={{ fontSize: "11px", fontWeight: 500, color: "#374151" }}>
             Tickets à assigner
           </div>
-          <div style={{ marginTop: "2px", fontSize: "11px", color: "#6b7280" }}>
+          <div style={{ marginTop: "2px", fontSize: "10px", color: "#6b7280" }}>
             Action requise
           </div>
         </div>
@@ -2646,39 +2748,39 @@ function DSIDashboard({ token }: DSIDashboardProps) {
         <div
           style={{
             background: "white",
-            borderRadius: "14px",
-            padding: "12px 14px",
+            borderRadius: "12px",
+            padding: "10px 12px",
             boxShadow: "0 6px 18px rgba(15,23,42,0.08)",
           }}
         >
           <div
             style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "12px",
+              width: "36px",
+              height: "36px",
+              borderRadius: "10px",
               background: "#e6fff3",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: "10px",
+              marginBottom: "8px",
             }}
           >
-            <UserCheck size={20} color="#16a34a" />
+            <UserCheck size={18} color="#16a34a" />
           </div>
           <div
             style={{
-              fontSize: "22px",
+              fontSize: "20px",
               fontWeight: 700,
               color: "#111827",
-              marginBottom: "4px",
+              marginBottom: "3px",
             }}
           >
             {activeTechniciansCount}
           </div>
-          <div style={{ fontSize: "12px", fontWeight: 500, color: "#374151" }}>
+          <div style={{ fontSize: "11px", fontWeight: 500, color: "#374151" }}>
             Techniciens disponibles
           </div>
-          <div style={{ marginTop: "2px", fontSize: "11px", color: "#6b7280" }}>
+          <div style={{ marginTop: "2px", fontSize: "10px", color: "#6b7280" }}>
             Sur {technicians.length || 0} au total
           </div>
         </div>
@@ -2687,39 +2789,39 @@ function DSIDashboard({ token }: DSIDashboardProps) {
         <div
           style={{
             background: "white",
-            borderRadius: "14px",
-            padding: "12px 14px",
+            borderRadius: "12px",
+            padding: "10px 12px",
             boxShadow: "0 6px 18px rgba(15,23,42,0.08)",
           }}
         >
           <div
             style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "12px",
+              width: "36px",
+              height: "36px",
+              borderRadius: "10px",
               background: "#e5f0ff",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: "10px",
+              marginBottom: "8px",
             }}
           >
-            <Users size={20} color="#2563eb" />
+            <Users size={18} color="#2563eb" />
           </div>
           <div
             style={{
-              fontSize: "22px",
+              fontSize: "20px",
               fontWeight: 700,
               color: "#111827",
-              marginBottom: "4px",
+              marginBottom: "3px",
             }}
           >
             {assignedCount}
           </div>
-          <div style={{ fontSize: "12px", fontWeight: 500, color: "#374151" }}>
+          <div style={{ fontSize: "11px", fontWeight: 500, color: "#374151" }}>
             Tickets en traitement
           </div>
-          <div style={{ marginTop: "2px", fontSize: "11px", color: "#6b7280" }}>
+          <div style={{ marginTop: "2px", fontSize: "10px", color: "#6b7280" }}>
             Par l&apos;équipe
           </div>
         </div>
@@ -2728,39 +2830,39 @@ function DSIDashboard({ token }: DSIDashboardProps) {
         <div
           style={{
             background: "white",
-            borderRadius: "14px",
-            padding: "12px 14px",
+            borderRadius: "12px",
+            padding: "10px 12px",
             boxShadow: "0 6px 18px rgba(15,23,42,0.08)",
           }}
         >
           <div
             style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "12px",
+              width: "36px",
+              height: "36px",
+              borderRadius: "10px",
               background: "#f4e9ff",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: "10px",
+              marginBottom: "8px",
             }}
           >
-            <Clock3 size={20} color="#8b5cf6" />
+            <Clock3 size={18} color="#8b5cf6" />
           </div>
           <div
             style={{
-              fontSize: "22px",
+              fontSize: "20px",
               fontWeight: 700,
               color: "#111827",
-              marginBottom: "4px",
+              marginBottom: "3px",
             }}
           >
             {metrics.avgResolutionTime}
           </div>
-          <div style={{ fontSize: "12px", fontWeight: 500, color: "#374151" }}>
+          <div style={{ fontSize: "11px", fontWeight: 500, color: "#374151" }}>
             Temps moyen
           </div>
-          <div style={{ marginTop: "2px", fontSize: "11px", color: "#16a34a" }}>
+          <div style={{ marginTop: "2px", fontSize: "10px", color: "#16a34a" }}>
             {/* Variation fictive pour l&apos;instant */}
             ↗ -15% ce mois
           </div>
@@ -2770,39 +2872,39 @@ function DSIDashboard({ token }: DSIDashboardProps) {
         <div
           style={{
             background: "white",
-            borderRadius: "14px",
-            padding: "12px 14px",
+            borderRadius: "12px",
+            padding: "10px 12px",
             boxShadow: "0 6px 18px rgba(15,23,42,0.08)",
           }}
         >
           <div
             style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "12px",
+              width: "36px",
+              height: "36px",
+              borderRadius: "10px",
               background: "#fff8db",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: "10px",
+              marginBottom: "8px",
             }}
           >
-            <Star size={20} color="#eab308" />
+            <Star size={18} color="#eab308" />
           </div>
           <div
             style={{
-              fontSize: "22px",
+              fontSize: "20px",
               fontWeight: 700,
               color: "#111827",
-              marginBottom: "4px",
+              marginBottom: "3px",
             }}
           >
             {metrics.userSatisfaction}
           </div>
-          <div style={{ fontSize: "12px", fontWeight: 500, color: "#374151" }}>
+          <div style={{ fontSize: "11px", fontWeight: 500, color: "#374151" }}>
             Satisfaction client
           </div>
-          <div style={{ marginTop: "2px", fontSize: "11px", color: "#16a34a" }}>
+          <div style={{ marginTop: "2px", fontSize: "10px", color: "#16a34a" }}>
             {/* Variation fictive pour l&apos;instant */}
             ↗ +0.3 ce mois
           </div>
@@ -2812,39 +2914,39 @@ function DSIDashboard({ token }: DSIDashboardProps) {
         <div
           style={{
             background: "white",
-            borderRadius: "14px",
-            padding: "12px 14px",
+            borderRadius: "12px",
+            padding: "10px 12px",
             boxShadow: "0 6px 18px rgba(15,23,42,0.08)",
           }}
         >
           <div
             style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "12px",
+              width: "36px",
+              height: "36px",
+              borderRadius: "10px",
               background: "#e0f7ff",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: "10px",
+              marginBottom: "8px",
             }}
           >
-            <Clock3 size={20} color="#0284c7" />
+            <Clock3 size={18} color="#0284c7" />
           </div>
           <div
             style={{
-              fontSize: "22px",
+              fontSize: "20px",
               fontWeight: 700,
               color: "#111827",
-              marginBottom: "4px",
+              marginBottom: "3px",
             }}
           >
             {totalTicketsCount}
           </div>
-          <div style={{ fontSize: "12px", fontWeight: 500, color: "#374151" }}>
+          <div style={{ fontSize: "11px", fontWeight: 500, color: "#374151" }}>
             Volume total
           </div>
-          <div style={{ marginTop: "2px", fontSize: "11px", color: "#6b7280" }}>
+          <div style={{ marginTop: "2px", fontSize: "10px", color: "#6b7280" }}>
             Ce mois
           </div>
         </div>
@@ -2853,46 +2955,119 @@ function DSIDashboard({ token }: DSIDashboardProps) {
         <div
           style={{
             background: "white",
-            borderRadius: "14px",
-            padding: "12px 14px",
+            borderRadius: "12px",
+            padding: "10px 12px",
             boxShadow: "0 6px 18px rgba(15,23,42,0.08)",
           }}
         >
           <div
             style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "12px",
+              width: "36px",
+              height: "36px",
+              borderRadius: "10px",
               background: "#dcfce7",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: "10px",
+              marginBottom: "8px",
             }}
           >
-            <UserCheck size={20} color="#16a34a" />
+            <UserCheck size={18} color="#16a34a" />
           </div>
           <div
             style={{
-              fontSize: "22px",
+              fontSize: "20px",
               fontWeight: 700,
               color: "#111827",
-              marginBottom: "4px",
+              marginBottom: "3px",
             }}
           >
             {resolutionRate}
           </div>
-          <div style={{ fontSize: "12px", fontWeight: 500, color: "#374151" }}>
+          <div style={{ fontSize: "11px", fontWeight: 500, color: "#374151" }}>
             Taux de résolution
           </div>
-          <div style={{ marginTop: "2px", fontSize: "11px", color: "#16a34a" }}>
+          <div style={{ marginTop: "2px", fontSize: "10px", color: "#16a34a" }}>
             +2% (indicatif)
           </div>
         </div>
       </div>
 
       {/* Tableau des tickets récents */}
-      <h3 style={{ marginTop: "32px", marginBottom: "16px", fontSize: "22px", fontWeight: "600", color: "#333" }}>Tickets Récents</h3>
+      <div style={{ 
+        display: "flex", 
+        gap: "16px", 
+        marginTop: "32px",
+        marginBottom: "16px", 
+        flexWrap: "wrap",
+        background: "white",
+        padding: "16px",
+        borderRadius: "8px",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+      }}>
+        <div style={{ flex: 1, minWidth: "200px" }}>
+          <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: "500", color: "#666" }}>Filtrer par statut</label>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            style={{ 
+              width: "100%", 
+              padding: "8px 12px", 
+              border: "1px solid #ddd", 
+              borderRadius: "4px",
+              fontSize: "14px"
+            }}
+          >
+            <option value="all">Tous les statuts</option>
+            <option value="en_attente_analyse">En attente</option>
+            <option value="en_traitement">En traitement</option>
+            <option value="resolu">Résolus</option>
+            <option value="cloture">Clôturés</option>
+            <option value="rejete">Rejetés</option>
+          </select>
+        </div>
+        <div style={{ flex: 1, minWidth: "200px" }}>
+          <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: "500", color: "#666" }}>Filtrer par agence</label>
+          <select
+            value={agencyFilter}
+            onChange={(e) => setAgencyFilter(e.target.value)}
+            style={{ 
+              width: "100%", 
+              padding: "8px 12px", 
+              border: "1px solid #ddd", 
+              borderRadius: "4px",
+              fontSize: "14px"
+            }}
+          >
+            <option value="all">Toutes les agences</option>
+            {allAgencies.map((agency) => (
+              <option key={agency} value={agency || ""}>{agency}</option>
+            ))}
+          </select>
+        </div>
+        <div style={{ flex: 1, minWidth: "200px" }}>
+          <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: "500", color: "#666" }}>Filtrer par priorité</label>
+          <select
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value)}
+            style={{ 
+              width: "100%", 
+              padding: "8px 12px", 
+              border: "1px solid #ddd", 
+              borderRadius: "4px",
+              fontSize: "14px"
+            }}
+          >
+            <option value="all">Toutes les priorités</option>
+            <option value="critique">Critique</option>
+            <option value="haute">Haute</option>
+            <option value="moyenne">Moyenne</option>
+            <option value="faible">Faible</option>
+          </select>
+        </div>
+      </div>
+      <h3 style={{ marginTop: "0", marginBottom: "16px", fontSize: "22px", fontWeight: "600", color: "#333" }}>Tickets Récents</h3>
+      
       <table style={{ width: "100%", borderCollapse: "collapse", background: "white", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
         <thead>
           <tr style={{ background: "#f8f9fa" }}>
@@ -2907,14 +3082,16 @@ function DSIDashboard({ token }: DSIDashboardProps) {
         </thead>
         <tbody>
           {(() => {
-            // Trier les tickets par date de création (plus récents en premier) et prendre les 5 premiers
-            const recentTickets = [...allTickets]
+            // Appliquer les filtres puis trier les tickets par date de création (plus récents en premier) et prendre les 5 premiers
+            let recentFilteredTickets = [...filteredTickets]
               .sort((a, b) => {
                 const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
                 const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
                 return dateB - dateA; // Tri décroissant (plus récent en premier)
               })
               .slice(0, 5); // Prendre les 5 premiers
+            
+            const recentTickets = recentFilteredTickets;
 
             if (recentTickets.length === 0) {
               return (
@@ -2942,7 +3119,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
                     borderRadius: "20px",
                     fontSize: "12px",
                     fontWeight: "500",
-                    background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fef3c7" : t.priority === "moyenne" ? "#dbeafe" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
+                    background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "#dbeafe" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
                     color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#1e40af" : t.priority === "faible" ? "#991b1b" : "#374151"
                   }}>
                     {t.priority}
@@ -2978,92 +3155,329 @@ function DSIDashboard({ token }: DSIDashboardProps) {
                   </span>
                 </td>
                 <td style={{ padding: "12px 16px" }}>
-                  {t.status === "en_attente_analyse" ? (
-                    // Actions pour tickets en attente
-                    <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
-                      <button
-                        onClick={() => loadTicketDetails(t.id)}
-                        disabled={loading}
-                        style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
-                      >
-                        Voir détails
-                      </button>
-                      <button
-                        onClick={() => handleAssignClick(t.id)}
-                        disabled={loading}
-                        style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "4px", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1 }}
-                      >
-                        Assigner
-                      </button>
-                      {userRole === "DSI" && (
-                        <button
-                          onClick={() => handleDelegateClick(t.id)}
-                          disabled={loading}
-                          style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#0ea5e9", color: "white", border: "none", borderRadius: "4px", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1 }}
-                        >
-                          Déléguer à un adjoint
-                        </button>
-                      )}
-                      {canEscalate() && (
-                        <button
-                          onClick={() => handleEscalate(t.id)}
-                          disabled={loading}
-                          style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#ff9800", color: "white", border: "none", borderRadius: "4px", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1 }}
-                        >
-                          Escalader
-                        </button>
-                      )}
-                    </div>
-                  ) : t.status === "assigne_technicien" || t.status === "en_cours" ? (
-                    // Actions pour tickets assignés/en cours
-                    <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
-                      <button
-                        onClick={() => loadTicketDetails(t.id)}
-                        disabled={loading}
-                        style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
-                      >
-                        Voir détails
-                      </button>
-                      <button
-                        onClick={() => handleReassignClick(t.id)}
-                        disabled={loading}
-                        style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#17a2b8", color: "white", border: "none", borderRadius: "4px", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1 }}
-                      >
-                        Réassigner
-                      </button>
-                      {canEscalate() && (
-                        <button
-                          onClick={() => handleEscalate(t.id)}
-                          disabled={loading}
-                          style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#ff9800", color: "white", border: "none", borderRadius: "4px", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1 }}
-                        >
-                          Escalader
-                        </button>
-                      )}
-                    </div>
-                  ) : t.status === "resolu" ? (
-                    // Action pour tickets résolus
-                    <button
-                      onClick={() => handleClose(t.id)}
-                      disabled={loading}
-                      style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "4px", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1 }}
-                    >
-                      Clôturer
-                    </button>
-                  ) : t.status === "rejete" ? (
-                    // Action pour tickets rejetés - Réouverture
-                    <button
-                      onClick={() => handleReopenClick(t.id)}
-                      disabled={loading}
-                      style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "4px", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1 }}
-                    >
-                      Réouvrir
-                    </button>
-                  ) : (
+                  {t.status === "cloture" ? (
                     // Pas d'action pour tickets clôturés
                     <span style={{ color: "#999", fontSize: "12px" }}>
-                      {t.status === "cloture" ? "Clôturé" : "N/A"}
+                      Clôturé
                     </span>
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", position: "relative" }}>
+                      <button
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          setOpenActionsMenuFor(openActionsMenuFor === t.id ? null : t.id);
+                        }}
+                        disabled={loading}
+                        title="Actions"
+                        aria-label="Actions"
+                        style={{
+                          width: 28,
+                          height: 28,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          background: "transparent",
+                          border: "none",
+                          borderRadius: 0,
+                          cursor: "pointer",
+                          color: "#475569",
+                          backgroundImage:
+                            "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='5' r='2' fill='%23475569'/><circle cx='12' cy='12' r='2' fill='%23475569'/><circle cx='12' cy='19' r='2' fill='%23475569'/></svg>\")",
+                          backgroundRepeat: "no-repeat",
+                          backgroundPosition: "center",
+                          backgroundSize: "18px 18px"
+                        }}
+                      />
+                      {openActionsMenuFor === t.id && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "100%",
+                            right: 0,
+                            marginTop: "4px",
+                            background: "white",
+                            border: "1px solid #e5e7eb",
+                            borderRadius: 8,
+                            boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
+                            minWidth: 180,
+                            zIndex: 1000,
+                            overflow: "visible"
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          ref={(el) => {
+                            if (el) {
+                              const button = el.previousElementSibling as HTMLElement;
+                              if (button) {
+                                const rect = button.getBoundingClientRect();
+                                const viewportHeight = window.innerHeight;
+                                const menuHeight = el.offsetHeight || 200;
+                                const spaceBelow = viewportHeight - rect.bottom;
+                                const spaceAbove = rect.top;
+                                
+                                if (spaceBelow < menuHeight && spaceAbove > menuHeight) {
+                                  el.style.bottom = "100%";
+                                  el.style.top = "auto";
+                                  el.style.marginBottom = "4px";
+                                  el.style.marginTop = "0";
+                                } else {
+                                  el.style.top = "100%";
+                                  el.style.bottom = "auto";
+                                  el.style.marginTop = "4px";
+                                  el.style.marginBottom = "0";
+                                }
+                              }
+                            }
+                          }}
+                        >
+                          {t.status === "en_attente_analyse" && (
+                            <>
+                              <button
+                                onClick={() => { loadTicketDetails(t.id); setOpenActionsMenuFor(null); }}
+                                disabled={loading}
+                                style={{ 
+                                  width: "100%", 
+                                  padding: "10px 12px", 
+                                  background: "transparent", 
+                                  border: "none", 
+                                  textAlign: "left", 
+                                  cursor: "pointer",
+                                  color: "#111827",
+                                  fontSize: "14px",
+                                  display: "block",
+                                  whiteSpace: "nowrap"
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = "#f3f4f6";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = "transparent";
+                                }}
+                              >
+                                Voir détails
+                              </button>
+                              <button
+                                onClick={() => { handleAssignClick(t.id); setOpenActionsMenuFor(null); }}
+                                disabled={loading}
+                                style={{ 
+                                  width: "100%", 
+                                  padding: "10px 12px", 
+                                  background: "transparent", 
+                                  border: "none", 
+                                  borderTop: "1px solid #e5e7eb",
+                                  textAlign: "left", 
+                                  cursor: loading ? "not-allowed" : "pointer",
+                                  color: "#111827",
+                                  fontSize: "14px",
+                                  display: "block",
+                                  whiteSpace: "nowrap",
+                                  opacity: loading ? 0.6 : 1
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (!loading) e.currentTarget.style.backgroundColor = "#f3f4f6";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = "transparent";
+                                }}
+                              >
+                                Assigner
+                              </button>
+                              {userRole === "DSI" && (
+                                <button
+                                  onClick={() => { handleDelegateClick(t.id); setOpenActionsMenuFor(null); }}
+                                  disabled={loading}
+                                  style={{ 
+                                    width: "100%", 
+                                    padding: "10px 12px", 
+                                    background: "transparent", 
+                                    border: "none", 
+                                    borderTop: "1px solid #e5e7eb",
+                                    textAlign: "left", 
+                                    cursor: loading ? "not-allowed" : "pointer",
+                                    color: "#111827",
+                                    fontSize: "14px",
+                                    display: "block",
+                                    whiteSpace: "nowrap",
+                                    opacity: loading ? 0.6 : 1
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (!loading) e.currentTarget.style.backgroundColor = "#f3f4f6";
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = "transparent";
+                                  }}
+                                >
+                                  Déléguer à un adjoint
+                                </button>
+                              )}
+                              {canEscalate() && (
+                                <button
+                                  onClick={() => { handleEscalate(t.id); setOpenActionsMenuFor(null); }}
+                                  disabled={loading}
+                                  style={{ 
+                                    width: "100%", 
+                                    padding: "10px 12px", 
+                                    background: "transparent", 
+                                    border: "none", 
+                                    borderTop: "1px solid #e5e7eb",
+                                    textAlign: "left", 
+                                    cursor: loading ? "not-allowed" : "pointer",
+                                    color: "#111827",
+                                    fontSize: "14px",
+                                    display: "block",
+                                    whiteSpace: "nowrap",
+                                    opacity: loading ? 0.6 : 1
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (!loading) e.currentTarget.style.backgroundColor = "#f3f4f6";
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = "transparent";
+                                  }}
+                                >
+                                  Escalader
+                                </button>
+                              )}
+                            </>
+                          )}
+                          {(t.status === "assigne_technicien" || t.status === "en_cours") && (
+                            <>
+                              <button
+                                onClick={() => { loadTicketDetails(t.id); setOpenActionsMenuFor(null); }}
+                                disabled={loading}
+                                style={{ 
+                                  width: "100%", 
+                                  padding: "10px 12px", 
+                                  background: "transparent", 
+                                  border: "none", 
+                                  textAlign: "left", 
+                                  cursor: "pointer",
+                                  color: "#111827",
+                                  fontSize: "14px",
+                                  display: "block",
+                                  whiteSpace: "nowrap"
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = "#f3f4f6";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = "transparent";
+                                }}
+                              >
+                                Voir détails
+                              </button>
+                              <button
+                                onClick={() => { handleReassignClick(t.id); setOpenActionsMenuFor(null); }}
+                                disabled={loading}
+                                style={{ 
+                                  width: "100%", 
+                                  padding: "10px 12px", 
+                                  background: "transparent", 
+                                  border: "none", 
+                                  borderTop: "1px solid #e5e7eb",
+                                  textAlign: "left", 
+                                  cursor: loading ? "not-allowed" : "pointer",
+                                  color: "#111827",
+                                  fontSize: "14px",
+                                  display: "block",
+                                  whiteSpace: "nowrap",
+                                  opacity: loading ? 0.6 : 1
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (!loading) e.currentTarget.style.backgroundColor = "#f3f4f6";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = "transparent";
+                                }}
+                              >
+                                Réassigner
+                              </button>
+                              {canEscalate() && (
+                                <button
+                                  onClick={() => { handleEscalate(t.id); setOpenActionsMenuFor(null); }}
+                                  disabled={loading}
+                                  style={{ 
+                                    width: "100%", 
+                                    padding: "10px 12px", 
+                                    background: "transparent", 
+                                    border: "none", 
+                                    borderTop: "1px solid #e5e7eb",
+                                    textAlign: "left", 
+                                    cursor: loading ? "not-allowed" : "pointer",
+                                    color: "#111827",
+                                    fontSize: "14px",
+                                    display: "block",
+                                    whiteSpace: "nowrap",
+                                    opacity: loading ? 0.6 : 1
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (!loading) e.currentTarget.style.backgroundColor = "#f3f4f6";
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = "transparent";
+                                  }}
+                                >
+                                  Escalader
+                                </button>
+                              )}
+                            </>
+                          )}
+                          {t.status === "resolu" && (
+                            <button
+                              onClick={() => { handleClose(t.id); setOpenActionsMenuFor(null); }}
+                              disabled={loading}
+                              style={{ 
+                                width: "100%", 
+                                padding: "10px 12px", 
+                                background: "transparent", 
+                                border: "none", 
+                                textAlign: "left", 
+                                cursor: loading ? "not-allowed" : "pointer",
+                                color: "#111827",
+                                fontSize: "14px",
+                                display: "block",
+                                whiteSpace: "nowrap",
+                                opacity: loading ? 0.6 : 1
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!loading) e.currentTarget.style.backgroundColor = "#f3f4f6";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = "transparent";
+                              }}
+                            >
+                              Clôturer
+                            </button>
+                          )}
+                          {t.status === "rejete" && (
+                            <button
+                              onClick={() => { handleReopenClick(t.id); setOpenActionsMenuFor(null); }}
+                              disabled={loading}
+                              style={{ 
+                                width: "100%", 
+                                padding: "10px 12px", 
+                                background: "transparent", 
+                                border: "none", 
+                                textAlign: "left", 
+                                cursor: loading ? "not-allowed" : "pointer",
+                                color: "#111827",
+                                fontSize: "14px",
+                                display: "block",
+                                whiteSpace: "nowrap",
+                                opacity: loading ? 0.6 : 1
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!loading) e.currentTarget.style.backgroundColor = "#f3f4f6";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = "transparent";
+                              }}
+                            >
+                              Réouvrir
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   )}
                 </td>
               </tr>
@@ -3118,8 +3532,8 @@ function DSIDashboard({ token }: DSIDashboardProps) {
                   borderRadius: "4px",
                   fontSize: "12px",
                   fontWeight: "500",
-                  background: ticketDetails.priority === "critique" ? "#f44336" : ticketDetails.priority === "haute" ? "#ff9800" : ticketDetails.priority === "moyenne" ? "#ffc107" : "#9e9e9e",
-                  color: "white"
+                  background: ticketDetails.priority === "critique" ? "#f44336" : ticketDetails.priority === "haute" ? "#fed7aa" : ticketDetails.priority === "moyenne" ? "#ffc107" : "#9e9e9e",
+                  color: ticketDetails.priority === "haute" ? "#92400e" : "white"
                 }}>
                   {ticketDetails.priority}
                 </span>
@@ -3171,6 +3585,78 @@ function DSIDashboard({ token }: DSIDashboardProps) {
             <>
               <h2 style={{ marginBottom: "24px", fontSize: "28px", fontWeight: "600", color: "#333" }}>Tous les tickets</h2>
               
+              <div style={{ 
+                display: "flex", 
+                gap: "16px", 
+                marginBottom: "24px", 
+                flexWrap: "wrap",
+                background: "white",
+                padding: "16px",
+                borderRadius: "8px",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+              }}>
+                <div style={{ flex: 1, minWidth: "200px" }}>
+                  <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: "500", color: "#666" }}>Filtrer par statut</label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    style={{ 
+                      width: "100%", 
+                      padding: "8px 12px", 
+                      border: "1px solid #ddd", 
+                      borderRadius: "4px",
+                      fontSize: "14px"
+                    }}
+                  >
+                    <option value="all">Tous les statuts</option>
+                    <option value="en_attente_analyse">En attente</option>
+                    <option value="en_traitement">En traitement</option>
+                    <option value="resolu">Résolus</option>
+                    <option value="cloture">Clôturés</option>
+                    <option value="rejete">Rejetés</option>
+                  </select>
+                </div>
+                <div style={{ flex: 1, minWidth: "200px" }}>
+                  <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: "500", color: "#666" }}>Filtrer par agence</label>
+                  <select
+                    value={agencyFilter}
+                    onChange={(e) => setAgencyFilter(e.target.value)}
+                    style={{ 
+                      width: "100%", 
+                      padding: "8px 12px", 
+                      border: "1px solid #ddd", 
+                      borderRadius: "4px",
+                      fontSize: "14px"
+                    }}
+                  >
+                    <option value="all">Toutes les agences</option>
+                    {allAgencies.map((agency) => (
+                      <option key={agency} value={agency || ""}>{agency}</option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{ flex: 1, minWidth: "200px" }}>
+                  <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: "500", color: "#666" }}>Filtrer par priorité</label>
+                  <select
+                    value={priorityFilter}
+                    onChange={(e) => setPriorityFilter(e.target.value)}
+                    style={{ 
+                      width: "100%", 
+                      padding: "8px 12px", 
+                      border: "1px solid #ddd", 
+                      borderRadius: "4px",
+                      fontSize: "14px"
+                    }}
+                  >
+                    <option value="all">Toutes les priorités</option>
+                    <option value="critique">Critique</option>
+                    <option value="haute">Haute</option>
+                    <option value="moyenne">Moyenne</option>
+                    <option value="faible">Faible</option>
+                  </select>
+                </div>
+              </div>
+              
               <table style={{ width: "100%", borderCollapse: "collapse", background: "white", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
                 <thead>
                   <tr style={{ background: "#f8f9fa" }}>
@@ -3207,7 +3693,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
                             borderRadius: "20px",
                             fontSize: "12px",
                             fontWeight: "500",
-                            background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fef3c7" : t.priority === "moyenne" ? "#dbeafe" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
+                            background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "#dbeafe" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
                             color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#1e40af" : t.priority === "faible" ? "#991b1b" : "#374151"
                           }}>
                             {t.priority}
@@ -3243,156 +3729,328 @@ function DSIDashboard({ token }: DSIDashboardProps) {
                           </span>
                         </td>
                         <td style={{ padding: "12px 16px" }}>
-                          {t.status === "en_attente_analyse" ? (
-                            <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                          {t.status === "cloture" ? (
+                            <span style={{ color: "#999", fontSize: "12px" }}>
+                              Clôturé
+                            </span>
+                          ) : (
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px", position: "relative" }}>
                               <button
-                                onClick={() => handleAssignClick(t.id)}
+                                onClick={(e) => { 
+                                  e.stopPropagation(); 
+                                  setOpenActionsMenuFor(openActionsMenuFor === t.id ? null : t.id);
+                                }}
                                 disabled={loading}
-                                  style={{ 
-                                    fontSize: "12px", 
-                                    padding: "6px 12px", 
-                            backgroundColor: "#007bff", 
-                            color: "white", 
-                            border: "none",
-                            borderRadius: "4px",
-                                    cursor: loading ? "not-allowed" : "pointer",
-                                    fontWeight: "500",
-                                    transition: "all 0.2s ease",
-                                    opacity: loading ? 0.6 : 1
+                                title="Actions"
+                                aria-label="Actions"
+                                style={{
+                                  width: 28,
+                                  height: 28,
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  background: "transparent",
+                                  border: "none",
+                                  borderRadius: 0,
+                                  cursor: "pointer",
+                                  color: "#475569",
+                                  backgroundImage:
+                                    "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='5' r='2' fill='%23475569'/><circle cx='12' cy='12' r='2' fill='%23475569'/><circle cx='12' cy='19' r='2' fill='%23475569'/></svg>\")",
+                                  backgroundRepeat: "no-repeat",
+                                  backgroundPosition: "center",
+                                  backgroundSize: "18px 18px"
+                                }}
+                              />
+                              {openActionsMenuFor === t.id && (
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    top: "100%",
+                                    right: 0,
+                                    marginTop: "4px",
+                                    background: "white",
+                                    border: "1px solid #e5e7eb",
+                                    borderRadius: 8,
+                                    boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
+                                    minWidth: 180,
+                                    zIndex: 1000,
+                                    overflow: "visible"
                                   }}
-                                  onMouseEnter={(e) => {
-                                    if (!loading) {
-                                      e.currentTarget.style.backgroundColor = "#bfdbfe";
-                                      e.currentTarget.style.borderColor = "#60a5fa";
-                                    }
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    if (!loading) {
-                                      e.currentTarget.style.backgroundColor = "#dbeafe";
-                                      e.currentTarget.style.borderColor = "#93c5fd";
+                                  onClick={(e) => e.stopPropagation()}
+                                  ref={(el) => {
+                                    if (el) {
+                                      const button = el.previousElementSibling as HTMLElement;
+                                      if (button) {
+                                        const rect = button.getBoundingClientRect();
+                                        const viewportHeight = window.innerHeight;
+                                        const menuHeight = el.offsetHeight || 200;
+                                        const spaceBelow = viewportHeight - rect.bottom;
+                                        const spaceAbove = rect.top;
+                                        
+                                        if (spaceBelow < menuHeight && spaceAbove > menuHeight) {
+                                          el.style.bottom = "100%";
+                                          el.style.top = "auto";
+                                          el.style.marginBottom = "4px";
+                                          el.style.marginTop = "0";
+                                        } else {
+                                          el.style.top = "100%";
+                                          el.style.bottom = "auto";
+                                          el.style.marginTop = "4px";
+                                          el.style.marginBottom = "0";
+                                        }
+                                      }
                                     }
                                   }}
                                 >
-                                  Assigner
-                                </button>
-                                {canEscalate() && (
-                                  <button
-                                    onClick={() => handleEscalate(t.id)}
-                                    disabled={loading}
-                                    style={{ 
-                                      fontSize: "12px", 
-                                      padding: "6px 12px", 
-                            backgroundColor: "#ff9800", 
-                            color: "white", 
-                            border: "none",
-                            borderRadius: "4px",
-                                      cursor: loading ? "not-allowed" : "pointer",
-                                      fontWeight: "500",
-                                      transition: "all 0.2s ease",
-                                      opacity: loading ? 0.6 : 1
-                                    }}
-                                    onMouseEnter={(e) => {
-                                      if (!loading) {
-                                        e.currentTarget.style.backgroundColor = "#fcd34d";
-                                        e.currentTarget.style.borderColor = "#f59e0b";
-                                      }
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      if (!loading) {
-                                        e.currentTarget.style.backgroundColor = "#fed7aa";
-                                        e.currentTarget.style.borderColor = "#fdba74";
-                                      }
-                                    }}
-                                  >
-                                    Escalader
-                                  </button>
-                        )}
-                      </div>
-                  ) : t.status === "assigne_technicien" || t.status === "en_cours" ? (
-                            <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
-                              <button
-                                onClick={() => handleReassignClick(t.id)}
-                                disabled={loading}
-                                style={{ 
-                                  fontSize: "12px", 
-                                  padding: "6px 12px", 
-                            backgroundColor: "#17a2b8", 
-                            color: "white", 
-                            border: "none",
-                            borderRadius: "4px",
-                                  cursor: loading ? "not-allowed" : "pointer",
-                                  fontWeight: "500",
-                                  transition: "all 0.2s ease",
-                                  opacity: loading ? 0.6 : 1
-                                }}
-                                onMouseEnter={(e) => {
-                                  if (!loading) {
-                                    e.currentTarget.style.backgroundColor = "#138496";
-                                    e.currentTarget.style.borderColor = "#117a8b";
-                                  }
-                                }}
-                                onMouseLeave={(e) => {
-                                  if (!loading) {
-                                    e.currentTarget.style.backgroundColor = "#17a2b8";
-                                    e.currentTarget.style.borderColor = "#17a2b8";
-                                  }
-                                }}
-                              >
-                                Réassigner
-                              </button>
-                                {canEscalate() && (
-                                  <button
-                                    onClick={() => handleEscalate(t.id)}
-                                    disabled={loading}
-                                    style={{ 
-                                      fontSize: "12px", 
-                                      padding: "6px 12px", 
-                            backgroundColor: "#ff9800", 
-                            color: "white", 
-                            border: "none",
-                            borderRadius: "4px",
-                                      cursor: loading ? "not-allowed" : "pointer",
-                                      fontWeight: "500",
-                                      transition: "all 0.2s ease",
-                                      opacity: loading ? 0.6 : 1
-                                    }}
-                                    onMouseEnter={(e) => {
-                                      if (!loading) {
-                                        e.currentTarget.style.backgroundColor = "#fcd34d";
-                                        e.currentTarget.style.borderColor = "#f59e0b";
-                                      }
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      if (!loading) {
-                                        e.currentTarget.style.backgroundColor = "#fed7aa";
-                                        e.currentTarget.style.borderColor = "#fdba74";
-                                      }
-                                    }}
-                                  >
-                                    Escalader
-                                  </button>
-                                )}
-                              </div>
-                          ) : t.status === "resolu" ? (
-                            <button
-                              onClick={() => handleClose(t.id)}
-                              disabled={loading}
-                              style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "4px", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1 }}
-                            >
-                              Clôturer
-                            </button>
-                          ) : t.status === "rejete" ? (
-                            <button
-                              onClick={() => handleReopenClick(t.id)}
-                              disabled={loading}
-                              style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "4px", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1 }}
-                            >
-                              Réouvrir
-                            </button>
-                          ) : (
-                            <span style={{ color: "#999", fontSize: "12px" }}>
-                              {t.status === "cloture" ? "Clôturé" : "N/A"}
-                            </span>
+                                  {t.status === "en_attente_analyse" && (
+                                    <>
+                                      <button
+                                        onClick={() => { loadTicketDetails(t.id); setOpenActionsMenuFor(null); }}
+                                        disabled={loading}
+                                        style={{ 
+                                          width: "100%", 
+                                          padding: "10px 12px", 
+                                          background: "transparent", 
+                                          border: "none", 
+                                          textAlign: "left", 
+                                          cursor: "pointer",
+                                          color: "#111827",
+                                          fontSize: "14px",
+                                          display: "block",
+                                          whiteSpace: "nowrap"
+                                        }}
+                                        onMouseEnter={(e) => {
+                                          e.currentTarget.style.backgroundColor = "#f3f4f6";
+                                        }}
+                                        onMouseLeave={(e) => {
+                                          e.currentTarget.style.backgroundColor = "transparent";
+                                        }}
+                                      >
+                                        Voir détails
+                                      </button>
+                                      <button
+                                        onClick={() => { handleAssignClick(t.id); setOpenActionsMenuFor(null); }}
+                                        disabled={loading}
+                                        style={{ 
+                                          width: "100%", 
+                                          padding: "10px 12px", 
+                                          background: "transparent", 
+                                          border: "none", 
+                                          borderTop: "1px solid #e5e7eb",
+                                          textAlign: "left", 
+                                          cursor: loading ? "not-allowed" : "pointer",
+                                          color: "#111827",
+                                          fontSize: "14px",
+                                          display: "block",
+                                          whiteSpace: "nowrap",
+                                          opacity: loading ? 0.6 : 1
+                                        }}
+                                        onMouseEnter={(e) => {
+                                          if (!loading) e.currentTarget.style.backgroundColor = "#f3f4f6";
+                                        }}
+                                        onMouseLeave={(e) => {
+                                          e.currentTarget.style.backgroundColor = "transparent";
+                                        }}
+                                      >
+                                        Assigner
+                                      </button>
+                                      {userRole === "DSI" && (
+                                        <button
+                                          onClick={() => { handleDelegateClick(t.id); setOpenActionsMenuFor(null); }}
+                                          disabled={loading}
+                                          style={{ 
+                                            width: "100%", 
+                                            padding: "10px 12px", 
+                                            background: "transparent", 
+                                            border: "none", 
+                                            borderTop: "1px solid #e5e7eb",
+                                            textAlign: "left", 
+                                            cursor: loading ? "not-allowed" : "pointer",
+                                            color: "#111827",
+                                            fontSize: "14px",
+                                            display: "block",
+                                            whiteSpace: "nowrap",
+                                            opacity: loading ? 0.6 : 1
+                                          }}
+                                          onMouseEnter={(e) => {
+                                            if (!loading) e.currentTarget.style.backgroundColor = "#f3f4f6";
+                                          }}
+                                          onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor = "transparent";
+                                          }}
+                                        >
+                                          Déléguer à un adjoint
+                                        </button>
+                                      )}
+                                      {canEscalate() && (
+                                        <button
+                                          onClick={() => { handleEscalate(t.id); setOpenActionsMenuFor(null); }}
+                                          disabled={loading}
+                                          style={{ 
+                                            width: "100%", 
+                                            padding: "10px 12px", 
+                                            background: "transparent", 
+                                            border: "none", 
+                                            borderTop: "1px solid #e5e7eb",
+                                            textAlign: "left", 
+                                            cursor: loading ? "not-allowed" : "pointer",
+                                            color: "#111827",
+                                            fontSize: "14px",
+                                            display: "block",
+                                            whiteSpace: "nowrap",
+                                            opacity: loading ? 0.6 : 1
+                                          }}
+                                          onMouseEnter={(e) => {
+                                            if (!loading) e.currentTarget.style.backgroundColor = "#f3f4f6";
+                                          }}
+                                          onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor = "transparent";
+                                          }}
+                                        >
+                                          Escalader
+                                        </button>
+                                      )}
+                                    </>
+                                  )}
+                                  {(t.status === "assigne_technicien" || t.status === "en_cours") && (
+                                    <>
+                                      <button
+                                        onClick={() => { loadTicketDetails(t.id); setOpenActionsMenuFor(null); }}
+                                        disabled={loading}
+                                        style={{ 
+                                          width: "100%", 
+                                          padding: "10px 12px", 
+                                          background: "transparent", 
+                                          border: "none", 
+                                          textAlign: "left", 
+                                          cursor: "pointer",
+                                          color: "#111827",
+                                          fontSize: "14px",
+                                          display: "block",
+                                          whiteSpace: "nowrap"
+                                        }}
+                                        onMouseEnter={(e) => {
+                                          e.currentTarget.style.backgroundColor = "#f3f4f6";
+                                        }}
+                                        onMouseLeave={(e) => {
+                                          e.currentTarget.style.backgroundColor = "transparent";
+                                        }}
+                                      >
+                                        Voir détails
+                                      </button>
+                                      <button
+                                        onClick={() => { handleReassignClick(t.id); setOpenActionsMenuFor(null); }}
+                                        disabled={loading}
+                                        style={{ 
+                                          width: "100%", 
+                                          padding: "10px 12px", 
+                                          background: "transparent", 
+                                          border: "none", 
+                                          borderTop: "1px solid #e5e7eb",
+                                          textAlign: "left", 
+                                          cursor: loading ? "not-allowed" : "pointer",
+                                          color: "#111827",
+                                          fontSize: "14px",
+                                          display: "block",
+                                          whiteSpace: "nowrap",
+                                          opacity: loading ? 0.6 : 1
+                                        }}
+                                        onMouseEnter={(e) => {
+                                          if (!loading) e.currentTarget.style.backgroundColor = "#f3f4f6";
+                                        }}
+                                        onMouseLeave={(e) => {
+                                          e.currentTarget.style.backgroundColor = "transparent";
+                                        }}
+                                      >
+                                        Réassigner
+                                      </button>
+                                      {canEscalate() && (
+                                        <button
+                                          onClick={() => { handleEscalate(t.id); setOpenActionsMenuFor(null); }}
+                                          disabled={loading}
+                                          style={{ 
+                                            width: "100%", 
+                                            padding: "10px 12px", 
+                                            background: "transparent", 
+                                            border: "none", 
+                                            borderTop: "1px solid #e5e7eb",
+                                            textAlign: "left", 
+                                            cursor: loading ? "not-allowed" : "pointer",
+                                            color: "#111827",
+                                            fontSize: "14px",
+                                            display: "block",
+                                            whiteSpace: "nowrap",
+                                            opacity: loading ? 0.6 : 1
+                                          }}
+                                          onMouseEnter={(e) => {
+                                            if (!loading) e.currentTarget.style.backgroundColor = "#f3f4f6";
+                                          }}
+                                          onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor = "transparent";
+                                          }}
+                                        >
+                                          Escalader
+                                        </button>
+                                      )}
+                                    </>
+                                  )}
+                                  {t.status === "resolu" && (
+                                    <button
+                                      onClick={() => { handleClose(t.id); setOpenActionsMenuFor(null); }}
+                                      disabled={loading}
+                                      style={{ 
+                                        width: "100%", 
+                                        padding: "10px 12px", 
+                                        background: "transparent", 
+                                        border: "none", 
+                                        textAlign: "left", 
+                                        cursor: loading ? "not-allowed" : "pointer",
+                                        color: "#111827",
+                                        fontSize: "14px",
+                                        display: "block",
+                                        whiteSpace: "nowrap",
+                                        opacity: loading ? 0.6 : 1
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        if (!loading) e.currentTarget.style.backgroundColor = "#f3f4f6";
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        e.currentTarget.style.backgroundColor = "transparent";
+                                      }}
+                                    >
+                                      Clôturer
+                                    </button>
+                                  )}
+                                  {t.status === "rejete" && (
+                                    <button
+                                      onClick={() => { handleReopenClick(t.id); setOpenActionsMenuFor(null); }}
+                                      disabled={loading}
+                                      style={{ 
+                                        width: "100%", 
+                                        padding: "10px 12px", 
+                                        background: "transparent", 
+                                        border: "none", 
+                                        textAlign: "left", 
+                                        cursor: loading ? "not-allowed" : "pointer",
+                                        color: "#111827",
+                                        fontSize: "14px",
+                                        display: "block",
+                                        whiteSpace: "nowrap",
+                                        opacity: loading ? 0.6 : 1
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        if (!loading) e.currentTarget.style.backgroundColor = "#f3f4f6";
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        e.currentTarget.style.backgroundColor = "transparent";
+                                      }}
+                                    >
+                                      Réouvrir
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           )}
                         </td>
                       </tr>
@@ -3412,27 +4070,27 @@ function DSIDashboard({ token }: DSIDashboardProps) {
                   <p style={{ color: "#666", fontSize: "16px", marginBottom: "20px" }}>Sélectionnez un type de rapport dans le menu latéral</p>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }}>
                     <div style={{ padding: "16px", border: "1px solid #eee", borderRadius: "8px", cursor: "pointer" }} onClick={() => setSelectedReport("statistiques")}>
-                      <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", color: "#333" }}>📊 Statistiques générales</h3>
+                      <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", color: "#333" }}>Statistiques générales</h3>
                       <p style={{ margin: 0, color: "#666", fontSize: "14px" }}>Nombre total, répartition par statut, priorité, type</p>
                     </div>
                     <div style={{ padding: "16px", border: "1px solid #eee", borderRadius: "8px", cursor: "pointer" }} onClick={() => setSelectedReport("metriques")}>
-                      <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", color: "#333" }}>⚡ Métriques de performance</h3>
+                      <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", color: "#333" }}>Métriques de performance</h3>
                       <p style={{ margin: 0, color: "#666", fontSize: "14px" }}>Temps moyen, satisfaction, escalades, réouvertures</p>
                     </div>
                     <div style={{ padding: "16px", border: "1px solid #eee", borderRadius: "8px", cursor: "pointer" }} onClick={() => setSelectedReport("agence")}>
-                      <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", color: "#333" }}>🏢 Analyses par agence</h3>
+                      <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", color: "#333" }}>Analyses par agence</h3>
                       <p style={{ margin: 0, color: "#666", fontSize: "14px" }}>Volume, temps moyen, satisfaction par agence</p>
                     </div>
                     <div style={{ padding: "16px", border: "1px solid #eee", borderRadius: "8px", cursor: "pointer" }} onClick={() => setSelectedReport("technicien")}>
-                      <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", color: "#333" }}>👥 Analyses par technicien</h3>
+                      <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", color: "#333" }}>Analyses par technicien</h3>
                       <p style={{ margin: 0, color: "#666", fontSize: "14px" }}>Tickets traités, temps moyen, charge, satisfaction</p>
                     </div>
                     <div style={{ padding: "16px", border: "1px solid #eee", borderRadius: "8px", cursor: "pointer" }} onClick={() => setSelectedReport("evolutions")}>
-                      <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", color: "#333" }}>📈 Évolutions dans le temps</h3>
+                      <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", color: "#333" }}>Évolutions dans le temps</h3>
                       <p style={{ margin: 0, color: "#666", fontSize: "14px" }}>Tendances, pics d'activité, performance</p>
                     </div>
                     <div style={{ padding: "16px", border: "1px solid #eee", borderRadius: "8px", cursor: "pointer" }} onClick={() => setSelectedReport("recurrents")}>
-                      <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", color: "#333" }}>🔄 Problèmes récurrents</h3>
+                      <h3 style={{ margin: "0 0 8px 0", fontSize: "18px", color: "#333" }}>Problèmes récurrents</h3>
                       <p style={{ margin: 0, color: "#666", fontSize: "14px" }}>Types fréquents, agences, patterns</p>
                     </div>
                   </div>

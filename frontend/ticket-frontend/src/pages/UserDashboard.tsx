@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import type { FormEvent } from "react";
-import { PanelLeft } from "lucide-react";
+import { PanelLeft, AlertCircle, Clock, CheckCircle } from "lucide-react";
 
 interface UserDashboardProps {
   token: string;
@@ -869,10 +869,9 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
             alignItems: "center", 
             justifyContent: "center"
           }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="9" stroke="white" strokeWidth="2" fill="none" />
-              <path d="M12 6v6l4 2" stroke="white" strokeWidth="2" strokeLinecap="round" />
-              <circle cx="12" cy="12" r="1" fill="white" />
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 15 15" />
             </svg>
           </div>
           <div style={{ 
@@ -897,8 +896,10 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
             alignItems: "center", 
             justifyContent: "center"
           }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M12 5v14M5 12h14" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="16" />
+              <line x1="8" y1="12" x2="16" y2="12" />
             </svg>
           </div>
           <div style={{ 
@@ -928,10 +929,12 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
             alignItems: "center", 
             justifyContent: "center"
           }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M8 7h8M8 11h8M8 15h6" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <line x1="9" y1="3" x2="9" y2="21" />
+              <line x1="8" y1="8" x2="18" y2="8" />
+              <line x1="8" y1="12" x2="18" y2="12" />
+              <line x1="8" y1="16" x2="18" y2="16" />
             </svg>
           </div>
           <div style={{ 
@@ -956,10 +959,10 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
             alignItems: "center", 
             justifyContent: "center"
           }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M9 9h.01M13 9h.01" stroke="white" strokeWidth="2" strokeLinecap="round" />
-              <circle cx="12" cy="12" r="1" fill="white" />
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
           </div>
           <div style={{ 
@@ -1047,6 +1050,19 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
 
           {/* Right side - Icons */}
           <div style={{ display: "flex", alignItems: "center", gap: "0" }}>
+            {/* Welcome message */}
+            {userInfo && (
+              <span style={{ 
+                color: "white", 
+                fontSize: "14px", 
+                fontWeight: "400",
+                fontFamily: "system-ui, -apple-system, sans-serif",
+                marginRight: "8px"
+              }}>
+                Bienvenue Dans Votre Espace Utilisateur, {userInfo.full_name.toUpperCase()}
+              </span>
+            )}
+            
             {/* Plus Icon - Trudesk style */}
             <div
               onClick={() => setShowCreateModal(true)}
@@ -1148,15 +1164,6 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
 
         {/* Contenu principal avec scroll */}
         <div style={{ flex: 1, padding: "30px", overflow: "auto" }}>
-          {/* Message de bienvenue - Visible seulement sur Dashboard */}
-          {activeSection === "dashboard" && userInfo && (
-            <div style={{ marginBottom: "24px" }}>
-              <h2 style={{ fontSize: "28px", fontWeight: "600", color: "#333", margin: 0 }}>
-                Bienvenue, {userInfo.full_name} 👋
-              </h2>
-            </div>
-          )}
-        
         {/* Section Tickets - Style GLPI - Visible seulement sur Dashboard */}
           {activeSection === "dashboard" && (
             <div style={{ 
@@ -1185,17 +1192,36 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                   flexDirection: "column",
                   alignItems: "flex-start", 
                   justifyContent: "space-between",
-                  padding: "18px 20px",
+                  padding: "14px",
                   borderRadius: "12px",
-                  background: "#f1f5f9",
-                  border: "1px solid #e5e7eb",
-                  minHeight: "120px"
+                  background: "white",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  minHeight: "100px"
                 }}
               >
-                <span style={{ fontSize: "15px", color: "#374151" }}>En attente d'assignation</span>
-                <span style={{ fontSize: "32px", fontWeight: "800", color: "#0f172a" }}>
+                <div style={{ 
+                  display: "flex", 
+                  justifyContent: "space-between", 
+                  alignItems: "flex-start",
+                  width: "100%",
+                  marginBottom: "8px"
+                }}>
+                  <div style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "8px",
+                    background: "#fff4e6",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}>
+                    <AlertCircle size={16} color="#ea580c" />
+                  </div>
+                </div>
+                <span style={{ fontSize: "28px", fontWeight: "bold", color: "#1f2937", marginBottom: "4px" }}>
                   {statusCounts.en_attente_analyse}
                 </span>
+                <span style={{ fontSize: "13px", fontWeight: "500", color: "#4b5563" }}>En attente d'assignation</span>
               </div>
 
               {/* En cours */}
@@ -1206,15 +1232,39 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                   flexDirection: "column",
                   alignItems: "flex-start", 
                   justifyContent: "space-between",
-                  padding: "18px 20px",
+                  padding: "14px",
                   borderRadius: "12px",
-                  background: "#fffbeb",
-                  border: "1px solid #e5e7eb",
-                  minHeight: "120px"
+                  background: "white",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  minHeight: "100px"
                 }}
               >
-                <span style={{ fontSize: "15px", color: "#374151" }}>En cours</span>
-                <span style={{ fontSize: "32px", fontWeight: "800", color: "#0f172a" }}>{statusCounts.en_cours}</span>
+                <div style={{ 
+                  display: "flex", 
+                  justifyContent: "space-between", 
+                  alignItems: "flex-start",
+                  width: "100%",
+                  marginBottom: "8px"
+                }}>
+                  <div style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "8px",
+                    background: "#e0f2fe",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}>
+                    <Clock size={16} color="#0284c7" />
+                  </div>
+                  <div style={{ color: "#6b7280", fontSize: "11px", fontWeight: "500" }}>
+                    En traitement
+                  </div>
+                </div>
+                <span style={{ fontSize: "28px", fontWeight: "bold", color: "#111827", marginBottom: "4px" }}>
+                  {statusCounts.en_cours}
+                </span>
+                <span style={{ fontSize: "13px", fontWeight: "500", color: "#4b5563" }}>Tickets en cours</span>
               </div>
 
               {/* Résolu */}
@@ -1225,15 +1275,39 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                   flexDirection: "column",
                   alignItems: "flex-start",
                   justifyContent: "space-between",
-                  padding: "18px 20px",
+                  padding: "14px",
                   borderRadius: "12px",
-                  background: "#f0fdf4",
-                  border: "1px solid #e5e7eb",
-                  minHeight: "120px"
+                  background: "white",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  minHeight: "100px"
                 }}
               >
-                <span style={{ fontSize: "15px", color: "#374151" }}>Résolu</span>
-                <span style={{ fontSize: "32px", fontWeight: "800", color: "#0f172a" }}>{statusCounts.resolu}</span>
+                <div style={{ 
+                  display: "flex", 
+                  justifyContent: "space-between", 
+                  alignItems: "flex-start",
+                  width: "100%",
+                  marginBottom: "8px"
+                }}>
+                  <div style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "8px",
+                    background: "#dcfce7",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}>
+                    <CheckCircle size={16} color="#16a34a" />
+                  </div>
+                  <div style={{ color: "#6b7280", fontSize: "11px", fontWeight: "500" }}>
+                    Ce mois-ci
+                  </div>
+                </div>
+                <span style={{ fontSize: "28px", fontWeight: "bold", color: "#1f2937", marginBottom: "4px" }}>
+                  {statusCounts.resolu}
+                </span>
+                <span style={{ fontSize: "13px", fontWeight: "500", color: "#4b5563" }}>Tickets Résolus</span>
               </div>
 
               {/* (Cartes supplémentaires supprimées) */}
@@ -1553,7 +1627,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                             borderRadius: "12px",
                             fontSize: "12px",
                             fontWeight: "500",
-                            background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fef3c7" : t.priority === "moyenne" ? "#dbeafe" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
+                            background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "#dbeafe" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
                             color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#1e40af" : t.priority === "faible" ? "#991b1b" : "#374151"
                           }}>
                             {t.priority}
@@ -1757,7 +1831,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                         borderRadius: "20px",
                         fontSize: "12px",
                         fontWeight: "500",
-                        background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fef3c7" : t.priority === "moyenne" ? "#dbeafe" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
+                        background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "#fed7aa" : t.priority === "moyenne" ? "#dbeafe" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
                         color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#92400e" : t.priority === "moyenne" ? "#1e40af" : t.priority === "faible" ? "#991b1b" : "#374151"
                       }}>
                         {t.priority}
@@ -1798,18 +1872,43 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                           <div
                             style={{
                               position: "absolute",
-                              // Ouvrir le menu vers le haut pour que les options restent visibles
-                              top: "auto",
-                              bottom: 36,
+                              top: "100%",
                               right: 0,
+                              marginTop: "4px",
                               background: "white",
                               border: "1px solid #e5e7eb",
                               borderRadius: 8,
                               boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
                               minWidth: 160,
-                              zIndex: 10
+                              zIndex: 1000,
+                              overflow: "visible"
                             }}
                             onClick={(e) => e.stopPropagation()}
+                            ref={(el) => {
+                              if (el) {
+                                const button = el.previousElementSibling as HTMLElement;
+                                if (button) {
+                                  const rect = button.getBoundingClientRect();
+                                  const viewportHeight = window.innerHeight;
+                                  const menuHeight = 150; // Hauteur approximative du menu (3 boutons)
+                                  const spaceBelow = viewportHeight - rect.bottom;
+                                  const spaceAbove = rect.top;
+                                  
+                                  // Si pas assez d'espace en bas mais assez en haut, afficher vers le haut
+                                  if (spaceBelow < menuHeight && spaceAbove > menuHeight) {
+                                    el.style.bottom = "100%";
+                                    el.style.top = "auto";
+                                    el.style.marginBottom = "4px";
+                                    el.style.marginTop = "0";
+                                  } else {
+                                    el.style.top = "100%";
+                                    el.style.bottom = "auto";
+                                    el.style.marginTop = "4px";
+                                    el.style.marginBottom = "0";
+                                  }
+                                }
+                              }
+                            }}
                           >
                             <button
                               onClick={() => { loadTicketDetails(t.id); setOpenActionsMenuFor(null); }}
@@ -1822,7 +1921,15 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                                 textAlign: "left", 
                                 cursor: "pointer",
                                 color: "#111827",
-                                fontSize: "14px"
+                                fontSize: "14px",
+                                display: "block",
+                                whiteSpace: "nowrap"
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = "#f3f4f6";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = "transparent";
                               }}
                             >
                               Voir détails
@@ -1847,10 +1954,19 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                                 padding: "10px 12px", 
                                 background: "transparent", 
                                 border: "none", 
+                                borderTop: "1px solid #e5e7eb",
                                 textAlign: "left", 
                                 cursor: "pointer",
                                 color: "#111827",
-                                fontSize: "14px"
+                                fontSize: "14px",
+                                display: "block",
+                                whiteSpace: "nowrap"
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = "#f3f4f6";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = "transparent";
                               }}
                             >
                               Modifier
@@ -1881,7 +1997,15 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                                 cursor: "pointer",
                                 color: "#b91c1c",
                                 fontSize: "14px",
-                                fontWeight: 500
+                                fontWeight: 500,
+                                display: "block",
+                                whiteSpace: "nowrap"
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = "#fee2e2";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = "transparent";
                               }}
                             >
                               Supprimer
@@ -2030,8 +2154,8 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                   borderRadius: "4px",
                   fontSize: "12px",
                   fontWeight: "500",
-                  background: ticketDetails.priority === "critique" ? "#f44336" : ticketDetails.priority === "haute" ? "#ff9800" : ticketDetails.priority === "moyenne" ? "#ffc107" : "#9e9e9e",
-                  color: "white"
+                  background: ticketDetails.priority === "critique" ? "#f44336" : ticketDetails.priority === "haute" ? "#fed7aa" : ticketDetails.priority === "moyenne" ? "#ffc107" : "#9e9e9e",
+                  color: ticketDetails.priority === "haute" ? "#92400e" : "white"
                 }}>
                   {ticketDetails.priority}
                 </span>
