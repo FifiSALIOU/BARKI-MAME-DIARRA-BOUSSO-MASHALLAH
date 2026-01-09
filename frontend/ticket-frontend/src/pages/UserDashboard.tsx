@@ -1439,8 +1439,8 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                     borderRadius: "4px",
                     fontSize: "12px",
                     fontWeight: "500",
-                    background: ticketDetails.priority === "critique" ? "rgba(229, 62, 62, 0.1)" : ticketDetails.priority === "haute" ? "rgba(245, 158, 11, 0.1)" : ticketDetails.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : "#9e9e9e",
-                    color: ticketDetails.priority === "critique" ? "#E53E3E" : ticketDetails.priority === "haute" ? "#F59E0B" : "white"
+                    background: ticketDetails.priority === "critique" ? "rgba(229, 62, 62, 0.1)" : ticketDetails.priority === "haute" ? "rgba(245, 158, 11, 0.1)" : ticketDetails.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : ticketDetails.priority === "faible" ? "#E5E7EB" : "#9e9e9e",
+                    color: ticketDetails.priority === "critique" ? "#E53E3E" : ticketDetails.priority === "haute" ? "#F59E0B" : ticketDetails.priority === "moyenne" ? "#0DADDB" : ticketDetails.priority === "faible" ? "#6B7280" : "white"
                   }}>
                     {getPriorityLabel(ticketDetails.priority)}
                   </span>
@@ -2135,19 +2135,19 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                         <td style={{ padding: "12px", fontSize: "14px", color: "#1e293b" }}>{t.title}</td>
                         <td style={{ padding: "12px" }}>
                           <span style={{
-                            padding: "4px 10px",
+                            padding: t.status === "en_cours" ? "2px 10px" : "4px 10px",
                             borderRadius: "12px",
                             fontSize: "12px",
                             fontWeight: "500",
-                            background: t.status === "en_attente_analyse" ? "rgba(13, 173, 219, 0.1)" : t.status === "assigne_technicien" ? "#f0f9ff" : t.status === "en_cours" ? "#fed7aa" : t.status === "resolu" ? "rgba(47, 158, 68, 0.1)" : t.status === "rejete" ? "#fee2e2" : "#e5e7eb",
-                            color: t.status === "en_attente_analyse" ? "#0DADDB" : t.status === "assigne_technicien" ? "#0c4a6e" : t.status === "en_cours" ? "#9a3412" : t.status === "resolu" ? "#2F9E44" : t.status === "rejete" ? "#991b1b" : "#374151",
+                            background: t.status === "en_attente_analyse" ? "rgba(13, 173, 219, 0.1)" : t.status === "assigne_technicien" ? "rgba(255, 122, 27, 0.1)" : t.status === "en_cours" ? "rgba(15, 31, 61, 0.1)" : t.status === "resolu" ? "rgba(47, 158, 68, 0.1)" : t.status === "rejete" ? "#fee2e2" : "#e5e7eb",
+                            color: t.status === "en_attente_analyse" ? "#0DADDB" : t.status === "assigne_technicien" ? "#FF7A1B" : t.status === "en_cours" ? "#0F1F3D" : t.status === "resolu" ? "#2F9E44" : t.status === "rejete" ? "#991b1b" : "#374151",
                             display: "inline-flex",
                             alignItems: "center",
                             gap: "6px"
                           }}>
                             {t.status === "en_attente_analyse" && <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#0DADDB" }}></div>}
-                            {t.status === "assigne_technicien" && <div style={{ width: "8px", height: "8px", borderRadius: "50%", border: "2px solid #3b82f6" }}></div>}
-                            {t.status === "en_cours" && <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#f97316" }}></div>}
+                            {t.status === "assigne_technicien" && <div style={{ width: "8px", height: "8px", borderRadius: "50%", border: "2px solid #FF7A1B" }}></div>}
+                            {t.status === "en_cours" && <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#0F1F3D" }}></div>}
                             {t.status === "resolu" && <div style={{ width: "8px", height: "8px", borderRadius: "50%", border: "2px solid #6b7280" }}></div>}
                             {t.status === "rejete" && <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#ef4444" }}></div>}
                             {t.status === "cloture" && <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#6b7280" }}></div>}
@@ -2165,8 +2165,8 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                             borderRadius: "12px",
                             fontSize: "12px",
                             fontWeight: "500",
-                            background: t.priority === "critique" ? "rgba(229, 62, 62, 0.1)" : t.priority === "haute" ? "rgba(245, 158, 11, 0.1)" : t.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
-                            color: t.priority === "critique" ? "#E53E3E" : t.priority === "haute" ? "#F59E0B" : t.priority === "moyenne" ? "#0DADDB" : t.priority === "faible" ? "#991b1b" : "#374151"
+                            background: t.priority === "critique" ? "rgba(229, 62, 62, 0.1)" : t.priority === "haute" ? "rgba(245, 158, 11, 0.1)" : t.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : t.priority === "faible" ? "#E5E7EB" : "#e5e7eb",
+                            color: t.priority === "critique" ? "#E53E3E" : t.priority === "haute" ? "#F59E0B" : t.priority === "moyenne" ? "#0DADDB" : t.priority === "faible" ? "#6B7280" : "#374151"
                           }}>
                             {getPriorityLabel(t.priority)}
                           </span>
@@ -2231,11 +2231,6 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
         {/* Section Header with Create Button */}
         {(activeSection === "tickets" || activeSection === "dashboard") && (
           <div ref={ticketsListRef}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-              <h3 style={{ fontSize: "24px", fontWeight: "700", color: "#333" }}>
-                {activeSection === "dashboard" ? "Mes Tickets Récents" : "Mes Tickets"}
-              </h3>
-            </div>
             {(activeSection === "dashboard" || activeSection === "tickets") && (
               <div style={{ 
                 display: "flex", 
@@ -2360,6 +2355,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                     // Couleur de la barre selon la priorité
                     const borderColor = t.priority === "critique" ? "#E53E3E" : 
                                        t.priority === "haute" ? "#F59E0B" : 
+                                       t.priority === "faible" ? "rgba(107, 114, 128, 0.3)" : 
                                        "#0DADDB";
 
                     return (
@@ -2409,12 +2405,12 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                             
                             {/* Badge Statut */}
                             <span style={{
-                              padding: "3px 8px",
+                              padding: t.status === "en_cours" ? "2px 10px" : "3px 8px",
                               borderRadius: "20px",
-                              fontSize: "10px",
+                              fontSize: t.status === "en_cours" ? "12px" : "10px",
                               fontWeight: "500",
-                        background: t.status === "en_attente_analyse" ? "rgba(13, 173, 219, 0.1)" : t.status === "assigne_technicien" ? "rgba(255, 122, 27, 0.1)" : t.status === "en_cours" ? "#fed7aa" : t.status === "resolu" ? "rgba(47, 158, 68, 0.1)" : t.status === "rejete" ? "#fee2e2" : t.status === "cloture" ? "#e5e7eb" : "#e5e7eb",
-                        color: t.status === "en_attente_analyse" ? "#0DADDB" : t.status === "assigne_technicien" ? "#FF7A1B" : t.status === "en_cours" ? "#9a3412" : t.status === "resolu" ? "#2F9E44" : t.status === "rejete" ? "#991b1b" : t.status === "cloture" ? "#374151" : "#374151",
+                        background: t.status === "en_attente_analyse" ? "rgba(13, 173, 219, 0.1)" : t.status === "assigne_technicien" ? "rgba(255, 122, 27, 0.1)" : t.status === "en_cours" ? "rgba(15, 31, 61, 0.1)" : t.status === "resolu" ? "rgba(47, 158, 68, 0.1)" : t.status === "rejete" ? "#fee2e2" : t.status === "cloture" ? "#e5e7eb" : "#e5e7eb",
+                        color: t.status === "en_attente_analyse" ? "#0DADDB" : t.status === "assigne_technicien" ? "#FF7A1B" : t.status === "en_cours" ? "#0F1F3D" : t.status === "resolu" ? "#2F9E44" : t.status === "rejete" ? "#991b1b" : t.status === "cloture" ? "#374151" : "#374151",
                         whiteSpace: "nowrap",
                       }}>
                         {t.status === "en_attente_analyse" ? "En attente d'assignation" :
@@ -2431,8 +2427,8 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                               borderRadius: "20px",
                               fontSize: "10px",
                               fontWeight: "500",
-                              background: t.priority === "critique" ? "rgba(229, 62, 62, 0.1)" : t.priority === "haute" ? "rgba(245, 158, 11, 0.1)" : t.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : t.priority === "faible" ? "#e5e7eb" : "#e5e7eb",
-                              color: t.priority === "critique" ? "#E53E3E" : t.priority === "haute" ? "#F59E0B" : t.priority === "moyenne" ? "#0DADDB" : t.priority === "faible" ? "#374151" : "#374151",
+                              background: t.priority === "critique" ? "rgba(229, 62, 62, 0.1)" : t.priority === "haute" ? "rgba(245, 158, 11, 0.1)" : t.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : t.priority === "faible" ? "#E5E7EB" : "#e5e7eb",
+                              color: t.priority === "critique" ? "#E53E3E" : t.priority === "haute" ? "#F59E0B" : t.priority === "moyenne" ? "#0DADDB" : t.priority === "faible" ? "#6B7280" : "#374151",
                               whiteSpace: "nowrap",
                       }}>
                         {getPriorityLabel(t.priority)}
@@ -2699,8 +2695,8 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                             </div>
 
                             {/* Date relative */}
-                            <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
-                              <span style={{ fontSize: "11px", color: "#9ca3af" }}>⏱</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                              <Clock size={12} color="#9ca3af" />
                               <span style={{ fontSize: "11px", color: "#9ca3af" }}>
                                 {getRelativeTime(t.created_at)}
                               </span>
@@ -3025,8 +3021,8 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                         borderRadius: "4px",
                         fontSize: "12px",
                         fontWeight: "500",
-                        background: selectedNotificationTicketDetails.priority === "critique" ? "#f44336" : selectedNotificationTicketDetails.priority === "haute" ? "rgba(245, 158, 11, 0.1)" : selectedNotificationTicketDetails.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : "#9e9e9e",
-                        color: selectedNotificationTicketDetails.priority === "haute" ? "#F59E0B" : "white"
+                        background: selectedNotificationTicketDetails.priority === "critique" ? "#f44336" : selectedNotificationTicketDetails.priority === "haute" ? "rgba(245, 158, 11, 0.1)" : selectedNotificationTicketDetails.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : selectedNotificationTicketDetails.priority === "faible" ? "#E5E7EB" : "#9e9e9e",
+                        color: selectedNotificationTicketDetails.priority === "critique" ? "#E53E3E" : selectedNotificationTicketDetails.priority === "haute" ? "#F59E0B" : selectedNotificationTicketDetails.priority === "moyenne" ? "#0DADDB" : selectedNotificationTicketDetails.priority === "faible" ? "#6B7280" : "white"
                       }}>
                         {getPriorityLabel(selectedNotificationTicketDetails.priority)}
                       </span>

@@ -5652,27 +5652,27 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                         borderRadius: "20px",
                         fontSize: "12px",
                         fontWeight: "500",
-                        background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "rgba(245, 158, 11, 0.1)" : t.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
-                        color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#F59E0B" : t.priority === "moyenne" ? "#0DADDB" : t.priority === "faible" ? "#991b1b" : "#374151"
+                        background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "rgba(245, 158, 11, 0.1)" : t.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : t.priority === "faible" ? "#E5E7EB" : "#e5e7eb",
+                        color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#F59E0B" : t.priority === "moyenne" ? "#0DADDB" : t.priority === "faible" ? "#6B7280" : "#374151"
                       }}>
                         {getPriorityLabel(t.priority)}
                       </span>
                     </td>
                     <td style={{ padding: "12px 16px" }}>
                       <span style={{
-                        padding: "6px 12px",
-                        borderRadius: "20px",
+                        padding: t.status === "en_cours" ? "2px 10px" : "6px 12px",
+                        borderRadius: t.status === "en_cours" ? "9999px" : "20px",
                         fontSize: "12px",
-                        fontWeight: "500",
+                        fontWeight: t.status === "en_cours" ? "600" : "500",
                         background: t.status === "en_attente_analyse" ? "rgba(13, 173, 219, 0.1)" : 
                                    t.status === "assigne_technicien" ? "#f0f9ff" : 
-                                   t.status === "en_cours" ? "#fed7aa" : 
+                                   t.status === "en_cours" ? "rgba(15, 31, 61, 0.1)" : 
                                    t.status === "resolu" ? "rgba(47, 158, 68, 0.1)" : 
                                    t.status === "cloture" ? "#e5e7eb" :
                                    t.status === "rejete" ? "#fee2e2" : "#e5e7eb",
                         color: t.status === "en_attente_analyse" ? "#0DADDB" : 
                                t.status === "assigne_technicien" ? "#0c4a6e" : 
-                               t.status === "en_cours" ? "#9a3412" : 
+                               t.status === "en_cours" ? "#0F1F3D" : 
                                t.status === "resolu" ? "#2F9E44" : 
                                t.status === "cloture" ? "#374151" :
                                t.status === "rejete" ? "#991b1b" : "#374151",
@@ -6728,27 +6728,27 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                             borderRadius: "20px",
                             fontSize: "12px",
                             fontWeight: "500",
-                            background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "rgba(245, 158, 11, 0.1)" : t.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : t.priority === "faible" ? "#fee2e2" : "#e5e7eb",
-                            color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#F59E0B" : t.priority === "moyenne" ? "#0DADDB" : t.priority === "faible" ? "#991b1b" : "#374151"
+                            background: t.priority === "critique" ? "#fee2e2" : t.priority === "haute" ? "rgba(245, 158, 11, 0.1)" : t.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : t.priority === "faible" ? "#E5E7EB" : "#e5e7eb",
+                            color: t.priority === "critique" ? "#991b1b" : t.priority === "haute" ? "#F59E0B" : t.priority === "moyenne" ? "#0DADDB" : t.priority === "faible" ? "#6B7280" : "#374151"
                           }}>
                             {t.priority}
                           </span>
                         </td>
                         <td style={{ padding: "12px 16px" }}>
                           <span style={{
-                            padding: "6px 12px",
-                            borderRadius: "20px",
+                            padding: t.status === "en_cours" ? "2px 10px" : "6px 12px",
+                            borderRadius: t.status === "en_cours" ? "9999px" : "20px",
                             fontSize: "12px",
-                            fontWeight: "500",
+                            fontWeight: t.status === "en_cours" ? "600" : "500",
                             background: t.status === "en_attente_analyse" ? "rgba(13, 173, 219, 0.1)" : 
                                        t.status === "assigne_technicien" ? "#f0f9ff" : 
-                                       t.status === "en_cours" ? "#fed7aa" : 
+                                       t.status === "en_cours" ? "rgba(15, 31, 61, 0.1)" : 
                                        t.status === "resolu" ? "#d4edda" : 
                                        t.status === "cloture" ? "#e5e7eb" :
                                        t.status === "rejete" ? "#fee2e2" : "#e5e7eb",
                             color: t.status === "en_attente_analyse" ? "#0DADDB" : 
                                    t.status === "assigne_technicien" ? "#0c4a6e" : 
-                                   t.status === "en_cours" ? "#9a3412" : 
+                                   t.status === "en_cours" ? "#0F1F3D" : 
                                    t.status === "resolu" ? "#155724" : 
                                    t.status === "cloture" ? "#374151" :
                                    t.status === "rejete" ? "#991b1b" : "#374151",

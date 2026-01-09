@@ -3957,25 +3957,25 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                     borderRadius: "20px",
                     fontSize: "12px",
                     fontWeight: "500",
-                    background: t.priority === "critique" ? "rgba(229, 62, 62, 0.1)" : t.priority === "haute" ? "rgba(245, 158, 11, 0.1)" : t.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : t.priority === "faible" ? "#fee2e2" : "#9e9e9e",
-                    color: t.priority === "critique" ? "#E53E3E" : t.priority === "haute" ? "#F59E0B" : t.priority === "faible" ? "#991b1b" : t.priority === "moyenne" ? "#0DADDB" : "#374151"
+                    background: t.priority === "critique" ? "rgba(229, 62, 62, 0.1)" : t.priority === "haute" ? "rgba(245, 158, 11, 0.1)" : t.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : t.priority === "faible" ? "#E5E7EB" : "#9e9e9e",
+                    color: t.priority === "critique" ? "#E53E3E" : t.priority === "haute" ? "#F59E0B" : t.priority === "faible" ? "#6B7280" : t.priority === "moyenne" ? "#0DADDB" : "#374151"
                   }}>
                     {getPriorityLabel(t.priority)}
                   </span>
                 </td>
                 <td style={{ padding: "12px 16px" }}>
                   <span style={{
-                    padding: "6px 12px",
+                    padding: t.status === "en_cours" ? "2px 10px" : "6px 12px",
                     borderRadius: "20px",
                     fontSize: "12px",
                     fontWeight: "500",
                     background: t.status === "en_attente_analyse" ? "rgba(13, 173, 219, 0.1)" : 
                                t.status === "assigne_technicien" ? "rgba(255, 122, 27, 0.1)" : 
-                               t.status === "en_cours" ? "#FFDAB9" : 
+                               t.status === "en_cours" ? "rgba(15, 31, 61, 0.1)" : 
                                t.status === "resolu" ? "rgba(47, 158, 68, 0.1)" : 
                                t.status === "cloture" ? "#e5e7eb" :
                                t.status === "rejete" ? "#fee2e2" : "#e0e0e0",
-                    color: t.status === "resolu" ? "#2F9E44" : t.status === "en_attente_analyse" ? "#0DADDB" : t.status === "en_cours" ? "#8B4513" : t.status === "cloture" ? "#374151" : t.status === "rejete" ? "#991b1b" : t.status === "assigne_technicien" ? "#FF7A1B" : "white",
+                    color: t.status === "resolu" ? "#2F9E44" : t.status === "en_attente_analyse" ? "#0DADDB" : t.status === "en_cours" ? "#0F1F3D" : t.status === "cloture" ? "#374151" : t.status === "rejete" ? "#991b1b" : t.status === "assigne_technicien" ? "#FF7A1B" : "white",
                     whiteSpace: "nowrap",
                     display: "inline-block"
                   }}>
@@ -4987,8 +4987,8 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                             borderRadius: "20px",
                             fontSize: "12px",
                             fontWeight: "500",
-                            background: t.priority === "critique" ? "rgba(229, 62, 62, 0.1)" : t.priority === "haute" ? "rgba(245, 158, 11, 0.1)" : t.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : t.priority === "faible" ? "#fee2e2" : "#9e9e9e",
-                            color: t.priority === "critique" ? "#E53E3E" : t.priority === "haute" ? "#F59E0B" : t.priority === "faible" ? "#991b1b" : t.priority === "moyenne" ? "#0DADDB" : "#374151"
+                            background: t.priority === "critique" ? "rgba(229, 62, 62, 0.1)" : t.priority === "haute" ? "rgba(245, 158, 11, 0.1)" : t.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : t.priority === "faible" ? "#E5E7EB" : "#9e9e9e",
+                            color: t.priority === "critique" ? "#E53E3E" : t.priority === "haute" ? "#F59E0B" : t.priority === "faible" ? "#6B7280" : t.priority === "moyenne" ? "#0DADDB" : "#374151"
                           }}>
                             {t.priority}
                           </span>
@@ -5901,8 +5901,8 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                   borderRadius: "20px",
                   fontSize: "12px",
                   fontWeight: "500",
-                  background: ticketDetails.priority === "critique" ? "rgba(229, 62, 62, 0.1)" : ticketDetails.priority === "haute" ? "rgba(245, 158, 11, 0.1)" : ticketDetails.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : ticketDetails.priority === "faible" ? "#fee2e2" : "#9e9e9e",
-                  color: ticketDetails.priority === "critique" ? "#E53E3E" : ticketDetails.priority === "haute" ? "#F59E0B" : ticketDetails.priority === "faible" ? "#991b1b" : ticketDetails.priority === "moyenne" ? "#0DADDB" : "#374151"
+                  background: ticketDetails.priority === "critique" ? "rgba(229, 62, 62, 0.1)" : ticketDetails.priority === "haute" ? "rgba(245, 158, 11, 0.1)" : ticketDetails.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : ticketDetails.priority === "faible" ? "#E5E7EB" : "#9e9e9e",
+                  color: ticketDetails.priority === "critique" ? "#E53E3E" : ticketDetails.priority === "haute" ? "#F59E0B" : ticketDetails.priority === "faible" ? "#6B7280" : ticketDetails.priority === "moyenne" ? "#0DADDB" : "#374151"
                 }}>
                   {getPriorityLabel(ticketDetails.priority)}
                 </span>
