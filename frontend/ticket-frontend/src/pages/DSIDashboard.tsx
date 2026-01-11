@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Users, Clock3, TrendingUp, Award, UserCheck, Star, LayoutDashboard, ChevronLeft, ChevronRight, Bell, BarChart3, Search } from "lucide-react";
+import { Users, Clock3, TrendingUp, Award, UserCheck, Star, LayoutDashboard, ChevronLeft, ChevronRight, Bell, BarChart3, Search, Ticket } from "lucide-react";
 import React from "react";
 import helpdeskLogo from "../assets/helpdesk-logo.png";
 import jsPDF from "jspdf";
@@ -7083,6 +7083,23 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                     </select>
                   </div>
                 )}
+              </div>
+              
+              {/* Compteur de tickets avec icône */}
+              <div style={{ 
+                display: "flex", 
+                alignItems: "center", 
+                gap: "8px",
+                marginBottom: "16px"
+              }}>
+                <Ticket size={20} color="#4b5563" />
+                <span style={{ 
+                  fontSize: "14px", 
+                  fontWeight: "500", 
+                  color: "#4b5563"
+                }}>
+                  {filteredTickets.length} ticket(s) trouvé(s)
+                </span>
               </div>
               
               {/* Tickets Cards */}
