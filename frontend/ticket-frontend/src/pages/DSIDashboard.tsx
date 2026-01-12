@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams, useLocation, useNavigate } from "react-router-dom";
-import { Users, Clock3, TrendingUp, Award, UserCheck, Star, LayoutDashboard, ChevronLeft, ChevronRight, Bell, BarChart3, Search, Ticket } from "lucide-react";
+import { Users, Clock3, TrendingUp, Award, UserCheck, Star, LayoutDashboard, ChevronLeft, ChevronRight, Bell, BarChart3, Search, Ticket, Wrench, CheckCircle2, AlertTriangle, Clock, Briefcase } from "lucide-react";
 import React from "react";
 import helpdeskLogo from "../assets/helpdesk-logo.png";
 import jsPDF from "jspdf";
@@ -9349,566 +9349,449 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
 
           {activeSection === "technicians" && userRole !== "Admin" && (
             <div style={{ padding: "24px" }}>
-              <div style={{ marginBottom: "24px" }}>
-                <h2
-                  style={{
-                    fontSize: "28px",
-                    fontWeight: 700,
-                    color: "#111827",
-                    margin: 0,
-                  }}
-                >
-                  Équipe Technique 👥
-                </h2>
-                <p
-                  style={{
-                    marginTop: "4px",
-                    marginBottom: 0,
-                    fontSize: "14px",
-                    color: "#4b5563",
-                  }}
-                >
-                  Gérez votre équipe de techniciens et suivez leurs performances.
-                </p>
-              </div>
-
-              {/* Cartes de synthèse pour l'équipe technique */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(4, minmax(220px, 1fr))",
-                  gap: "16px",
-                  marginBottom: "24px",
-                }}
-              >
-                {/* Techniciens actifs */}
-                <div
-                  style={{
-                    background: "#ffffff",
-                    borderRadius: "16px",
-                    padding: "20px 24px",
-                    boxShadow: "0 2px 8px rgba(15,23,42,0.06)",
+              {/* Deux panneaux côte à côte */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+                {/* Panneau gauche : Membres de l'équipe DSI */}
+                <div style={{
+                  background: "hsl(0, 0%, 100%)",
+                  borderRadius: "8px",
+                  border: "1px solid hsla(220, 20%, 92%, 0.5)",
+                  padding: "16px",
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "fit-content"
+                }}>
+                  {/* Header */}
+                  <div style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "16px",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "48px",
-                      height: "48px",
-                      borderRadius: "16px",
-                      background: "#dcfce7",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Users size={24} color="#16a34a" />
+                    justifyContent: "space-between",
+                    paddingBottom: "12px",
+                    borderBottom: "1px solid hsla(220, 20%, 92%, 0.5)"
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <Users size={20} color="hsl(25, 95%, 53%)" />
+                      <h3 style={{
+                        fontSize: "16px",
+                        fontWeight: 500,
+                        color: "#111827",
+                        margin: 0,
+                        fontFamily: "'Inter', system-ui, sans-serif"
+                      }}>
+                        Membres de l'équipe DSI
+                      </h3>
+                    </div>
+                    {(() => {
+                      // Récupérer les membres DSI et Adjoint DSI depuis allUsers
+                      const dsiAndAdjointMembers = allUsers.filter((user: any) => 
+                        user.role?.name === "DSI" || 
+                        user.role?.name === "Adjoint DSI"
+                      );
+                      
+                      // Compter tous les membres (DSI + Adjoint DSI + Techniciens)
+                      const totalMembers = dsiAndAdjointMembers.length + technicians.length;
+                      
+                      return (
+                        <div style={{
+                          width: "24px",
+                          height: "24px",
+                          borderRadius: "50%",
+                          background: "hsl(25, 95%, 53%)",
+                          color: "white",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          marginLeft: "auto"
+                        }}>
+                          {totalMembers}
+                        </div>
+                      );
+                    })()}
                   </div>
-                  <div>
-                    <div
-                      style={{
-                        fontSize: "24px",
-                        fontWeight: 700,
-                        color: "#0f172a",
-                      }}
-                    >
-                      {activeTechniciansCount}
-                    </div>
-                    <div style={{ fontSize: "14px", color: "#6b7280" }}>
-                      Techniciens actifs
-                    </div>
+
+                  {/* Liste des membres */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginTop: "12px" }}>
+                    {(() => {
+                      // Récupérer les membres DSI et Adjoint DSI depuis allUsers
+                      const dsiAndAdjointMembers = allUsers.filter((user: any) => 
+                        user.role?.name === "DSI" || 
+                        user.role?.name === "Adjoint DSI"
+                      );
+                      
+                      // Récupérer tous les techniciens depuis la liste technicians
+                      // et les convertir au format attendu avec le rôle "Support Technique"
+                      const technicianMembers = technicians.map((tech: any) => ({
+                        ...tech,
+                        role: { name: "Support Technique" }
+                      }));
+                      
+                      // Combiner les deux listes
+                      const allTeamMembers = [...dsiAndAdjointMembers, ...technicianMembers];
+                      
+                      if (allTeamMembers.length === 0) {
+                        return (
+                          <div style={{ padding: "20px", textAlign: "center", color: "hsl(220, 15%, 45%)" }}>
+                            Aucun membre trouvé
+                          </div>
+                        );
+                      }
+
+                      return allTeamMembers.map((member: any) => {
+                        const initials = member.full_name
+                          ?.split(" ")
+                          .map((n: string) => n[0])
+                          .join("")
+                          .toUpperCase()
+                          .substring(0, 2) || "??";
+                        
+                        const roleName = member.role?.name || "";
+                        const isTechnician = roleName === "Support Technique";
+                        
+                        return (
+                          <div
+                            key={member.id}
+                            style={{
+                              padding: "12px",
+                              borderRadius: "8px",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "12px",
+                              cursor: "pointer",
+                              transition: "all 200ms",
+                              border: "1px solid transparent"
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.borderColor = "hsla(220, 20%, 92%, 0.5)";
+                              e.currentTarget.style.background = "hsla(220, 20%, 92%, 0.5)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.borderColor = "transparent";
+                              e.currentTarget.style.background = "transparent";
+                            }}
+                          >
+                            {/* Avatar */}
+                            <div style={{
+                              width: "40px",
+                              height: "40px",
+                              borderRadius: "50%",
+                              background: "hsla(25, 95%, 53%, 0.1)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: "hsl(25, 95%, 53%)",
+                              fontSize: "14px",
+                              fontWeight: 600,
+                              flexShrink: 0
+                            }}>
+                              {initials}
+                            </div>
+                            
+                            {/* Infos */}
+                            <div style={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
+                              <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1, minWidth: 0 }}>
+                                <div style={{
+                                  fontSize: "14px",
+                                  fontWeight: 500,
+                                  color: "#111827"
+                                }}>
+                                  {member.full_name}
+                                </div>
+                                {(roleName === "DSI" || roleName === "Adjoint DSI" || roleName === "Support Technique") && (
+                                  <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                                    <Briefcase size={12} color="#6B7280" />
+                                    <span style={{
+                                      fontSize: "12px",
+                                      color: "#6B7280"
+                                    }}>
+                                      {roleName === "Adjoint DSI" ? "DSI" : roleName}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                              <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+                                {roleName === "DSI" && (
+                                  <span style={{
+                                    padding: "2px 8px",
+                                    borderRadius: "4px",
+                                    fontSize: "12px",
+                                    fontWeight: 500,
+                                    background: "hsla(25, 95%, 53%, 0.1)",
+                                    color: "hsl(25, 95%, 53%)",
+                                    border: "none"
+                                  }}>
+                                    DSI
+                                  </span>
+                                )}
+                                {roleName === "Adjoint DSI" && (
+                                  <span style={{
+                                    padding: "2px 8px",
+                                    borderRadius: "4px",
+                                    fontSize: "12px",
+                                    fontWeight: 500,
+                                    background: "hsla(220, 60%, 15%, 0.1)",
+                                    color: "hsl(220, 60%, 15%)",
+                                    border: "none"
+                                  }}>
+                                    Adjoint DSI
+                                  </span>
+                                )}
+                                {isTechnician && (
+                                  <span style={{
+                                    padding: "2px 8px",
+                                    borderRadius: "4px",
+                                    fontSize: "12px",
+                                    fontWeight: 500,
+                                    background: "hsla(142, 76%, 36%, 0.1)",
+                                    color: "hsl(142, 76%, 36%)",
+                                    border: "none"
+                                  }}>
+                                    Technicien
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
                   </div>
                 </div>
 
-                {/* Tickets en cours */}
-                <div
-                  style={{
-                    background: "#ffffff",
-                    borderRadius: "16px",
-                    padding: "20px 24px",
-                    boxShadow: "0 2px 8px rgba(15,23,42,0.06)",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "16px",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "48px",
-                      height: "48px",
-                      borderRadius: "16px",
-                      background: "#dbeafe",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Clock3 size={24} color="#2563eb" />
-                  </div>
-                  <div>
-                    <div
-                      style={{
-                        fontSize: "24px",
-                        fontWeight: 700,
-                        color: "#0f172a",
-                      }}
-                    >
-                      {ticketsInProgressCount}
-                    </div>
-                    <div style={{ fontSize: "14px", color: "#6b7280" }}>
-                      Tickets en cours
-                    </div>
-                  </div>
-                </div>
-
-                {/* Taux de résolution */}
-                <div
-                  style={{
-                    background: "#ffffff",
-                    borderRadius: "16px",
-                    padding: "20px 24px",
-                    boxShadow: "0 2px 8px rgba(15,23,42,0.06)",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "16px",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "48px",
-                      height: "48px",
-                      borderRadius: "16px",
-                      background: "#ede9fe",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <TrendingUp size={24} color="#7c3aed" />
-                  </div>
-                  <div>
-                    <div
-                      style={{
-                        fontSize: "24px",
-                        fontWeight: 700,
-                        color: "#0f172a",
-                      }}
-                    >
-                      {resolutionRateForTechnicians}
-                    </div>
-                    <div style={{ fontSize: "14px", color: "#6b7280" }}>
-                      Taux de résolution
-                    </div>
-                  </div>
-                </div>
-
-                {/* Satisfaction moyenne */}
-                <div
-                  style={{
-                    background: "#ffffff",
-                    borderRadius: "16px",
-                    padding: "20px 24px",
-                    boxShadow: "0 2px 8px rgba(15,23,42,0.06)",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "16px",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "48px",
-                      height: "48px",
-                      borderRadius: "16px",
-                      background: "#fef9c3",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Award size={24} color="#eab308" />
-                  </div>
-                  <div>
-                    <div
-                      style={{
-                        fontSize: "24px",
-                        fontWeight: 700,
-                        color: "#0f172a",
-                      }}
-                    >
-                      {averageSatisfactionForTechniciansPercentage}%
-                    </div>
-                    <div style={{ fontSize: "14px", color: "#6b7280" }}>
-                      Satisfaction moyenne
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Barre de recherche et filtres */}
-              <div style={{ 
-                background: "white", 
-                borderRadius: "8px", 
-                padding: "16px", 
-                marginBottom: "20px",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
-              }}>
-                {/* Ligne 1 : recherche */}
-                <div style={{ 
-                display: "flex",
-                gap: "12px",
-                alignItems: "center",
-                  flexWrap: "wrap",
-                  marginBottom: "12px"
-              }}>
-                <div style={{ flex: 1, minWidth: "200px" }}>
-                  <input
-                    type="text"
-                    placeholder="Rechercher par nom ou email..."
-                    value={techSearchQuery}
-                    onChange={(e) => setTechSearchQuery(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "8px 12px",
-                      border: "1px solid #ddd",
-                      borderRadius: "4px",
-                      fontSize: "14px"
-                    }}
-                  />
-                  </div>
-                </div>
-                
-                {/* Ligne 2 : filtre en liste déroulante */}
-                <div
-                  style={{
+                {/* Panneau droit : Techniciens */}
+                <div style={{
+                  background: "hsl(0, 0%, 100%)",
+                  borderRadius: "8px",
+                  border: "1px solid hsla(220, 20%, 92%, 0.5)",
+                  padding: "16px",
+                  display: "flex",
+                  flexDirection: "column"
+                }}>
+                  {/* Header */}
+                  <div style={{
                     display: "flex",
                     alignItems: "center",
                     gap: "8px",
-                    marginTop: "4px",
-                  }}
-                >
-                  <span style={{ fontSize: "14px", color: "#6b7280" }}>Filtre :</span>
-                  <select
-                    value={
-                      techSpecializationFilter !== "all"
-                        ? techSpecializationFilter
-                        : techAvailabilityFilter !== "all"
-                        ? techAvailabilityFilter
-                        : "all"
-                    }
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value === "all") {
-                        setTechSpecializationFilter("all");
-                        setTechAvailabilityFilter("all");
-                      } else if (value === "materiel" || value === "applicatif") {
-                        setTechSpecializationFilter(value);
-                        setTechAvailabilityFilter("all");
-                      } else {
-                        setTechAvailabilityFilter(value);
-                        setTechSpecializationFilter("all");
-                      }
-                    }}
-                    style={{
-                      minWidth: "220px",
-                      padding: "8px 12px",
-                      borderRadius: "4px",
-                      border: "1px solid #ddd",
-                      fontSize: "14px",
-                      background: "white",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <option value="all">Tous</option>
-                    <option value="materiel">Matériel</option>
-                    <option value="applicatif">Applicatif</option>
-                    <option value="disponible">Disponible</option>
-                    <option value="en pause">En pause</option>
-                    <option value="occupé">Occupé</option>
-                    <option value="indisponible">Indisponible</option>
-                  </select>
-                </div>
-              </div>
-               
-               {/* Grille de cartes des techniciens */}
-               {(() => {
-                 // Filtrer les techniciens
-                 let filteredTechnicians = technicians;
-                 
-                 // Filtre par recherche
-                 if (techSearchQuery) {
-                   const query = techSearchQuery.toLowerCase();
-                   filteredTechnicians = filteredTechnicians.filter((tech: any) =>
-                     tech.full_name?.toLowerCase().includes(query) ||
-                     tech.email?.toLowerCase().includes(query)
-                   );
-                 }
-                 
-                 // Filtre par spécialisation
-                 if (techSpecializationFilter !== "all") {
-                   filteredTechnicians = filteredTechnicians.filter((tech: any) =>
-                     tech.specialization === techSpecializationFilter
-                   );
-                 }
+                    marginBottom: "16px"
+                  }}>
+                    <Wrench size={18} color="hsl(25, 95%, 53%)" />
+                    <h3 style={{
+                      fontSize: "18px",
+                      fontWeight: 600,
+                      color: "#111827",
+                      margin: 0,
+                      fontFamily: "'Inter', system-ui, sans-serif"
+                    }}>
+                      Techniciens
+                    </h3>
+                  </div>
 
-                 // Filtre par disponibilité
-                 if (techAvailabilityFilter !== "all") {
-                   filteredTechnicians = filteredTechnicians.filter((tech: any) =>
-                     (tech.actif === true ? "disponible" : "indisponible") === techAvailabilityFilter
-                   );
-                 }
-                 
-                 if (filteredTechnicians.length === 0) {
-                   return (
-                     <div style={{ 
-                       background: "white", 
-                       borderRadius: "8px", 
-                       padding: "40px", 
-                       textAlign: "center", 
-                       color: "#999",
-                       boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
-                     }}>
-                       Aucun technicien trouvé
-                     </div>
-                   );
-                 }
-                 
-                 return (
-                   <div style={{ 
-                     display: "grid", 
-                     gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", 
-                     gap: "24px" 
-                   }}>
-                     {filteredTechnicians.map((tech: any) => {
-                       // Obtenir les initiales
-                       const initials = tech.full_name
-                         .split(" ")
-                         .map((n: string) => n[0])
-                         .join("")
-                         .toUpperCase()
-                         .substring(0, 2);
-                       
-                       // Déterminer le statut de disponibilité basé sur les horaires
-                       const currentStatus = getAvailabilityStatus(tech);
-                       
-                       // Couleur de l'avatar basée sur la spécialisation
-                       const avatarColor = tech.specialization === "materiel" ? "#ffc107" : "#28a745";
-                       
-                       // Compétences basées sur la spécialisation
-                       const skills = tech.specialization === "materiel" 
-                         ? ["Hardware", "Imprimantes", "Téléphonie"]
-                         : ["Réseau", "Logiciel", "Applications"];
-                       
-                       return (
-                         <div
-                           key={tech.id}
-                           style={{
-                             background: "white",
-                             borderRadius: "12px",
-                             padding: "20px",
-                             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                             display: "flex",
-                             flexDirection: "column",
-                             gap: "16px"
-                           }}
-                         >
-                           {/* En-tête avec avatar et titre */}
-                           <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
-                             <div style={{
-                               width: "60px",
-                               height: "60px",
-                               borderRadius: "50%",
-                               background: avatarColor,
-                               display: "flex",
-                               alignItems: "center",
-                               justifyContent: "center",
-                               color: "white",
-                               fontSize: "20px",
-                               fontWeight: "700",
-                               flexShrink: 0
-                             }}>
-                               {initials}
-                             </div>
-                             <div style={{ flex: 1 }}>
-                              <div style={{ fontSize: "18px", fontWeight: "700", color: "#333", marginBottom: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
-                                {tech.full_name}
-                                <span
-                                  style={{
-                                    padding: "2px 8px",
-                                    borderRadius: "8px",
-                                    fontSize: "12px",
-                                    fontWeight: "500",
-                                    background: currentStatus === "actif" ? "#d4edda" : "#f8d7da",
-                                    color: currentStatus === "actif" ? "#155724" : "#721c24",
-                                  }}
-                                >
-                                  {currentStatus === "actif" ? "Actif" : "Inactif"}
+                  {/* Liste des techniciens */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                    {technicians.length === 0 ? (
+                      <div style={{ padding: "20px", textAlign: "center", color: "hsl(220, 15%, 45%)" }}>
+                        Aucun technicien trouvé
+                      </div>
+                    ) : (
+                      technicians.map((tech: any) => {
+                        const initials = tech.full_name
+                          ?.split(" ")
+                          .map((n: string) => n[0])
+                          .join("")
+                          .toUpperCase()
+                          .substring(0, 2) || "??";
+                        
+                        // Calculer les tickets relancés (par défaut 0 si non disponible)
+                        const reopenedCount = 0; // À calculer depuis l'historique si nécessaire
+                        
+                        return (
+                          <div
+                            key={tech.id}
+                            style={{
+                              border: "1px solid hsla(220, 20%, 92%, 0.5)",
+                              borderRadius: "8px",
+                              padding: "16px",
+                              transition: "all 200ms",
+                              cursor: "pointer"
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.borderColor = "hsla(25, 95%, 53%, 0.5)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.borderColor = "hsla(220, 20%, 92%, 0.5)";
+                            }}
+                          >
+                            {/* En-tête avec avatar et infos */}
+                            <div style={{ display: "flex", gap: "16px", marginBottom: "12px" }}>
+                              {/* Avatar */}
+                              <div style={{
+                                width: "48px",
+                                height: "48px",
+                                borderRadius: "50%",
+                                background: "hsla(25, 95%, 53%, 0.1)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: "hsl(25, 95%, 53%)",
+                                fontSize: "18px",
+                                fontWeight: 600,
+                                flexShrink: 0
+                              }}>
+                                {initials}
+                              </div>
+                              
+                              {/* Infos */}
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{
+                                  fontSize: "16px",
+                                  fontWeight: 600,
+                                  color: "#111827",
+                                  marginBottom: "4px"
+                                }}>
+                                  {tech.full_name}
+                                </div>
+                                <div style={{
+                                  fontSize: "14px",
+                                  color: "hsl(220, 15%, 45%)",
+                                  marginBottom: "12px"
+                                }}>
+                                  {tech.email}
+                                </div>
+                                
+                                {/* Badge spécialisation */}
+                                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                                  {tech.specialization === "materiel" ? (
+                                    <>
+                                      <Wrench size={12} color="hsl(220, 15%, 45%)" />
+                                      <span style={{
+                                        padding: "2px 8px",
+                                        borderRadius: "4px",
+                                        fontSize: "12px",
+                                        border: "1px solid hsla(220, 20%, 92%, 0.5)",
+                                        color: "hsl(220, 15%, 45%)"
+                                      }}>
+                                        Matériel
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="hsl(220, 15%, 45%)" strokeWidth="2">
+                                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                                      </svg>
+                                      <span style={{
+                                        padding: "2px 8px",
+                                        borderRadius: "4px",
+                                        fontSize: "12px",
+                                        border: "1px solid hsla(220, 20%, 92%, 0.5)",
+                                        color: "hsl(220, 15%, 45%)"
+                                      }}>
+                                        Applicatif
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Statistiques */}
+                            <div style={{
+                              display: "grid",
+                              gridTemplateColumns: "repeat(4, 1fr)",
+                              gap: "8px",
+                              marginTop: "12px"
+                            }}>
+                              {/* En cours */}
+                              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                                  <Clock size={12} color="hsl(199, 89%, 48%)" />
+                                  <span style={{
+                                    fontSize: "14px",
+                                    fontWeight: 600,
+                                    color: "hsl(199, 89%, 48%)"
+                                  }}>
+                                    {tech.in_progress_tickets_count || 0}
+                                  </span>
+                                </div>
+                                <span style={{
+                                  fontSize: "12px",
+                                  color: "hsl(220, 15%, 45%)"
+                                }}>
+                                  En cours
                                 </span>
                               </div>
-                               <span style={{
-                                 padding: "4px 10px",
-                                 borderRadius: "12px",
-                                 fontSize: "12px",
-                                 fontWeight: "500",
-                                 background: tech.specialization === "materiel" ? "#fff3cd" : "#d1ecf1",
-                                 color: tech.specialization === "materiel" ? "#856404" : "#0c5460"
-                               }}>
-                                 {tech.specialization === "materiel" ? "Matériel" : "Applicatif"}
-                               </span>
-                             </div>
-                           </div>
-                           
-                           {/* Statistiques visuelles */}
-                           <div style={{ 
-                             display: "grid", 
-                             gridTemplateColumns: "repeat(3, 1fr)", 
-                             gap: "12px",
-                             padding: "16px",
-                             background: "#f8f9fa",
-                             borderRadius: "8px"
-                           }}>
-                             <div style={{ textAlign: "center" }}>
-                               <div style={{ fontSize: "24px", fontWeight: "700", color: "#007bff", marginBottom: "4px" }}>
-                                 {tech.in_progress_tickets_count || 0}
-                               </div>
-                               <div style={{ fontSize: "12px", color: "#666" }}>En cours</div>
-                             </div>
-                             <div style={{ textAlign: "center" }}>
-                               <div style={{ fontSize: "24px", fontWeight: "700", color: "#28a745", marginBottom: "4px" }}>
-                                 {tech.closed_tickets_count || 0}
-                               </div>
-                               <div style={{ fontSize: "12px", color: "#666" }}>Résolus</div>
-                             </div>
-                             <div style={{ textAlign: "center" }}>
-                               <div style={{ fontSize: "24px", fontWeight: "700", color: "#007bff", marginBottom: "4px" }}>
-                                 {tech.resolved_today || 0}
-                               </div>
-                               <div style={{ fontSize: "12px", color: "#666" }}>Aujourd'hui</div>
-                             </div>
-                           </div>
-                           
-                           {/* Temps de réponse moyen et Charge de travail */}
-                           <div style={{ 
-                             display: "flex", 
-                             justifyContent: "space-between",
-                             padding: "12px",
-                             background: "#f8f9fa",
-                             borderRadius: "8px"
-                           }}>
-                             <div>
-                               <div style={{ fontSize: "12px", color: "#666", marginBottom: "4px" }}>Temps de réponse moyen</div>
-                               <div style={{ fontSize: "18px", fontWeight: "700", color: "#333" }}>
-                                 {tech.avg_response_time_minutes || 0} min
-                               </div>
-                             </div>
-                             <div style={{ textAlign: "right" }}>
-                               <div style={{ fontSize: "12px", color: "#666", marginBottom: "4px" }}>Charge de travail</div>
-                               <div style={{ fontSize: "18px", fontWeight: "700", color: "#ffc107" }}>
-                                 {tech.workload_ratio || "0/5"}
-                               </div>
-                             </div>
-                           </div>
-                           
-                           {/* Contact */}
-                           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                             <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#666", fontSize: "14px" }}>
-                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                                 <polyline points="22,6 12,13 2,6" />
-                               </svg>
-                               <span>{tech.email}</span>
-                             </div>
-                             {tech.phone && (
-                               <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#666", fontSize: "14px" }}>
-                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                   <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                                 </svg>
-                                 <span>{tech.phone}</span>
-                               </div>
-                             )}
-                           </div>
-                           
-                           {/* Compétences */}
-                           <div>
-                             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                               {skills.map((skill: string, index: number) => (
-                                 <span
-                                   key={index}
-                                   style={{
-                                     padding: "4px 10px",
-                                     borderRadius: "12px",
-                                     fontSize: "12px",
-                                     fontWeight: "500",
-                                     background: "#e3f2fd",
-                                     color: "#1565c0"
-                                   }}
-                                 >
-                                   {skill}
-                                 </span>
-                               ))}
-                             </div>
-                           </div>
-                           
-                           {/* Actions */}
-                           <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-                             <button
-                               onClick={async () => {
-                                 setLoadingTechnicianStats(true);
-                                 try {
-                                   const res = await fetch(`http://localhost:8000/users/technicians/${tech.id}/stats`, {
-                                     headers: {
-                                       Authorization: `Bearer ${token}`,
-                                     },
-                                   });
-                                   if (res.ok) {
-                                     const stats = await res.json();
-                                     setSelectedTechnicianDetails({ ...tech, ...stats });
-                                     setShowTechnicianDetailsModal(true);
-                                   } else {
-                                     setSelectedTechnicianDetails(tech);
-                                     setShowTechnicianDetailsModal(true);
-                                   }
-                                 } catch (err) {
-                                   console.error("Erreur:", err);
-                                   setSelectedTechnicianDetails(tech);
-                                   setShowTechnicianDetailsModal(true);
-                                 } finally {
-                                   setLoadingTechnicianStats(false);
-                                 }
-                               }}
-                               style={{
-                                 flex: 1,
-                                 padding: "8px 12px",
-                                 background: "white",
-                                 border: "1px solid #007bff",
-                                 borderRadius: "6px",
-                                 color: "#007bff",
-                                 cursor: "pointer",
-                                 fontSize: "14px",
-                                 fontWeight: "500",
-                                 display: "flex",
-                                 alignItems: "center",
-                                 justifyContent: "center",
-                                 gap: "6px"
-                               }}
-                             >
-                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                 <circle cx="12" cy="12" r="3" />
-                               </svg>
-                               Voir Profil
-                             </button>
-                            {/* Boutons Modifier/Supprimer masqués pour DSI et rôles non-admin */}
+
+                              {/* Assignés */}
+                              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                                  <Wrench size={12} color="hsl(25, 95%, 53%)" />
+                                  <span style={{
+                                    fontSize: "14px",
+                                    fontWeight: 600,
+                                    color: "hsl(25, 95%, 53%)"
+                                  }}>
+                                    {tech.assigned_tickets_count || 0}
+                                  </span>
+                                </div>
+                                <span style={{
+                                  fontSize: "12px",
+                                  color: "hsl(220, 15%, 45%)"
+                                }}>
+                                  Assignés
+                                </span>
+                              </div>
+
+                              {/* Résolus */}
+                              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                                  <CheckCircle2 size={12} color="hsl(142, 76%, 36%)" />
+                                  <span style={{
+                                    fontSize: "14px",
+                                    fontWeight: 600,
+                                    color: "hsl(142, 76%, 36%)"
+                                  }}>
+                                    {tech.resolved_tickets_count || tech.closed_tickets_count || 0}
+                                  </span>
+                                </div>
+                                <span style={{
+                                  fontSize: "12px",
+                                  color: "hsl(220, 15%, 45%)"
+                                }}>
+                                  Résolus
+                                </span>
+                              </div>
+
+                              {/* Relancés */}
+                              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                                  <AlertTriangle size={12} color="hsl(0, 84%, 60%)" />
+                                  <span style={{
+                                    fontSize: "14px",
+                                    fontWeight: 600,
+                                    color: "hsl(0, 84%, 60%)"
+                                  }}>
+                                    {reopenedCount}
+                                  </span>
+                                </div>
+                                <span style={{
+                                  fontSize: "12px",
+                                  color: "hsl(220, 15%, 45%)"
+                                }}>
+                                  Relancés
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                         </div>
-                       );
-                     })}
-                   </div>
-                 );
-               })()}
-             </div>
-           )}
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
            {/* Modal de détails du technicien */}
            {showTechnicianDetailsModal && selectedTechnicianDetails && (
