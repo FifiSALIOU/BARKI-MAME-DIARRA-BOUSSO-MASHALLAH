@@ -7594,116 +7594,144 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                 <>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", marginTop: "32px" }}>
                   {/* Graphique 1: Tickets cette semaine */}
-                  <div style={{ background: "white", padding: "24px", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", display: "flex", flexDirection: "column" }}>
-                    <h3 style={{ marginBottom: "16px", fontSize: "16px", fontWeight: "600", color: "#333" }}>
-                      Tickets cette semaine
-                    </h3>
-                    <ResponsiveContainer width="100%" height={320} style={{ flex: 1 }}>
-                      <BarChart
-                        data={prepareWeeklyTicketsData()}
-                        margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-                        barCategoryGap="20%"
-                      >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                        <XAxis 
-                          dataKey="jour" 
-                          stroke="#6b7280" 
-                          style={{ fontSize: "12px" }}
-                          height={60}
-                        />
-                        <YAxis 
-                          stroke="#6b7280" 
-                          style={{ fontSize: "12px" }}
-                          domain={[0, 16]}
-                          ticks={[0, 4, 8, 12, 16]}
-                        />
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: "white", 
-                            border: "1px solid #e5e7eb", 
-                            borderRadius: "8px",
-                            boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
-                          }}
-                        />
-                        <Legend />
-                        <Bar 
-                          dataKey="Créés" 
-                          fill="#FF9500"
-                          radius={[4, 4, 0, 0]}
-                          barSize={30}
-                        />
-                        <Bar 
-                          dataKey="Résolus" 
-                          fill="#22C55E"
-                          radius={[4, 4, 0, 0]}
-                          barSize={30}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
+                  <div style={{ 
+                    background: "white", 
+                    borderRadius: "8px", 
+                    border: "1px solid rgba(229, 231, 235, 0.5)", 
+                    boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)", 
+                    display: "flex", 
+                    flexDirection: "column" 
+                  }}>
+                    {/* CardHeader */}
+                    <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                      <h3 style={{ fontSize: "16px", fontWeight: "600", color: "#333", margin: 0 }}>
+                        Tickets cette semaine
+                      </h3>
+                    </div>
+                    {/* CardContent */}
+                    <div style={{ padding: "24px", paddingTop: "0", flex: 1 }}>
+                      <ResponsiveContainer width="100%" height={320}>
+                        <BarChart
+                          data={prepareWeeklyTicketsData()}
+                          margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
+                          barCategoryGap="20%"
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                          <XAxis 
+                            dataKey="jour" 
+                            stroke="#E5E7EB"
+                            tick={{ fill: "#6B7280", fontSize: 12 }}
+                            style={{ fontSize: "12px" }}
+                          />
+                          <YAxis 
+                            stroke="#E5E7EB"
+                            tick={{ fill: "#6B7280", fontSize: 12 }}
+                            style={{ fontSize: "12px" }}
+                            domain={[0, 16]}
+                            ticks={[0, 4, 8, 12, 16]}
+                          />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: "white", 
+                              border: "1px solid #e5e7eb", 
+                              borderRadius: "8px",
+                              boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
+                            }}
+                          />
+                          <Legend wrapperStyle={{ paddingTop: "20px" }} iconType="rect" />
+                          <Bar 
+                            dataKey="Créés" 
+                            fill="#FF9500"
+                            radius={[4, 4, 0, 0]}
+                            barSize={30}
+                          />
+                          <Bar 
+                            dataKey="Résolus" 
+                            fill="#22C55E"
+                            radius={[4, 4, 0, 0]}
+                            barSize={30}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
                   </div>
 
                   {/* Graphique 2: Évolution mensuelle par type */}
-                  <div style={{ background: "white", padding: "24px", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", display: "flex", flexDirection: "column" }}>
-                    <h3 style={{ marginBottom: "16px", fontSize: "16px", fontWeight: "600", color: "#333" }}>
-                      Évolution mensuelle par type
-                    </h3>
-                    <ResponsiveContainer width="100%" height={320} style={{ flex: 1 }}>
-                      <AreaChart
-                        data={prepareMonthlyEvolutionData()}
-                        margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-                      >
-                        <defs>
-                          <linearGradient id="colorMateriel" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#FF9500" stopOpacity={0.4}/>
-                            <stop offset="95%" stopColor="#FF9500" stopOpacity={0.05}/>
-                          </linearGradient>
-                          <linearGradient id="colorApplicatif" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#475569" stopOpacity={0.4}/>
-                            <stop offset="95%" stopColor="#475569" stopOpacity={0.05}/>
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                        <XAxis 
-                          dataKey="mois" 
-                          stroke="#6b7280" 
-                          style={{ fontSize: "11px" }}
-                          angle={-45}
-                          textAnchor="end"
-                          height={60}
-                        />
-                        <YAxis 
-                          stroke="#6b7280" 
-                          style={{ fontSize: "12px" }}
-                          domain={[0, 80]}
-                          ticks={[0, 20, 40, 60, 80]}
-                        />
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: "white", 
-                            border: "1px solid #e5e7eb", 
-                            borderRadius: "8px",
-                            boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
-                          }}
-                        />
-                        <Legend />
-                        <Area 
-                          type="monotone" 
-                          dataKey="Matériel" 
-                          stroke="#FF9500" 
-                          strokeWidth={2}
-                          fillOpacity={1}
-                          fill="url(#colorMateriel)" 
-                        />
-                        <Area 
-                          type="monotone" 
-                          dataKey="Applicatif" 
-                          stroke="#475569" 
-                          strokeWidth={2}
-                          fillOpacity={1}
-                          fill="url(#colorApplicatif)" 
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
+                  <div style={{ 
+                    background: "white", 
+                    borderRadius: "8px", 
+                    border: "1px solid rgba(229, 231, 235, 0.5)", 
+                    boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)", 
+                    display: "flex", 
+                    flexDirection: "column" 
+                  }}>
+                    {/* CardHeader */}
+                    <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                      <h3 style={{ fontSize: "16px", fontWeight: "600", color: "#333", margin: 0 }}>
+                        Évolution mensuelle par type
+                      </h3>
+                    </div>
+                    {/* CardContent */}
+                    <div style={{ padding: "24px", paddingTop: "0", flex: 1 }}>
+                      <ResponsiveContainer width="100%" height={320}>
+                        <AreaChart
+                          data={prepareMonthlyEvolutionData()}
+                          margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
+                        >
+                          <defs>
+                            <linearGradient id="colorMateriel" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#FF9500" stopOpacity={0.4}/>
+                              <stop offset="95%" stopColor="#FF9500" stopOpacity={0.05}/>
+                            </linearGradient>
+                            <linearGradient id="colorApplicatif" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#475569" stopOpacity={0.4}/>
+                              <stop offset="95%" stopColor="#475569" stopOpacity={0.05}/>
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                          <XAxis 
+                            dataKey="mois" 
+                            stroke="#E5E7EB"
+                            tick={{ fill: "#6B7280", fontSize: 12 }}
+                            style={{ fontSize: "12px" }}
+                            angle={-45}
+                            textAnchor="end"
+                          />
+                          <YAxis 
+                            stroke="#E5E7EB"
+                            tick={{ fill: "#6B7280", fontSize: 12 }}
+                            style={{ fontSize: "12px" }}
+                            domain={[0, 80]}
+                            ticks={[0, 20, 40, 60, 80]}
+                          />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: "white", 
+                              border: "1px solid #e5e7eb", 
+                              borderRadius: "8px",
+                              boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
+                            }}
+                          />
+                          <Legend wrapperStyle={{ paddingTop: "20px" }} iconType="line" />
+                          <Area 
+                            type="monotone" 
+                            dataKey="Matériel" 
+                            stroke="#FF9500" 
+                            strokeWidth={2}
+                            fillOpacity={1}
+                            fill="url(#colorMateriel)" 
+                          />
+                          <Area 
+                            type="monotone" 
+                            dataKey="Applicatif" 
+                            stroke="#475569" 
+                            strokeWidth={2}
+                            fillOpacity={1}
+                            fill="url(#colorApplicatif)" 
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
                   </div>
                 </div>
 
