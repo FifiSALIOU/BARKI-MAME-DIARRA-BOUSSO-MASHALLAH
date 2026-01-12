@@ -6961,7 +6961,8 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                       padding: "8px 12px", 
                       border: "1px solid #ddd", 
                       borderRadius: "4px",
-                      fontSize: "14px"
+                      fontSize: "14px",
+                      backgroundColor: "transparent"
                     }}
                   >
                     <option value="all">Tous les statuts</option>
@@ -6982,7 +6983,8 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                       padding: "8px 12px", 
                       border: "1px solid #ddd", 
                       borderRadius: "4px",
-                      fontSize: "14px"
+                      fontSize: "14px",
+                      backgroundColor: "transparent"
                     }}
                   >
                     <option value="all">Toutes les agences</option>
@@ -7001,7 +7003,8 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                       padding: "8px 12px", 
                       border: "1px solid #ddd", 
                       borderRadius: "4px",
-                      fontSize: "14px"
+                      fontSize: "14px",
+                      backgroundColor: "transparent"
                     }}
                   >
                     <option value="all">Toutes les priorités</option>
@@ -7022,7 +7025,8 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                         padding: "8px 12px", 
                         border: "1px solid #ddd", 
                         borderRadius: "4px",
-                        fontSize: "14px"
+                        fontSize: "14px",
+                        backgroundColor: "transparent"
                       }}
                     >
                       <option value="all">Tous les tickets</option>
