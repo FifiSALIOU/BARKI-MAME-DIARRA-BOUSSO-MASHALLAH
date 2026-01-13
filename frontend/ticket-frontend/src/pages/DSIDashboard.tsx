@@ -8073,19 +8073,25 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                     <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                       {(() => {
                         const techData = prepareTechnicianPerformanceData();
-                        return techData.map((tech, index) => (
+                        return techData.map((tech, index) => {
+                          // Identifier Seydou Wane et Backary DRAME pour appliquer des styles spécifiques
+                          const isSeydouWane = tech.technicien.toLowerCase().includes("seydou") && tech.technicien.toLowerCase().includes("wane");
+                          const isBackaryDrame = tech.technicien.toLowerCase().includes("backary") && tech.technicien.toLowerCase().includes("drame");
+                          const isSpecialTechnician = isSeydouWane || isBackaryDrame;
+                          
+                          return (
                           <div 
                             key={tech.technicien}
                             style={{ 
-                              background: "#FFFFFF", 
+                              background: isSpecialTechnician ? "#F5F5F5" : "#FFFFFF", 
                               borderRadius: "12px", 
                               border: "1px solid #F2F2F2", 
-                              padding: "16px 20px", 
+                              padding: isSpecialTechnician ? "10px 14px" : "16px 20px", 
                               boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
                               display: "flex",
                               alignItems: "center",
                               gap: "20px",
-                              minHeight: "56px",
+                              minHeight: isSpecialTechnician ? "44px" : "56px",
                               fontFamily: "'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
                             }}
                           >
@@ -8096,7 +8102,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                                 height: "32px",
                                 borderRadius: "50%",
                                 backgroundColor: index === 0 
-                                  ? "#E8D9B0" // Rang 1 : Jaune doré/beige
+                                  ? "#F5EDD4" // Rang 1 : Couleur exacte demandée
                                   : "#E5E5E5", // Autres rangs : Gris clair
                                 display: "flex",
                                 alignItems: "center",
@@ -8104,9 +8110,11 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                                 fontSize: "14px",
                                 fontWeight: 500,
                                 color: index === 0 
-                                  ? "#262626" // Rang 1 : texte foncé
+                                  ? "#C4A941" // Rang 1 : Couleur exacte demandée
                                   : "#262626", // Autres rangs : texte foncé
-                                flexShrink: 0
+                                flexShrink: 0,
+                                boxShadow: "none",
+                                border: "none"
                               }}
                             >
                               {index + 1}
@@ -8114,7 +8122,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
 
                             {/* Nom du technicien */}
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: "14px", fontWeight: 600, color: "#262626" }}>
+                              <div style={{ fontSize: isSpecialTechnician ? "12px" : "14px", fontWeight: 600, color: "#262626" }}>
                                 {tech.technicien}
                               </div>
                             </div>
@@ -8127,11 +8135,11 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                                 gap: "4px",
                                 fontSize: "14px",
                                 fontWeight: 400,
-                                color: "#808080",
+                                color: isSpecialTechnician ? "#000000" : "#808080",
                                 flexShrink: 0
                               }}
                             >
-                              <Clock className="h-3 w-3" style={{ width: "12px", height: "12px", color: "#808080" }} />
+                              <Clock className="h-3 w-3" style={{ width: "12px", height: "12px", color: isSpecialTechnician ? "#000000" : "#808080" }} />
                               <span>{tech.avgTimeHours > 0 ? `${tech.avgTimeHours.toFixed(1)}h moy.` : "N/A"}</span>
                             </div>
 
@@ -8157,7 +8165,8 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                               <span>{tech.performancePercent}%</span>
                             </div>
                           </div>
-                        ));
+                          );
+                        });
                       })()}
                     </div>
                   </div>
