@@ -8023,7 +8023,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                         {(() => {
                           const techData = prepareTechnicianPerformanceData();
                           return techData.length > 0 ? (
-                            <ResponsiveContainer width="100%" height={280}>
+                            <ResponsiveContainer width="100%" height={200}>
                               <BarChart 
                                 data={techData} 
                                 margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
@@ -8093,13 +8093,21 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                                 width: "32px",
                                 height: "32px",
                                 borderRadius: "50%",
-                                backgroundColor: (index === 0 || index === 2) ? "#FF9500" : "#E5E7EB",
+                                backgroundColor: index === 0 
+                                  ? "rgba(234, 179, 8, 0.2)" // bg-yellow-500/20
+                                  : index === 1 
+                                  ? "rgba(209, 213, 219, 0.3)" // bg-gray-300/30
+                                  : "rgba(249, 115, 22, 0.2)", // bg-orange-500/20
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
                                 fontSize: "14px",
                                 fontWeight: 600,
-                                color: (index === 0 || index === 2) ? "white" : "#374151",
+                                color: index === 0 
+                                  ? "#ca8a04" // text-yellow-600
+                                  : index === 1 
+                                  ? "#4b5563" // text-gray-600
+                                  : "#ea580c", // text-orange-600
                                 flexShrink: 0
                               }}
                             >
