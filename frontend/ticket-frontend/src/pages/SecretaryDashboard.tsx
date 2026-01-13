@@ -2839,6 +2839,28 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
           </div>
           <div style={{ fontSize: "16px", fontFamily: "'Inter', system-ui, sans-serif", fontWeight: "500" }}>Tickets</div>
         </div>
+        
+        <div 
+          onClick={() => {
+            setActiveSection("technicians");
+          }}
+          style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "12px", 
+            padding: "10px", 
+            background: activeSection === "technicians" ? "hsl(25, 95%, 53%)" : "transparent",
+            borderRadius: "8px",
+            cursor: "pointer",
+            marginBottom: "8px"
+          }}
+        >
+          <div style={{ width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Wrench size={18} color={activeSection === "technicians" ? "white" : "rgba(180, 180, 180, 0.7)"} />
+          </div>
+          <div style={{ fontSize: "16px", fontFamily: "'Inter', system-ui, sans-serif", fontWeight: "500" }}>Techniciens</div>
+        </div>
+        
         {(roleName === "Adjoint DSI" || roleName === "DSI" || roleName === "Admin") && (
           <div style={{ position: "relative" }}>
             <div 
