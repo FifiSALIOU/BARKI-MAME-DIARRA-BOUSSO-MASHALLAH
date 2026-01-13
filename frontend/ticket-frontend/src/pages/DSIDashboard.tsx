@@ -2854,6 +2854,77 @@ function DSIDashboard({ token }: DSIDashboardProps) {
     }).sort((a, b) => b.assignés - a.assignés).slice(0, 10); // Top 10
   };
 
+  // Fonction pour préparer les données "Analyse par agence" (Total, Résolus, En attente)
+  const prepareAgencyAnalysisData = () => {
+    const agencies = Array.from(new Set(allTickets.map((t) => t.creator?.agency || t.user_agency).filter(Boolean)));
+    
+    // Si aucune agence, utiliser les 5 agences par défaut avec des données vides
+    const defaultAgencies = ["Siège Abidjan", "Agence Cocody", "Agence Plateau", "Agence Marcory", "Agence Yopougon"];
+    const allAgencies = agencies.length > 0 ? agencies : defaultAgencies;
+    
+    return allAgencies.map(agency => {
+      const agencyTickets = allTickets.filter((t) => (t.creator?.agency || t.user_agency) === agency);
+      const total = agencyTickets.length;
+      const resolved = agencyTickets.filter((t) => t.status === "resolu" || t.status === "cloture").length;
+      const pending = agencyTickets.filter((t) => t.status === "en_attente_analyse" || t.status === "assigne_technicien" || t.status === "en_cours").length;
+      
+      return {
+        agence: agency,
+        Total: total,
+        Résolus: resolved,
+        "En attente": pending
+      };
+    }).sort((a, b) => b.Total - a.Total).slice(0, 5); // Top 5 agences
+  };
+
+  // Fonction pour préparer les données "Performance des techniciens"
+  const prepareTechnicianPerformanceData = () => {
+    return technicians.map((tech) => {
+      // Utiliser les données du backend qui sont plus fiables
+      const resolvedCount = (tech.resolved_tickets_count || 0) + (tech.closed_tickets_count || 0);
+      
+      // Calculer le temps moyen de résolution en heures
+      let avgTimeHours = 0;
+      if (tech.avg_resolution_time_days) {
+        avgTimeHours = tech.avg_resolution_time_days * 24;
+      } else {
+        // Fallback: calculer depuis les tickets si disponible
+        const assignedTickets = allTickets.filter((t) => t.technician_id === tech.id);
+        const resolvedTickets = assignedTickets.filter((t) => t.status === "resolu" || t.status === "cloture");
+        if (resolvedTickets.length > 0) {
+          const times: number[] = [];
+          resolvedTickets.forEach(ticket => {
+            if (ticket.created_at && ticket.resolved_at) {
+              const created = new Date(ticket.created_at).getTime();
+              const resolved = new Date(ticket.resolved_at).getTime();
+              const diffHours = (resolved - created) / (1000 * 60 * 60);
+              if (diffHours > 0) {
+                times.push(diffHours);
+              }
+            }
+          });
+          if (times.length > 0) {
+            avgTimeHours = times.reduce((a, b) => a + b, 0) / times.length;
+          }
+        }
+      }
+      
+      // Calculer le pourcentage de performance (taux de réussite)
+      const assignedTickets = allTickets.filter((t) => t.technician_id === tech.id);
+      const performance = tech.success_rate || (resolvedCount > 0 && assignedTickets.length > 0 
+        ? Math.round((resolvedCount / assignedTickets.length) * 100) 
+        : 0);
+      
+      return {
+        technicien: tech.full_name,
+        performance: resolvedCount, // Nombre de tickets résolus pour la hauteur des barres
+        avgTimeHours: avgTimeHours,
+        performancePercent: performance,
+        resolvedCount: resolvedCount
+      };
+    }).sort((a, b) => b.performance - a.performance); // Tous les techniciens triés par performance
+  };
+
   // Fonction pour préparer les données sur les utilisateurs les plus actifs (créateurs de tickets)
   const prepareMostActiveUsersData = () => {
     const userTicketCounts: { [key: string]: { name: string; count: number } } = {};
@@ -7842,6 +7913,232 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                         />
                       </PieChart>
                     </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Troisième ligne de graphiques - Analyse par agence + Performance des techniciens */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "24px", marginTop: "24px" }}>
+                  {/* Analyse par agence */}
+                  <div style={{ 
+                    background: "white", 
+                    borderRadius: "8px", 
+                    border: "1px solid rgba(229, 231, 235, 0.5)", 
+                    boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)", 
+                    display: "flex", 
+                    flexDirection: "column" 
+                  }}>
+                    {/* CardHeader */}
+                    <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                      <h3 style={{ fontSize: "16px", fontWeight: "600", color: "#333", margin: 0 }}>
+                        Analyse par agence
+                      </h3>
+                    </div>
+                    {/* CardContent */}
+                    <div style={{ padding: "24px", paddingTop: "0", flex: 1 }}>
+                      {(() => {
+                        const agencyData = prepareAgencyAnalysisData();
+                        return agencyData.length > 0 ? (
+                          <ResponsiveContainer width="100%" height={400}>
+                            <BarChart 
+                              data={agencyData} 
+                              layout="vertical"
+                              margin={{ top: 10, right: 30, left: 100, bottom: 10 }}
+                              barCategoryGap="20%"
+                            >
+                              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                              <XAxis 
+                                type="number" 
+                                domain={[0, 60]}
+                                ticks={[0, 15, 30, 45, 60]}
+                                stroke="#6B7280" 
+                                style={{ fontSize: "12px" }}
+                              />
+                              <YAxis 
+                                dataKey="agence" 
+                                type="category" 
+                                stroke="#374151" 
+                                style={{ fontSize: "12px" }} 
+                                width={90}
+                              />
+                              <Tooltip
+                                contentStyle={{
+                                  backgroundColor: "white",
+                                  border: "1px solid #e5e7eb",
+                                  borderRadius: "8px",
+                                  boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
+                                }}
+                              />
+                              <Legend 
+                                wrapperStyle={{ marginTop: "20px" }}
+                                iconType="rect"
+                              />
+                              <Bar 
+                                dataKey="Total" 
+                                fill="#1A202C"
+                                radius={[0, 4, 4, 0]}
+                                barSize={20}
+                              />
+                              <Bar 
+                                dataKey="Résolus" 
+                                fill="#22C55E"
+                                radius={[0, 4, 4, 0]}
+                                barSize={20}
+                              />
+                              <Bar 
+                                dataKey="En attente" 
+                                fill="#FF9500"
+                                radius={[0, 4, 4, 0]}
+                                barSize={20}
+                              />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        ) : (
+                          <div style={{ padding: "40px", textAlign: "center", color: "#9ca3af" }}>
+                            Aucune donnée à afficher
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Performance des techniciens */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+                    {/* Graphique en barres verticales */}
+                    <div style={{ 
+                      background: "white", 
+                      borderRadius: "8px", 
+                      border: "1px solid rgba(229, 231, 235, 0.5)", 
+                      boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)", 
+                      display: "flex", 
+                      flexDirection: "column" 
+                    }}>
+                      {/* CardHeader */}
+                      <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                        <h3 style={{ fontSize: "16px", fontWeight: "600", color: "#333", margin: 0 }}>
+                          Performance des techniciens
+                        </h3>
+                      </div>
+                      {/* CardContent */}
+                      <div style={{ padding: "24px", paddingTop: "0", flex: 1 }}>
+                        {(() => {
+                          const techData = prepareTechnicianPerformanceData();
+                          return techData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={280}>
+                              <BarChart 
+                                data={techData} 
+                                margin={{ top: 10, right: 20, left: 0, bottom: 10 }}
+                              >
+                                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                                <XAxis 
+                                  dataKey="technicien" 
+                                  stroke="#6B7280" 
+                                  style={{ fontSize: "12px" }}
+                                />
+                                <YAxis 
+                                  domain={[0, 60]}
+                                  ticks={[0, 15, 30, 45, 60]}
+                                  stroke="#6B7280" 
+                                  style={{ fontSize: "12px" }}
+                                />
+                                <Tooltip
+                                  contentStyle={{
+                                    backgroundColor: "white",
+                                    border: "1px solid #e5e7eb",
+                                    borderRadius: "8px",
+                                    boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
+                                  }}
+                                  formatter={(value: any, name: any, props: any) => {
+                                    return [`Résolus : ${value}`, props.payload.technicien];
+                                  }}
+                                />
+                                <Bar 
+                                  dataKey="performance" 
+                                  fill="#FF9500"
+                                  stroke="#FF9500"
+                                  radius={[4, 4, 0, 0]}
+                                  barSize={40}
+                                />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          ) : (
+                            <div style={{ padding: "40px", textAlign: "center", color: "#9ca3af" }}>
+                              Aucune donnée à afficher
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Liste détaillée des techniciens */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                      {(() => {
+                        const techData = prepareTechnicianPerformanceData();
+                        return techData.map((tech, index) => (
+                          <div 
+                            key={tech.technicien}
+                            style={{ 
+                              background: "white", 
+                              borderRadius: "8px", 
+                              border: "1px solid rgba(229, 231, 235, 0.5)", 
+                              padding: "16px", 
+                              boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "12px"
+                            }}
+                          >
+                            {/* Badge de rang */}
+                            <div 
+                              style={{
+                                width: "32px",
+                                height: "32px",
+                                borderRadius: "50%",
+                                backgroundColor: (index === 0 || index === 2) ? "#FF9500" : "#E5E7EB",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: "14px",
+                                fontWeight: 600,
+                                color: (index === 0 || index === 2) ? "white" : "#374151",
+                                flexShrink: 0
+                              }}
+                            >
+                              {index + 1}
+                            </div>
+
+                            {/* Informations du technicien */}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: "16px", fontWeight: 500, color: "#111827", marginBottom: "4px" }}>
+                                {tech.technicien}
+                              </div>
+                              <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "14px", color: "#4B5563", marginTop: "4px" }}>
+                                <Clock className="h-3 w-3" />
+                                <span>{tech.avgTimeHours > 0 ? `${tech.avgTimeHours.toFixed(1)}h moy.` : "N/A"}</span>
+                              </div>
+                            </div>
+
+                            {/* Badge de performance */}
+                            <div 
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                                backgroundColor: "#DCFCE7",
+                                color: "#15803D",
+                                padding: "6px 12px",
+                                borderRadius: "8px",
+                                fontSize: "14px",
+                                fontWeight: 600,
+                                flexShrink: 0
+                              }}
+                            >
+                              <TrendingUp className="h-4 w-4" />
+                              <span>{tech.performancePercent}%</span>
+                            </div>
+                          </div>
+                        ));
+                      })()}
+                    </div>
                   </div>
                 </div>
                 </>
