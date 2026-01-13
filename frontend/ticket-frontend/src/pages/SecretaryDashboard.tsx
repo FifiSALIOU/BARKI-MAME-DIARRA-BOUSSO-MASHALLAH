@@ -3719,68 +3719,70 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                 </div>
 
                 {/* Actions disponibles */}
-                <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid #e5e7eb" }}>
-                  <strong>Actions :</strong>
-                  <div style={{ marginTop: "12px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                    {/* Bouton Assigner à un technicien */}
-                    {ticketDetails.status === "en_attente_analyse" && (
-                      <button
-                        onClick={() => {
-                          setAssignModalTicketId(ticketDetails.id);
-                          setShowAssignModal(true);
-                        }}
-                        disabled={loading}
-                        style={{
-                          padding: "10px 20px",
-                          backgroundColor: "#3b82f6",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "6px",
-                          cursor: "pointer",
-                          fontSize: "14px",
-                          fontWeight: "500"
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = "#2563eb";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = "#3b82f6";
-                        }}
-                      >
-                        Assigner à un technicien
-                      </button>
-                    )}
+                {ticketDetails.status !== "cloture" && (
+                  <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid #e5e7eb" }}>
+                    <strong>Actions :</strong>
+                    <div style={{ marginTop: "12px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                      {/* Bouton Assigner à un technicien */}
+                      {ticketDetails.status === "en_attente_analyse" && (
+                        <button
+                          onClick={() => {
+                            setAssignModalTicketId(ticketDetails.id);
+                            setShowAssignModal(true);
+                          }}
+                          disabled={loading}
+                          style={{
+                            padding: "10px 20px",
+                            backgroundColor: "#3b82f6",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            fontWeight: "500"
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = "#2563eb";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = "#3b82f6";
+                          }}
+                        >
+                          Assigner à un technicien
+                        </button>
+                      )}
 
-                    {/* Bouton Réouvrir */}
-                    {(ticketDetails.status === "cloture" || ticketDetails.status === "rejete") && (
-                      <button
-                        onClick={() => {
-                          setReopenTicketId(ticketDetails.id);
-                          setShowReopenModal(true);
-                        }}
-                        disabled={loading}
-                        style={{
-                          padding: "10px 20px",
-                          backgroundColor: "#f59e0b",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "6px",
-                          cursor: "pointer",
-                          fontSize: "14px",
-                          fontWeight: "500"
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = "#d97706";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = "#f59e0b";
-                        }}
-                      >
-                        Réouvrir
-                      </button>
-                    )}
+                      {/* Bouton Réouvrir */}
+                      {ticketDetails.status === "rejete" && (
+                        <button
+                          onClick={() => {
+                            setReopenTicketId(ticketDetails.id);
+                            setShowReopenModal(true);
+                          }}
+                          disabled={loading}
+                          style={{
+                            padding: "10px 20px",
+                            backgroundColor: "#f59e0b",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            fontWeight: "500"
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = "#d97706";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = "#f59e0b";
+                          }}
+                        >
+                          Réouvrir
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           ) : (
