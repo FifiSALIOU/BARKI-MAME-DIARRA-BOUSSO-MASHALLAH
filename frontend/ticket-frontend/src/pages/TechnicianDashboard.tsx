@@ -2996,37 +2996,94 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
             {activeSection === "tickets-rejetes" && (
               <div>
                 <h2 style={{ marginBottom: "24px" }}>Tickets Rejetés</h2>
-                <div style={{ 
-                  background: "white", 
-                  borderRadius: "8px", 
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                  overflow: "hidden"
-                }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                    <thead>
-                      <tr style={{ background: "#f8f9fa", borderBottom: "2px solid #dee2e6" }}>
-                        <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", color: "#333" }}>ID</th>
-                        <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", color: "#333" }}>Titre</th>
-                        <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", color: "#333" }}>Statut</th>
-                        <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", color: "#333" }}>Priorité</th>
-                        <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", color: "#333" }}>Type</th>
-                        <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", color: "#333" }}>Assigné le</th>
-                        <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", color: "#333" }}>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {rejectedTickets.length === 0 ? (
-                        <tr>
-                          <td colSpan={7} style={{ textAlign: "center", padding: "40px", color: "#999" }}>
-                            Aucun ticket rejeté
-                          </td>
-                        </tr>
-                      ) : (
-                        rejectedTickets.map((t) => (
-                          <tr key={t.id} style={{ borderBottom: "1px solid #dee2e6" }}>
-                            <td style={{ padding: "12px 16px" }}>#{t.number}</td>
-                            <td style={{ padding: "12px 16px" }}>{t.title}</td>
-                            <td style={{ padding: "12px 16px" }}>
+                {/* Tickets Cards */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "12px",
+                    overflow: "visible",
+                  }}
+                >
+                  {rejectedTickets.length === 0 ? (
+                    <div style={{ 
+                      textAlign: "center", 
+                      padding: "40px", 
+                      color: "#999", 
+                      fontWeight: "500",
+                      background: "white",
+                      borderRadius: "12px",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                    }}>
+                      Aucun ticket rejeté
+                    </div>
+                  ) : (
+                    rejectedTickets.map((t) => {
+                      // Fonction helper pour calculer la date relative
+                      const getRelativeTime = (date: string | null) => {
+                        if (!date) return "N/A";
+                        const now = new Date();
+                        const past = new Date(date);
+                        const diffInMs = now.getTime() - past.getTime();
+                        const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+                        
+                        if (diffInDays === 0) return "aujourd'hui";
+                        if (diffInDays === 1) return "il y a 1 jour";
+                        return `il y a ${diffInDays} jours`;
+                      };
+
+                      // Couleur de la barre selon la priorité
+                      const borderColor = t.priority === "critique" ? "#E53E3E" : 
+                                         t.priority === "haute" ? "#F59E0B" : 
+                                         t.priority === "faible" ? "rgba(107, 114, 128, 0.3)" : 
+                                         "#0DADDB";
+
+                      return (
+                        <div
+                          key={t.id} 
+                          onClick={() => loadTicketDetails(t.id)}
+                          style={{
+                            position: "relative",
+                            background: "white",
+                            borderRadius: "12px",
+                            padding: "16px",
+                            border: "1px solid #e5e7eb",
+                            boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+                            cursor: "pointer",
+                            transition: "all 0.2s ease",
+                            overflow: "visible",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = "translateY(-2px)";
+                            e.currentTarget.style.boxShadow = "0 6px 24px rgba(0,0,0,0.15)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = "translateY(0)";
+                            e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.1)";
+                          }}
+                        >
+                          {/* Barre de priorité à gauche */}
+                          <div
+                            style={{
+                              position: "absolute",
+                              left: 0,
+                              top: 0,
+                              bottom: 0,
+                              width: "4px",
+                              background: borderColor,
+                              borderTopLeftRadius: "12px",
+                              borderBottomLeftRadius: "12px",
+                            }}
+                          />
+
+                          {/* En-tête : ID + Badges + Menu 3 points */}
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                              <span style={{ fontSize: "14px", color: "#1f2937", fontFamily: "monospace", fontWeight: "600" }}>
+                                {formatTicketNumber(t.number)}
+                              </span>
+                              
+                              {/* Badge Statut */}
                               <span style={{
                                 padding: "6px 12px",
                                 borderRadius: "20px",
@@ -3035,63 +3092,249 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                                 background: "#fee2e2",
                                 color: "#991b1b",
                                 whiteSpace: "nowrap",
-                                display: "inline-block"
                               }}>
                                 Rejeté
                               </span>
-                            </td>
-                            <td style={{ padding: "12px 16px" }}>
+
+                              {/* Badge Priorité */}
                               <span style={{
-                                padding: "4px 10px",
-                                borderRadius: "12px",
-                                fontSize: "12px",
+                                padding: "3px 8px",
+                                borderRadius: "20px",
+                                fontSize: "10px",
                                 fontWeight: "500",
                                 background: t.priority === "critique" ? "rgba(229, 62, 62, 0.1)" : t.priority === "haute" ? "rgba(245, 158, 11, 0.1)" : t.priority === "moyenne" ? "rgba(13, 173, 219, 0.1)" : t.priority === "faible" ? "#E5E7EB" : "#e5e7eb",
-                                color: t.priority === "critique" ? "#E53E3E" : t.priority === "haute" ? "#F59E0B" : t.priority === "moyenne" ? "#0DADDB" : t.priority === "faible" ? "#6B7280" : "#374151"
+                                color: t.priority === "critique" ? "#E53E3E" : t.priority === "haute" ? "#F59E0B" : t.priority === "moyenne" ? "#0DADDB" : t.priority === "faible" ? "#6B7280" : "#374151",
+                                whiteSpace: "nowrap",
                               }}>
                                 {getPriorityLabel(t.priority)}
                               </span>
-                            </td>
-                            <td style={{ padding: "12px 16px" }}>
-                              <span style={{
-                                padding: "4px 8px",
-                                borderRadius: "4px",
-                                fontSize: "12px",
-                                background: "#e3f2fd",
-                                color: "#1976d2"
-                              }}>
-                                {t.type === "materiel" ? "Matériel" : "Applicatif"}
-                              </span>
-                            </td>
-                            <td style={{ padding: "12px 16px", color: "#666" }}>
-                              {t.assigned_at ? new Date(t.assigned_at).toLocaleString("fr-FR") : "N/A"}
-                            </td>
-                            <td style={{ padding: "12px 16px" }}>
-                              <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
-                                <button
-                                  onClick={() => loadTicketDetails(t.id)}
-                                  disabled={loading}
-                                  style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+
+                              {/* Badge Catégorie */}
+                              {(() => {
+                                // Déterminer le type de ticket basé sur la catégorie ou le type
+                                const category = t.category || "";
+                                const ticketType = t.type || "";
+                                const isApplicatif = category.toLowerCase().includes("logiciel") || 
+                                                    category.toLowerCase().includes("applicatif") ||
+                                                    category.toLowerCase().includes("application") ||
+                                                    ticketType === "applicatif";
+                                const categoryType = isApplicatif ? "Applicatif" : "Matériel";
+                                const CategoryIcon = isApplicatif ? Monitor : Wrench;
+                                
+                                return (
+                                  <span style={{
+                                    padding: "3px 8px",
+                                    borderRadius: "20px",
+                                    fontSize: "10px",
+                                    fontWeight: "500",
+                                    background: "#f3f4f6",
+                                    color: "#1f2937",
+                                    whiteSpace: "nowrap",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "4px",
+                                  }}>
+                                    <CategoryIcon size={12} style={{ flexShrink: 0, color: "#1f2937" }} />
+                                    <span>{categoryType}</span>
+                                  </span>
+                                );
+                              })()}
+                            </div>
+
+                            {/* Menu 3 points */}
+                            <div style={{ position: "relative" }}>
+                              <button
+                                onClick={(e) => { 
+                                  e.stopPropagation(); 
+                                  setOpenActionsMenuFor(openActionsMenuFor === t.id ? null : t.id);
+                                }}
+                                disabled={loading}
+                                title="Actions"
+                                aria-label="Actions"
+                                style={{
+                                  width: 28,
+                                  height: 28,
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  background: "transparent",
+                                  border: "none",
+                                  borderRadius: "4px",
+                                  cursor: "pointer",
+                                  color: "#475569",
+                                  backgroundImage:
+                                    "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='5' r='2' fill='%23475569'/><circle cx='12' cy='12' r='2' fill='%23475569'/><circle cx='12' cy='19' r='2' fill='%23475569'/></svg>\")",
+                                  backgroundRepeat: "no-repeat",
+                                  backgroundPosition: "center",
+                                  backgroundSize: "18px 18px",
+                                  transition: "background-color 0.2s",
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = "#f3f4f6";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = "transparent";
+                                }}
+                              />
+                              {openActionsMenuFor === t.id && (
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    top: "100%",
+                                    right: 0,
+                                    marginTop: "4px",
+                                    background: "white",
+                                    border: "1px solid #e5e7eb",
+                                    borderRadius: 8,
+                                    boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
+                                    minWidth: 160,
+                                    zIndex: 1000,
+                                    overflow: "visible"
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                  ref={(el) => {
+                                    if (el) {
+                                      const button = el.previousElementSibling as HTMLElement;
+                                      if (button) {
+                                        const rect = button.getBoundingClientRect();
+                                        const viewportHeight = window.innerHeight;
+                                        const menuHeight = 120;
+                                        const spaceBelow = viewportHeight - rect.bottom;
+                                        const spaceAbove = rect.top;
+                                        
+                                        if (spaceBelow < menuHeight && spaceAbove > menuHeight) {
+                                          el.style.bottom = "100%";
+                                          el.style.top = "auto";
+                                          el.style.marginBottom = "4px";
+                                          el.style.marginTop = "0";
+                                        } else {
+                                          el.style.top = "100%";
+                                          el.style.bottom = "auto";
+                                          el.style.marginTop = "4px";
+                                          el.style.marginBottom = "0";
+                                        }
+                                      }
+                                    }
+                                  }}
                                 >
-                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
-                                    <circle cx="12" cy="12" r="3" />
-                                  </svg>
-                                </button>
-                                <button
-                                  onClick={() => handleTakeCharge(t.id)}
-                                  disabled={loading}
-                                  style={{ fontSize: "12px", padding: "6px 12px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
-                                >
-                                  Reprendre
-                                </button>
+                                  <button
+                                    onClick={() => { loadTicketDetails(t.id); setOpenActionsMenuFor(null); }}
+                                    disabled={loading}
+                                    style={{ 
+                                      width: "100%", 
+                                      padding: "10px 12px", 
+                                      background: "transparent", 
+                                      border: "none", 
+                                      textAlign: "left", 
+                                      cursor: "pointer",
+                                      color: "#111827",
+                                      fontSize: "14px",
+                                      display: "block",
+                                      whiteSpace: "nowrap"
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.backgroundColor = "#f3f4f6";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.backgroundColor = "transparent";
+                                    }}
+                                  >
+                                    Voir le ticket
+                                  </button>
+                                  <button
+                                    onClick={() => { handleTakeCharge(t.id); setOpenActionsMenuFor(null); }}
+                                    disabled={loading}
+                                    style={{ 
+                                      width: "100%", 
+                                      padding: "10px 12px", 
+                                      background: "transparent", 
+                                      border: "none", 
+                                      borderTop: "1px solid #e5e7eb",
+                                      textAlign: "left", 
+                                      cursor: "pointer",
+                                      color: "#111827",
+                                      fontSize: "14px",
+                                      display: "block",
+                                      whiteSpace: "nowrap"
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.backgroundColor = "#f3f4f6";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.backgroundColor = "transparent";
+                                    }}
+                                  >
+                                    Reprendre
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Titre du ticket */}
+                          <h4 style={{
+                            fontSize: "14px",
+                            fontWeight: "600",
+                            color: "#1f2937",
+                            marginBottom: "6px",
+                            lineHeight: "1.3",
+                          }}>
+                            {t.title}
+                          </h4>
+
+                          {/* Description du ticket */}
+                          <p style={{
+                            fontSize: "13px",
+                            color: "#6b7280",
+                            marginBottom: "12px",
+                            lineHeight: "1.4",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                          }}>
+                            {t.description || "Aucune description"}
+                          </p>
+
+                          {/* Pied de carte : Créateur, Date */}
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              {/* Avatar + Nom créateur */}
+                              {t.creator && (
+                                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                                  <div style={{
+                                    width: "28px",
+                                    height: "28px",
+                                    borderRadius: "50%",
+                                    background: "#e5e7eb",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    fontSize: "11px",
+                                    fontWeight: "600",
+                                    color: "#374151",
+                                  }}>
+                                    {getInitials(t.creator.full_name || "Inconnu")}
+                                  </div>
+                                  <span style={{ fontSize: "12px", color: "#374151", fontWeight: "500" }}>
+                                    {t.creator.full_name || "Inconnu"}
+                                  </span>
+                                </div>
+                              )}
+
+                              {/* Date relative */}
+                              <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                                <Clock size={12} color="#9ca3af" />
+                                <span style={{ fontSize: "11px", color: "#9ca3af" }}>
+                                  {getRelativeTime(t.assigned_at || t.created_at || null)}
+                                </span>
                               </div>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             )}
