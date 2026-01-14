@@ -3495,10 +3495,10 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
           <div style={{
             display: "flex",
             width: "100%",
-            height: "100vh",
+            height: "calc(100vh - 80px)",
             background: "white",
             overflow: "hidden",
-            paddingLeft: "24px"
+            marginTop: "80px"
           }}>
             {/* Panneau gauche - Liste des tickets avec notifications */}
             <div style={{
