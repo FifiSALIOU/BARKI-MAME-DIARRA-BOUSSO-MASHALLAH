@@ -3673,8 +3673,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                       {ticketDetails.status === "rejete" && (
                         <button
                           onClick={() => {
-                            setReopenTicketId(ticketDetails.id);
-                            setShowReopenModal(true);
+                            handleReopenClick(ticketDetails.id);
                           }}
                           disabled={loading}
                           style={{
