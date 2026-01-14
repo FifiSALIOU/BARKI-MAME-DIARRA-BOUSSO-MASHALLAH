@@ -329,45 +329,42 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
   useEffect(() => {
     const ticketId = searchParams.get("ticket");
     
-    if (ticketId && allTickets.length > 0) {
-      // Vérifier que le ticket existe et est assigné au technicien
-      const ticket = allTickets.find(t => t.id === ticketId);
-      if (ticket) {
-        // Charger et ouvrir automatiquement les détails du ticket
-        async function openTicket() {
-          try {
-            const res = await fetch(`http://localhost:8000/tickets/${ticketId}`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-            if (res.ok) {
-              const data = await res.json();
-              setTicketDetails(data);
-              // Charger l'historique
-              try {
-                const historyRes = await fetch(`http://localhost:8000/tickets/${ticketId}/history`, {
-                  headers: {
-                    Authorization: `Bearer ${token}`,
-                  },
-                });
-                if (historyRes.ok) {
-                  const historyData = await historyRes.json();
-                  setTicketHistory(Array.isArray(historyData) ? historyData : []);
-                }
-              } catch {}
-              setViewTicketDetails(ticketId);
-              // Nettoyer l'URL après avoir ouvert le ticket
-              window.history.replaceState({}, "", window.location.pathname);
-            }
-          } catch (err) {
-            console.error("Erreur chargement détails:", err);
+    if (ticketId && token) {
+      // Charger et ouvrir automatiquement les détails du ticket
+      // Ne pas attendre que le ticket soit dans allTickets car il peut venir d'un email
+      async function openTicket() {
+        try {
+          const res = await fetch(`http://localhost:8000/tickets/${ticketId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setTicketDetails(data);
+            // Charger l'historique
+            try {
+              const historyRes = await fetch(`http://localhost:8000/tickets/${ticketId}/history`, {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+              if (historyRes.ok) {
+                const historyData = await historyRes.json();
+                setTicketHistory(Array.isArray(historyData) ? historyData : []);
+              }
+            } catch {}
+            setViewTicketDetails(ticketId);
+            // Nettoyer l'URL après avoir ouvert le ticket
+            window.history.replaceState({}, "", window.location.pathname);
           }
+        } catch (err) {
+          console.error("Erreur chargement détails:", err);
         }
-        void openTicket();
       }
+      void openTicket();
     }
-  }, [searchParams, allTickets, token]);
+  }, [searchParams, token]);
 
   async function loadTicketDetails(ticketId: string) {
     try {

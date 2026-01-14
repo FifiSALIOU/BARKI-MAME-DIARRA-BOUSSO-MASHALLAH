@@ -292,7 +292,7 @@ Cordialement,
         
         # Lien vers login avec redirection pour forcer l'authentification
         redirect_params = urlencode({
-            "redirect": "/dashboard/technician",
+            "redirect": "/dashboard/techniciens",
             "ticket": ticket_id
         })
         action_link = f"{self.app_base_url}/login?{redirect_params}"
