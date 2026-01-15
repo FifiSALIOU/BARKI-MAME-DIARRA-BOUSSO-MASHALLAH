@@ -1691,6 +1691,44 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                       Marquer comme résolu
                     </button>
                   )}
+
+                  {/* Bouton Reprendre - visible seulement si le ticket est rejeté */}
+                  {ticketDetails.status === "rejete" && (
+                    <button
+                      onClick={() => {
+                        handleTakeCharge(ticketDetails.id);
+                        // Recharger les détails après la reprise
+                        setTimeout(() => {
+                          loadTicketDetails(ticketDetails.id);
+                        }, 500);
+                      }}
+                      disabled={loading}
+                      style={{
+                        padding: "10px 20px",
+                        backgroundColor: "#007bff",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "6px",
+                        cursor: loading ? "not-allowed" : "pointer",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px"
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!loading) e.currentTarget.style.backgroundColor = "#0056b3";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!loading) e.currentTarget.style.backgroundColor = "#007bff";
+                      }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                      </svg>
+                      Reprendre
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
