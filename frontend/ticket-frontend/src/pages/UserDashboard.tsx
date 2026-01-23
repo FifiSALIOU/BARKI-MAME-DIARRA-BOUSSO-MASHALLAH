@@ -1700,7 +1700,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                         style={{
                           padding: "10px 20px",
                           backgroundColor: isBlocked ? "#d1d5db" : "#e5e7eb",
-                          color: "black",
+                          color: "red",
                           border: "none",
                           borderRadius: "6px",
                           cursor: isBlocked ? "not-allowed" : "pointer",
@@ -1718,7 +1718,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                           if (!isBlocked) e.currentTarget.style.backgroundColor = "#e5e7eb";
                         }}
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={16} color="red" />
                         Supprimer
                       </button>
                     );
