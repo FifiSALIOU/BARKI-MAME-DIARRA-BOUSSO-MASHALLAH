@@ -5618,7 +5618,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                         if (!loading) e.currentTarget.style.backgroundColor = "#f3f4f6";
                       }}
                     >
-                      <CornerUpRight size={16} />
+                      <Users size={16} />
                       Déléguer à un adjoint
                     </button>
                   )}
