@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import type { FormEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Clock, CheckCircle, LayoutDashboard, PlusCircle, Ticket, ChevronLeft, ChevronRight, Bell, Wrench, Monitor, Search, Send, Info, CheckCircle2, AlertTriangle, XCircle, Check, Pencil, Trash2, RefreshCcw } from "lucide-react";
+import { Clock, CheckCircle, LayoutDashboard, PlusCircle, Ticket, ChevronLeft, ChevronRight, Bell, Wrench, Monitor, Search, Send, Info, CheckCircle2, AlertTriangle, XCircle, Check, Pencil, Trash2, RefreshCcw, FileText, UserCheck, Users } from "lucide-react";
 import helpdeskLogo from "../assets/helpdesk-logo.png";
 
 interface UserDashboardProps {
@@ -92,6 +92,115 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
     } else {
       return "à l'instant";
     }
+  };
+
+  // Fonction helper pour déterminer l'icône et les couleurs de la timeline d'historique
+  const getHistoryVisuals = (entry: TicketHistory) => {
+    const status = (entry.new_status || "").toLowerCase();
+
+    let Icon = Clock;
+    let iconBg = "#F3F4F6";
+    let iconBorder = "#E5E7EB";
+    let iconColor = "#111827";
+
+    if (!entry.old_status || entry.new_status === "creation") {
+      // Création du ticket
+      Icon = FileText;
+    } else if (status.includes("assigne") || status.includes("assigné") || status.includes("assign")) {
+      // Assignation
+      Icon = UserCheck;
+    } else if (status.includes("deleg") || status.includes("délégu")) {
+      // Délégation
+      Icon = Users;
+    } else if (
+      status.includes("resolu") ||
+      status.includes("résolu") ||
+      status.includes("valide") ||
+      status.includes("validé") ||
+      status.includes("cloture") ||
+      status.includes("clôture")
+    ) {
+      // Résolution / validation
+      Icon = CheckCircle2;
+      iconBg = "#ECFDF3";
+      iconBorder = "#BBF7D0";
+      iconColor = "#166534";
+    } else if (status.includes("relance") || status.includes("relancé")) {
+      // Relance
+      Icon = RefreshCcw;
+    }
+
+    return { Icon, iconBg, iconBorder, iconColor };
+  };
+
+  // Formate la date/heure pour l'historique (ex. "02 janv. 2025 à 16:00")
+  const formatHistoryDate = (dateStr: string): string => {
+    const d = new Date(dateStr);
+    const day = d.toLocaleDateString("fr-FR", { day: "2-digit" });
+    const month = d.toLocaleDateString("fr-FR", { month: "short" });
+    const year = d.toLocaleDateString("fr-FR", { year: "numeric" });
+    const time = d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    return `${day} ${month} ${year} à ${time}`;
+  };
+
+  // Historique affiché : "Création du ticket" en premier, puis le reste trié par date ascendante
+  const getDisplayHistory = (ticket: Ticket, history: TicketHistory[]): TicketHistory[] => {
+    const creation: TicketHistory = {
+      id: `creation-${ticket.id}`,
+      ticket_id: ticket.id,
+      old_status: null,
+      new_status: "creation",
+      user_id: "",
+      reason: null,
+      changed_at: ticket.created_at,
+      user: ticket.creator ? { full_name: ticket.creator.full_name } : null,
+    };
+    const rest = history.filter((h) => h.old_status != null);
+    const combined = [creation, ...rest];
+    combined.sort((a, b) => new Date(a.changed_at).getTime() - new Date(b.changed_at).getTime());
+    return combined;
+  };
+
+  // Fonction helper pour déterminer le titre principal d'une entrée d'historique
+  const getHistoryTitle = (entry: TicketHistory, ticket?: Ticket | null): string => {
+    const status = (entry.new_status || "").toLowerCase();
+
+    if (!entry.old_status || entry.new_status === "creation") {
+      return "Création du ticket";
+    }
+
+    if (status.includes("assigne") || status.includes("assigné") || status.includes("assign")) {
+      // Pour l'assignation, utiliser le technicien assigné du ticket, pas la personne qui a fait l'assignation
+      if (ticket?.technician?.full_name) {
+        return `Assigné à ${ticket.technician.full_name}`;
+      }
+      return "Ticket assigné";
+    }
+
+    if (status.includes("deleg") || status.includes("délégu")) {
+      return entry.user?.full_name ? `Délégué par ${entry.user.full_name}` : "Ticket délégué";
+    }
+
+    if (
+      status.includes("resolu") ||
+      status.includes("résolu") ||
+      status.includes("valide") ||
+      status.includes("validé") ||
+      status.includes("cloture") ||
+      status.includes("clôture")
+    ) {
+      return entry.user?.full_name ? `Résolu par ${entry.user.full_name}` : "Ticket résolu";
+    }
+
+    if (status.includes("relance") || status.includes("relancé")) {
+      return entry.user?.full_name ? `Relancé par ${entry.user.full_name}` : "Ticket relancé";
+    }
+
+    if (entry.old_status) {
+      return `${entry.old_status} → ${entry.new_status}`;
+    }
+
+    return entry.new_status;
   };
 
   // Fonction helper pour déterminer le type de notification
@@ -1608,28 +1717,85 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
               <div style={{ marginTop: "16px" }}>
                 <strong>Historique :</strong>
                 <div style={{ marginTop: "8px" }}>
-                  {ticketHistory.length === 0 ? (
-                    <p style={{ color: "#999", fontStyle: "italic" }}>Aucun historique</p>
-                  ) : (
-                    ticketHistory.map((h) => (
-                      <div key={h.id} style={{ padding: "8px", marginTop: "4px", background: "#f8f9fa", borderRadius: "4px" }}>
-                        <div style={{ fontSize: "12px", color: "#555" }}>
-                          {new Date(h.changed_at).toLocaleString("fr-FR")}
-                        </div>
-                        <div style={{ marginTop: "4px", fontWeight: 500 }}>
-                          {h.old_status ? `${h.old_status} → ${h.new_status}` : h.new_status}
-                        </div>
-                        {h.user && (
-                          <div style={{ marginTop: "4px", fontSize: "12px", color: "#666" }}>
-                            Par: {h.user.full_name}
+                  {(() => {
+                    const displayHistory = getDisplayHistory(ticketDetails, ticketHistory);
+                    if (displayHistory.length === 0) {
+                      return <p style={{ color: "#999", fontStyle: "italic" }}>Aucun historique</p>;
+                    }
+                    return displayHistory.map((h, index) => {
+                      const { Icon, iconBg, iconBorder, iconColor } = getHistoryVisuals(h);
+                      const isLast = index === displayHistory.length - 1;
+                      const isCreation = h.new_status === "creation";
+
+                      return (
+                        <div key={h.id} style={{ display: "flex", gap: "12px" }}>
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minHeight: "60px" }}>
+                            <div
+                              style={{
+                                width: "32px",
+                                height: "32px",
+                                borderRadius: "9999px",
+                                border: `2px solid ${iconBorder}`,
+                                backgroundColor: iconBg,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: iconColor,
+                                boxShadow: "0 0 0 4px rgba(148, 163, 184, 0.15)",
+                              }}
+                            >
+                              <Icon size={18} />
+                            </div>
+                            {!isLast && (
+                              <div
+                                style={{
+                                  flexGrow: 1,
+                                  width: "2px",
+                                  backgroundColor: "#E5E7EB",
+                                  marginTop: "4px",
+                                  marginBottom: "-4px",
+                                }}
+                              />
+                            )}
                           </div>
-                        )}
-                        {h.reason && (
-                          <div style={{ marginTop: "4px", color: "#666" }}>{h.reason}</div>
-                        )}
-                      </div>
-                    ))
-                  )}
+                          <div
+                            style={{
+                              padding: "8px 12px",
+                              marginBottom: "12px",
+                              background: "#F9FAFB",
+                              borderRadius: "8px",
+                              border: "1px solid #E5E7EB",
+                              flex: 1,
+                            }}
+                          >
+                            <div style={{ fontSize: "14px", fontWeight: 600, color: "#111827" }}>
+                              {getHistoryTitle(h, ticketDetails)}
+                            </div>
+                            <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "4px" }}>
+                              {formatHistoryDate(h.changed_at)}
+                            </div>
+                            {!isCreation && (
+                              <>
+                                <div style={{ marginTop: "4px", fontSize: "13px", color: "#374151" }}>
+                                  {h.old_status ? `${h.old_status} → ${h.new_status}` : h.new_status}
+                                </div>
+                                {h.user && (
+                                  <div style={{ marginTop: "4px", fontSize: "12px", color: "#6B7280" }}>
+                                    Par: {h.user.full_name}
+                                  </div>
+                                )}
+                                {h.reason && (
+                                  <div style={{ marginTop: "4px", fontSize: "13px", color: "#4B5563" }}>
+                                    {h.reason}
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
                 </div>
               </div>
 
@@ -3291,28 +3457,84 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                   <div style={{ marginTop: "24px", marginBottom: "16px" }}>
                     <strong>Historique :</strong>
                     <div style={{ marginTop: "8px" }}>
-                      {ticketHistory.length === 0 ? (
-                        <p style={{ color: "#999", fontStyle: "italic" }}>Aucun historique</p>
-                      ) : (
-                        ticketHistory.map((h) => (
-                          <div key={h.id} style={{ padding: "8px", marginTop: "4px", background: "#f8f9fa", borderRadius: "4px" }}>
-                            <div style={{ fontSize: "12px", color: "#555" }}>
-                              {new Date(h.changed_at).toLocaleString("fr-FR")}
-                            </div>
-                            <div style={{ marginTop: "4px", fontWeight: 500 }}>
-                              {h.old_status ? `${h.old_status} → ${h.new_status}` : h.new_status}
-                            </div>
-                            {h.user && (
-                              <div style={{ marginTop: "4px", fontSize: "12px", color: "#666" }}>
-                                Par: {h.user.full_name}
+                      {(() => {
+                        const displayHistory = getDisplayHistory(selectedNotificationTicketDetails, ticketHistory);
+                        if (displayHistory.length === 0) {
+                          return <p style={{ color: "#999", fontStyle: "italic" }}>Aucun historique</p>;
+                        }
+                        return displayHistory.map((h, index) => {
+                          const { Icon, iconBg, iconBorder, iconColor } = getHistoryVisuals(h);
+                          const isLast = index === displayHistory.length - 1;
+                          const isCreation = h.new_status === "creation";
+                          return (
+                            <div key={h.id} style={{ display: "flex", gap: "12px" }}>
+                              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minHeight: "60px" }}>
+                                <div
+                                  style={{
+                                    width: "32px",
+                                    height: "32px",
+                                    borderRadius: "9999px",
+                                    border: `2px solid ${iconBorder}`,
+                                    backgroundColor: iconBg,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    color: iconColor,
+                                    boxShadow: "0 0 0 4px rgba(148, 163, 184, 0.15)",
+                                  }}
+                                >
+                                  <Icon size={18} />
+                                </div>
+                                {!isLast && (
+                                  <div
+                                    style={{
+                                      flexGrow: 1,
+                                      width: "2px",
+                                      backgroundColor: "#E5E7EB",
+                                      marginTop: "4px",
+                                      marginBottom: "-4px",
+                                    }}
+                                  />
+                                )}
                               </div>
-                            )}
-                            {h.reason && (
-                              <div style={{ marginTop: "4px", color: "#666" }}>{h.reason}</div>
-                            )}
-                          </div>
-                        ))
-                      )}
+                              <div
+                                style={{
+                                  padding: "8px 12px",
+                                  marginBottom: "12px",
+                                  background: "#F9FAFB",
+                                  borderRadius: "8px",
+                                  border: "1px solid #E5E7EB",
+                                  flex: 1,
+                                }}
+                              >
+                                <div style={{ fontSize: "14px", fontWeight: 600, color: "#111827" }}>
+                                  {getHistoryTitle(h, selectedNotificationTicketDetails)}
+                                </div>
+                                <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "4px" }}>
+                                  {formatHistoryDate(h.changed_at)}
+                                </div>
+                                {!isCreation && (
+                                  <>
+                                    <div style={{ marginTop: "4px", fontSize: "13px", color: "#374151" }}>
+                                      {h.old_status ? `${h.old_status} → ${h.new_status}` : h.new_status}
+                                    </div>
+                                    {h.user && (
+                                      <div style={{ marginTop: "4px", fontSize: "12px", color: "#6B7280" }}>
+                                        Par: {h.user.full_name}
+                                      </div>
+                                    )}
+                                    {h.reason && (
+                                      <div style={{ marginTop: "4px", fontSize: "13px", color: "#4B5563" }}>
+                                        {h.reason}
+                                      </div>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()}
                     </div>
                   </div>
                 </div>
@@ -3481,28 +3703,84 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
             <div style={{ marginTop: "16px" }}>
               <strong>Historique :</strong>
               <div style={{ marginTop: "8px" }}>
-                {ticketHistory.length === 0 ? (
-                  <p style={{ color: "#999", fontStyle: "italic" }}>Aucun historique</p>
-                ) : (
-                  ticketHistory.map((h) => (
-                    <div key={h.id} style={{ padding: "8px", marginTop: "4px", background: "#f8f9fa", borderRadius: "4px" }}>
-                      <div style={{ fontSize: "12px", color: "#555" }}>
-                        {new Date(h.changed_at).toLocaleString("fr-FR")}
-                      </div>
-                      <div style={{ marginTop: "4px", fontWeight: 500 }}>
-                        {h.old_status ? `${h.old_status} → ${h.new_status}` : h.new_status}
-                      </div>
-                      {h.user && (
-                        <div style={{ marginTop: "4px", fontSize: "12px", color: "#666" }}>
-                          Par: {h.user.full_name}
+                {(() => {
+                  const displayHistory = getDisplayHistory(ticketDetails, ticketHistory);
+                  if (displayHistory.length === 0) {
+                    return <p style={{ color: "#999", fontStyle: "italic" }}>Aucun historique</p>;
+                  }
+                  return displayHistory.map((h, index) => {
+                    const { Icon, iconBg, iconBorder, iconColor } = getHistoryVisuals(h);
+                    const isLast = index === displayHistory.length - 1;
+                    const isCreation = h.new_status === "creation";
+                    return (
+                      <div key={h.id} style={{ display: "flex", gap: "12px" }}>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minHeight: "60px" }}>
+                          <div
+                            style={{
+                              width: "32px",
+                              height: "32px",
+                              borderRadius: "9999px",
+                              border: `2px solid ${iconBorder}`,
+                              backgroundColor: iconBg,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: iconColor,
+                              boxShadow: "0 0 0 4px rgba(148, 163, 184, 0.15)",
+                            }}
+                          >
+                            <Icon size={18} />
+                          </div>
+                          {!isLast && (
+                            <div
+                              style={{
+                                flexGrow: 1,
+                                width: "2px",
+                                backgroundColor: "#E5E7EB",
+                                marginTop: "4px",
+                                marginBottom: "-4px",
+                              }}
+                            />
+                          )}
                         </div>
-                      )}
-                      {h.reason && (
-                        <div style={{ marginTop: "4px", color: "#666" }}>{h.reason}</div>
-                      )}
-                    </div>
-                  ))
-                )}
+                        <div
+                          style={{
+                            padding: "8px 12px",
+                            marginBottom: "12px",
+                            background: "#F9FAFB",
+                            borderRadius: "8px",
+                            border: "1px solid #E5E7EB",
+                            flex: 1,
+                          }}
+                        >
+                          <div style={{ fontSize: "14px", fontWeight: 600, color: "#111827" }}>
+                            {getHistoryTitle(h, ticketDetails)}
+                          </div>
+                          <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "4px" }}>
+                            {formatHistoryDate(h.changed_at)}
+                          </div>
+                          {!isCreation && (
+                            <>
+                              <div style={{ marginTop: "4px", fontSize: "13px", color: "#374151" }}>
+                                {h.old_status ? `${h.old_status} → ${h.new_status}` : h.new_status}
+                              </div>
+                              {h.user && (
+                                <div style={{ marginTop: "4px", fontSize: "12px", color: "#6B7280" }}>
+                                  Par: {h.user.full_name}
+                                </div>
+                              )}
+                              {h.reason && (
+                                <div style={{ marginTop: "4px", fontSize: "13px", color: "#4B5563" }}>
+                                  {h.reason}
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             </div>
             <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
@@ -4394,28 +4672,84 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                       <div style={{ marginTop: "24px", marginBottom: "16px" }}>
                         <strong>Historique :</strong>
                         <div style={{ marginTop: "8px" }}>
-                          {ticketHistory.length === 0 ? (
-                            <p style={{ color: "#999", fontStyle: "italic" }}>Aucun historique</p>
-                          ) : (
-                            ticketHistory.map((h) => (
-                              <div key={h.id} style={{ padding: "8px", marginTop: "4px", background: "#f8f9fa", borderRadius: "4px" }}>
-                                <div style={{ fontSize: "12px", color: "#555" }}>
-                                  {new Date(h.changed_at).toLocaleString("fr-FR")}
-                                </div>
-                                <div style={{ marginTop: "4px", fontWeight: 500 }}>
-                                  {h.old_status ? `${h.old_status} → ${h.new_status}` : h.new_status}
-                                </div>
-                                {h.user && (
-                                  <div style={{ marginTop: "4px", fontSize: "12px", color: "#666" }}>
-                                    Par: {h.user.full_name}
+                          {(() => {
+                            const displayHistory = getDisplayHistory(selectedNotificationTicketDetails, ticketHistory);
+                            if (displayHistory.length === 0) {
+                              return <p style={{ color: "#999", fontStyle: "italic" }}>Aucun historique</p>;
+                            }
+                            return displayHistory.map((h, index) => {
+                              const { Icon, iconBg, iconBorder, iconColor } = getHistoryVisuals(h);
+                              const isLast = index === displayHistory.length - 1;
+                              const isCreation = h.new_status === "creation";
+                              return (
+                                <div key={h.id} style={{ display: "flex", gap: "12px" }}>
+                                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minHeight: "60px" }}>
+                                    <div
+                                      style={{
+                                        width: "32px",
+                                        height: "32px",
+                                        borderRadius: "9999px",
+                                        border: `2px solid ${iconBorder}`,
+                                        backgroundColor: iconBg,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        color: iconColor,
+                                        boxShadow: "0 0 0 4px rgba(148, 163, 184, 0.15)",
+                                      }}
+                                    >
+                                      <Icon size={18} />
+                                    </div>
+                                    {!isLast && (
+                                      <div
+                                        style={{
+                                          flexGrow: 1,
+                                          width: "2px",
+                                          backgroundColor: "#E5E7EB",
+                                          marginTop: "4px",
+                                          marginBottom: "-4px",
+                                        }}
+                                      />
+                                    )}
                                   </div>
-                                )}
-                                {h.reason && (
-                                  <div style={{ marginTop: "4px", color: "#666" }}>{h.reason}</div>
-                                )}
-                              </div>
-                            ))
-                          )}
+                                  <div
+                                    style={{
+                                      padding: "8px 12px",
+                                      marginBottom: "12px",
+                                      background: "#F9FAFB",
+                                      borderRadius: "8px",
+                                      border: "1px solid #E5E7EB",
+                                      flex: 1,
+                                    }}
+                                  >
+                                    <div style={{ fontSize: "14px", fontWeight: 600, color: "#111827" }}>
+                                      {getHistoryTitle(h, selectedNotificationTicketDetails)}
+                                    </div>
+                                    <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "4px" }}>
+                                      {formatHistoryDate(h.changed_at)}
+                                    </div>
+                                    {!isCreation && (
+                                      <>
+                                        <div style={{ marginTop: "4px", fontSize: "13px", color: "#374151" }}>
+                                          {h.old_status ? `${h.old_status} → ${h.new_status}` : h.new_status}
+                                        </div>
+                                        {h.user && (
+                                          <div style={{ marginTop: "4px", fontSize: "12px", color: "#6B7280" }}>
+                                            Par: {h.user.full_name}
+                                          </div>
+                                        )}
+                                        {h.reason && (
+                                          <div style={{ marginTop: "4px", fontSize: "13px", color: "#4B5563" }}>
+                                            {h.reason}
+                                          </div>
+                                        )}
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            });
+                          })()}
                         </div>
                       </div>
                     </div>
