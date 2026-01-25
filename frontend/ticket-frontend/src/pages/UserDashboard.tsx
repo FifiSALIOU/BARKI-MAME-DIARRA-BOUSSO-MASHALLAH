@@ -207,6 +207,16 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
       return entry.user?.full_name ? `Relancé par ${entry.user.full_name}` : "Ticket relancé";
     }
 
+    // Cas spécifique: assigne_technicien → en_cours
+    if (entry.old_status && entry.new_status) {
+      const oldStatus = (entry.old_status || "").toLowerCase();
+      const newStatus = (entry.new_status || "").toLowerCase();
+      if ((oldStatus.includes("assigne_technicien") || oldStatus.includes("assigne technicien")) && 
+          (newStatus.includes("en_cours") || newStatus.includes("en cours"))) {
+        return "Ticket en cours de traitement";
+      }
+    }
+
     if (entry.old_status) {
       return `${entry.old_status} → ${entry.new_status}`;
     }
