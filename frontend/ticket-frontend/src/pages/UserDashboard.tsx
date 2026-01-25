@@ -215,6 +215,11 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
           (newStatus.includes("en_cours") || newStatus.includes("en cours"))) {
         return "Ticket en cours de traitement";
       }
+      // Cas spécifique: en_attente_analyse → en_attente_analyse
+      if ((oldStatus.includes("en_attente_analyse") || oldStatus.includes("en attente analyse")) && 
+          (newStatus.includes("en_attente_analyse") || newStatus.includes("en attente analyse"))) {
+        return "Ticket en attente d'assignation";
+      }
     }
 
     if (entry.old_status) {
