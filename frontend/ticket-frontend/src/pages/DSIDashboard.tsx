@@ -417,15 +417,26 @@ function DSIDashboard({ token }: DSIDashboardProps) {
   
   // Déterminer activeSection depuis l'URL
   const getActiveSection = () => {
-    if (location.pathname === "/dashboard/dsi/notifications") return "notifications";
-    if (location.pathname === "/dashboard/dsi/audit-logs") return "audit-logs";
-    if (location.pathname === "/dashboard/dsi/maintenance") return "maintenance";
-    if (location.pathname === "/dashboard/dsi/reports") return "reports";
-    if (location.pathname === "/dashboard/dsi/users") return "users";
-    if (location.pathname === "/dashboard/dsi/technicians") return "technicians";
-    if (location.pathname === "/dashboard/dsi/actifs") return "actifs";
-    if (location.pathname === "/dashboard/dsi/tickets") return "tickets";
-    if (location.pathname === "/dashboard/dsi") return "dashboard";
+    const path = location.pathname;
+    // Vérifier les routes admin
+    if (path === "/dashboard/admin/notifications" || path === "/dashboard/dsi/notifications") return "notifications";
+    if (path === "/dashboard/admin/audit-logs" || path === "/dashboard/admin/audit-et-logs" || path === "/dashboard/dsi/audit-logs") return "audit-logs";
+    if (path === "/dashboard/admin/maintenance" || path === "/dashboard/dsi/maintenance") return "maintenance";
+    if (path === "/dashboard/admin/reports" || path === "/dashboard/admin/statistiques" || path === "/dashboard/dsi/reports") return "reports";
+    if (path === "/dashboard/admin/users" || path === "/dashboard/dsi/users") return "users";
+    if (path === "/dashboard/admin/technicians" || path === "/dashboard/dsi/technicians") return "technicians";
+    if (path === "/dashboard/admin/actifs" || path === "/dashboard/dsi/actifs") return "actifs";
+    if (path === "/dashboard/admin/tickets" || path === "/dashboard/dsi/tickets") return "tickets";
+    // Vérifier les sous-sections de paramètres en premier (ordre important)
+    if (path === "/dashboard/admin/parametres/apparence") return "apparence";
+    if (path === "/dashboard/admin/parametres/email") return "email";
+    if (path === "/dashboard/admin/parametres/securite") return "securite";
+    if (path === "/dashboard/admin/parametres/types-de-tickets") return "types-tickets";
+    if (path === "/dashboard/admin/parametres/priorites") return "priorites";
+    if (path === "/dashboard/admin/parametres/departements") return "departements";
+    // Route générale paramètres
+    if (path === "/dashboard/admin/parametres") return "settings";
+    if (path === "/dashboard/admin" || path === "/dashboard/dsi") return "dashboard";
     return "dashboard"; // Par défaut
   };
   const activeSection = getActiveSection();
@@ -437,6 +448,11 @@ function DSIDashboard({ token }: DSIDashboardProps) {
   const [showReportsDropdown, setShowReportsDropdown] = useState<boolean>(false);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState<boolean>(false);
   const [userRole, setUserRole] = useState<string | null>(null);
+  
+  // Fonction helper pour obtenir le préfixe de route selon le rôle
+  const getRoutePrefix = (): string => {
+    return userRole === "Admin" ? "/dashboard/admin" : "/dashboard/dsi";
+  };
   const [selectedReport, setSelectedReport] = useState<string>("");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
@@ -756,7 +772,8 @@ function DSIDashboard({ token }: DSIDashboardProps) {
   
   // Définir automatiquement "statistiques" comme rapport sélectionné quand on arrive sur la page reports
   useEffect(() => {
-    if (location.pathname === "/dashboard/dsi/reports" && !selectedReport) {
+    const path = location.pathname;
+    if ((path === "/dashboard/admin/reports" || path === "/dashboard/admin/statistiques" || path === "/dashboard/dsi/reports") && !selectedReport) {
       setSelectedReport("statistiques");
     }
   }, [location.pathname]);
@@ -1335,7 +1352,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
     
     // Ouvrir la vue des tickets avec notifications dans le contenu principal
     setShowNotifications(false);
-    navigate("/dashboard/dsi/notifications");
+    navigate(`${getRoutePrefix()}/notifications`);
     setSelectedNotificationTicket(notification.ticket_id);
     
     // Charger les tickets avec notifications
@@ -5019,7 +5036,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
         )}
         
         <div 
-          onClick={() => navigate("/dashboard/dsi")}
+          onClick={() => navigate(getRoutePrefix())}
           style={{ 
             display: "flex", 
             alignItems: "center", 
@@ -5040,7 +5057,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
         <div 
           onClick={() => {
             setStatusFilter("all");
-            navigate("/dashboard/dsi/tickets");
+            navigate(`${getRoutePrefix()}/tickets`);
           }}
           style={{ 
             display: "flex", 
@@ -5068,7 +5085,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
         {userRole === "Admin" && (
           <div 
             onClick={() => {
-              navigate("/dashboard/dsi/actifs");
+              navigate(`${getRoutePrefix()}/actifs`);
             }}
             style={{ 
               display: "flex", 
@@ -5090,7 +5107,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
         )}
         {userRole !== "Admin" && (
           <div 
-            onClick={() => navigate("/dashboard/dsi/technicians")}
+            onClick={() => navigate(`${getRoutePrefix()}/technicians`)}
             style={{ 
               display: "flex", 
               alignItems: "center", 
@@ -5111,7 +5128,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
         )}
         {userRole === "Admin" && (
           <div 
-            onClick={() => navigate("/dashboard/dsi/users")}
+            onClick={() => navigate(`${getRoutePrefix()}/users`)}
             style={{ 
               display: "flex", 
               alignItems: "center", 
@@ -5138,7 +5155,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
         <div 
           onClick={() => {
             setSelectedReport("statistiques");
-            navigate("/dashboard/dsi/reports");
+            navigate(`${getRoutePrefix()}/reports`);
           }}
           style={{ 
             display: "flex", 
@@ -5157,7 +5174,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
         </div>
         {userRole === "Admin" && (
           <div 
-            onClick={() => navigate("/dashboard/dsi/maintenance")}
+            onClick={() => navigate(`${getRoutePrefix()}/maintenance`)}
             style={{ 
               display: "flex", 
               alignItems: "center", 
@@ -5179,7 +5196,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
         )}
         {userRole === "Admin" && (
           <div 
-            onClick={() => navigate("/dashboard/dsi/audit-logs")}
+            onClick={() => navigate(`${getRoutePrefix()}/audit-logs`)}
             style={{ 
               display: "flex", 
               alignItems: "center", 
@@ -5242,7 +5259,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                 gap: "4px"
               }}>
                 <div
-                  onClick={() => setActiveSection("apparence")}
+                  onClick={() => navigate(`${getRoutePrefix()}/parametres/apparence`)}
                   style={{
                     padding: "8px 12px",
                     cursor: "pointer",
@@ -5255,7 +5272,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                   Apparence
                 </div>
                 <div
-                  onClick={() => setActiveSection("email")}
+                  onClick={() => navigate(`${getRoutePrefix()}/parametres/email`)}
                   style={{
                     padding: "8px 12px",
                     cursor: "pointer",
@@ -5268,7 +5285,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                   Email
                 </div>
                 <div
-                  onClick={() => setActiveSection("securite")}
+                  onClick={() => navigate(`${getRoutePrefix()}/parametres/securite`)}
                   style={{
                     padding: "8px 12px",
                     cursor: "pointer",
@@ -5281,7 +5298,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                   Sécurité
                 </div>
                 <div
-                  onClick={() => setActiveSection("types-tickets")}
+                  onClick={() => navigate(`${getRoutePrefix()}/parametres/types-de-tickets`)}
                   style={{
                     padding: "8px 12px",
                     cursor: "pointer",
@@ -5294,7 +5311,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                   Types de Tickets
                 </div>
                 <div
-                  onClick={() => setActiveSection("priorites")}
+                  onClick={() => navigate(`${getRoutePrefix()}/parametres/priorites`)}
                   style={{
                     padding: "8px 12px",
                     cursor: "pointer",
@@ -5307,7 +5324,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                   Priorités
                 </div>
                 <div
-                  onClick={() => setActiveSection("departements")}
+                  onClick={() => navigate(`${getRoutePrefix()}/parametres/departements`)}
                   style={{
                     padding: "8px 12px",
                     cursor: "pointer",
@@ -5328,7 +5345,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
         <div style={{ marginTop: "auto" }}>
           {/* Bouton Notifications */}
           <div
-            onClick={() => navigate("/dashboard/dsi/notifications")}
+            onClick={() => navigate(`${getRoutePrefix()}/notifications`)}
             style={{
               display: "flex",
               alignItems: "center",
@@ -13994,7 +14011,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                     </h3>
                     <button
                       onClick={() => {
-                        navigate("/dashboard/dsi");
+                        navigate(getRoutePrefix());
                         setSelectedNotificationTicket(null);
                         setSelectedNotificationTicketDetails(null);
                       }}
