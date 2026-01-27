@@ -10675,7 +10675,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                                          height: "40px",
                                          borderRadius: "50%",
                                          background: orangeLight,
-                                         color: orangeDark,
+                                         color: "hsl(25, 95%, 53%)",
                                          display: "flex",
                                          alignItems: "center",
                                          justifyContent: "center",
