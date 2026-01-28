@@ -11159,9 +11159,6 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                   <Layers size={20} color="hsl(220, 15%, 45%)" />
-                  <h1 style={{ fontSize: "24px", fontWeight: 600, color: "hsl(220, 15%, 45%)", margin: 0 }}>
-                    Types de tickets
-                  </h1>
                 </div>
                 <button
                   onClick={() => {
