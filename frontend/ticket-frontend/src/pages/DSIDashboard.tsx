@@ -11389,7 +11389,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                       background: "white",
                       borderRadius: "12px",
                       width: "100%",
-                      maxWidth: "500px",
+                      maxWidth: "448px",
                       boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
                       padding: "24px",
                       position: "relative"
@@ -11419,7 +11419,8 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                       <X size={20} />
                     </button>
 
-                    <h2 style={{ marginBottom: "24px", fontSize: "24px", fontWeight: "600", color: "#333" }}>
+                    {/* Titre: text-foreground (bleu marine #1E3A5F) */}
+                    <h2 style={{ marginBottom: "24px", fontSize: "24px", fontWeight: "600", color: "#1E3A5F" }}>
                       {editingType ? "Modifier le type" : "Ajouter un type"}
                     </h2>
                     
@@ -11430,11 +11431,14 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                       } else {
                         handleAddType();
                       }
-                    }}>
-                      <div style={{ marginBottom: "16px" }}>
-                        <label style={{ display: "block", marginBottom: "8px", color: "#333", fontWeight: "500" }}>
+                    }} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                      {/* Nom du type */}
+                      <div>
+                        {/* Label: text-sm font-medium text-foreground mb-2 */}
+                        <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: "500", color: "#1E3A5F" }}>
                           Nom du type <span style={{ color: "#dc3545" }}>*</span>
                         </label>
+                        {/* Input: border border-input rounded-lg px-4 py-3 text-base bg-background */}
                         <input
                           type="text"
                           value={newType.type}
@@ -11443,18 +11447,23 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                           required
                           style={{
                             width: "100%",
-                            padding: "10px 12px",
-                            border: "1px solid #ddd",
-                            borderRadius: "4px",
-                            fontSize: "14px"
+                            padding: "12px 16px",
+                            border: "1px solid hsl(220, 20%, 88%)",
+                            borderRadius: "8px",
+                            fontSize: "16px",
+                            backgroundColor: "white",
+                            color: "#1E3A5F"
                           }}
                         />
                       </div>
 
-                      <div style={{ marginBottom: "16px" }}>
-                        <label style={{ display: "block", marginBottom: "8px", color: "#333", fontWeight: "500" }}>
+                      {/* Code (identifiant technique) */}
+                      <div>
+                        {/* Label: text-sm font-medium text-foreground mb-2 */}
+                        <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: "500", color: "#1E3A5F" }}>
                           Code (identifiant technique)
                         </label>
+                        {/* Input désactivé: border border-input rounded-lg px-4 py-3 text-muted-foreground bg-muted/50 cursor-not-allowed */}
                         <input
                           type="text"
                           value={editingType ? ticketTypes.find(t => t.id === editingType)?.code || "" : (newType.type ? newType.type.toLowerCase().replace(/\s+/g, "-") : "")}
@@ -11462,39 +11471,47 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                           placeholder="Généré automatiquement"
                           style={{
                             width: "100%",
-                            padding: "10px 12px",
-                            border: "1px solid #ddd",
-                            borderRadius: "4px",
-                            fontSize: "14px",
+                            padding: "12px 16px",
+                            border: "1px solid hsl(220, 20%, 88%)",
+                            borderRadius: "8px",
+                            fontSize: "16px",
                             fontFamily: "monospace",
-                            backgroundColor: "#f5f5f5",
-                            color: "#666"
+                            backgroundColor: "hsl(220, 13%, 91%)",
+                            color: "hsl(220, 15%, 45%)",
+                            cursor: "not-allowed"
                           }}
                         />
                       </div>
 
-                      <div style={{ marginBottom: "16px" }}>
-                        <label style={{ display: "block", marginBottom: "8px", color: "#333", fontWeight: "500" }}>
+                      {/* Description */}
+                      <div>
+                        {/* Label: text-sm font-medium text-foreground mb-2 */}
+                        <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: "500", color: "#1E3A5F" }}>
                           Description
                         </label>
+                        {/* Textarea: border border-input rounded-lg px-4 py-3 min-h-[100px] text-sm bg-background resize-y */}
                         <textarea
                           value={newType.description}
                           onChange={(e) => setNewType({ ...newType, description: e.target.value })}
                           placeholder="Ex: Problèmes liés aux équipements physiques (ordinateurs, imprimantes, etc.)"
-                          rows={4}
                           style={{
                             width: "100%",
-                            padding: "10px 12px",
-                            border: "1px solid #ddd",
-                            borderRadius: "4px",
+                            padding: "12px 16px",
+                            border: "1px solid hsl(220, 20%, 88%)",
+                            borderRadius: "8px",
                             fontSize: "14px",
+                            minHeight: "100px",
+                            backgroundColor: "white",
+                            color: "#1E3A5F",
                             resize: "vertical"
                           }}
                         />
                       </div>
 
-                      <div style={{ marginBottom: "24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <label style={{ color: "#333", fontWeight: "500" }}>
+                      {/* Actif Switch */}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        {/* Label: text-sm font-medium text-foreground */}
+                        <label style={{ fontSize: "14px", fontWeight: "500", color: "#1E3A5F" }}>
                           Actif
                         </label>
                         <div
@@ -11523,7 +11540,9 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                         </div>
                       </div>
 
-                      <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "24px" }}>
+                      {/* Boutons d'action */}
+                      <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "8px" }}>
+                        {/* Bouton Annuler: variant="outline" */}
                         <button
                           type="button"
                           onClick={() => {
@@ -11534,9 +11553,9 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                           style={{
                             padding: "10px 20px",
                             background: "white",
-                            color: "#333",
-                            border: "1px solid #ddd",
-                            borderRadius: "4px",
+                            color: "#1E3A5F",
+                            border: "1px solid hsl(220, 20%, 88%)",
+                            borderRadius: "8px",
                             cursor: "pointer",
                             fontSize: "14px",
                             fontWeight: "500"
@@ -11544,14 +11563,15 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                         >
                           Annuler
                         </button>
+                        {/* Bouton Modifier: bg-primary (orange #F58220) */}
                         <button
                           type="submit"
                           style={{
                             padding: "10px 20px",
-                            background: "#FF6B00",
+                            background: "#F58220",
                             color: "white",
                             border: "none",
-                            borderRadius: "4px",
+                            borderRadius: "8px",
                             cursor: "pointer",
                             fontSize: "14px",
                             fontWeight: "500"
