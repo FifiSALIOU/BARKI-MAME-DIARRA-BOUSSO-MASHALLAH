@@ -3932,7 +3932,7 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                 display: "flex",
                 width: "100%",
                 height: "calc(100vh - 80px)",
-                marginTop: "-30px",
+                marginTop: "0",
                 marginLeft: "-30px",
                 marginRight: "-30px",
                 marginBottom: "-30px",
