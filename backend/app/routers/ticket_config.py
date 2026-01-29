@@ -105,6 +105,51 @@ def get_ticket_categories(
     return result
 
 
+@router.put("/categories/{category_id}", response_model=schemas.TicketCategoryConfig)
+def update_ticket_category(
+    category_id: int,
+    category_update: schemas.TicketCategoryUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """
+    Met à jour une catégorie de ticket.
+    """
+    category = db.query(models.TicketCategory).filter(models.TicketCategory.id == category_id).first()
+    if not category:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Catégorie non trouvée"
+        )
+    if category_update.name is not None:
+        category.name = category_update.name.strip()
+    if category_update.ticket_type_id is not None:
+        type_exists = db.query(models.TicketTypeModel).filter(models.TicketTypeModel.id == category_update.ticket_type_id).first()
+        if not type_exists:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Type de ticket invalide"
+            )
+        category.ticket_type_id = category_update.ticket_type_id
+    if category_update.is_active is not None:
+        category.is_active = category_update.is_active
+    db.commit()
+    db.refresh(category)
+    category = (
+        db.query(models.TicketCategory)
+        .options(joinedload(models.TicketCategory.ticket_type))
+        .filter(models.TicketCategory.id == category_id)
+        .first()
+    )
+    return schemas.TicketCategoryConfig(
+        id=category.id,
+        name=category.name,
+        description=category.description,
+        type_code=category.ticket_type.code if category.ticket_type else "",
+        is_active=category.is_active
+    )
+
+
 @router.put("/types/{type_id}", response_model=schemas.TicketTypeConfig)
 def update_ticket_type(
     type_id: int,

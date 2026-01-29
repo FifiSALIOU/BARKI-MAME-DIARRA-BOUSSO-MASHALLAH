@@ -1393,6 +1393,53 @@ function DSIDashboard({ token }: DSIDashboardProps) {
     }
   };
 
+  async function handleUpdateCategory() {
+    if (!editingCategory || !token?.trim()) {
+      if (!token?.trim()) alert("Session expirée. Veuillez vous reconnecter.");
+      return;
+    }
+    const name = editCategoryName?.trim();
+    if (!name) {
+      alert("Le nom de la catégorie est obligatoire.");
+      return;
+    }
+    const selectedType = categoriesTypes.find((t) => t.code === editCategoryTypeCode);
+    if (!selectedType) {
+      alert("Veuillez sélectionner un type de ticket.");
+      return;
+    }
+    try {
+      const res = await fetch(`http://localhost:8000/ticket-config/categories/${editingCategory.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name,
+          ticket_type_id: selectedType.id,
+          is_active: editingCategory.is_active,
+        }),
+      });
+      if (res.ok) {
+        const [typesRes, categoriesRes] = await Promise.all([
+          fetch("http://localhost:8000/ticket-config/types", { headers: { Authorization: `Bearer ${token}` } }),
+          fetch("http://localhost:8000/ticket-config/categories", { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
+        if (typesRes.ok) setCategoriesTypes(await typesRes.json());
+        if (categoriesRes.ok) setCategoriesList(await categoriesRes.json());
+        setShowEditCategoryModal(false);
+        setEditingCategory(null);
+      } else {
+        const err = await res.json().catch(() => ({ detail: "Erreur lors de la modification" }));
+        alert(err.detail || "Erreur lors de la modification de la catégorie");
+      }
+    } catch (err) {
+      console.error("Erreur lors de la modification de la catégorie:", err);
+      alert("Erreur lors de la modification de la catégorie");
+    }
+  }
+
   const getTypeColorName = (color: string) => {
     const colorMap: { [key: string]: string } = {
       "#dc3545": "Rouge",
@@ -11691,6 +11738,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                         </button>
                         <button
                           type="button"
+                          onClick={handleUpdateCategory}
                           style={{
                             padding: "10px 20px",
                             background: "hsl(25, 95%, 53%)",
