@@ -10979,7 +10979,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                { id: "4", name: "Utilisateurs", description: "Utilisateurs standards qui créent des tickets", icon: UserCheck, bgColor: "#dcfce7", iconColor: "#16a34a", members: utilisateursMembers },
              ];
              return (
-               <div style={{ padding: "24px" }}>
+               <div style={{ padding: "24px", background: "white", minHeight: "100%" }}>
                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                    {groupsData.map((group) => {
                      const IconComponent = group.icon;
