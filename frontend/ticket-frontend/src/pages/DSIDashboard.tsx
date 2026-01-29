@@ -427,6 +427,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
     if (path === "/dashboard/admin/maintenance" || path === "/dashboard/dsi/maintenance") return "maintenance";
     if (path === "/dashboard/admin/reports" || path === "/dashboard/admin/statistiques" || path === "/dashboard/dsi/reports") return "reports";
     if (path === "/dashboard/admin/users" || path === "/dashboard/dsi/users") return "users";
+    if (path === "/dashboard/admin/groupes") return "groupes";
     if (path === "/dashboard/admin/roles" || path === "/dashboard/dsi/roles") return "roles";
     if (path === "/dashboard/admin/technicians" || path === "/dashboard/dsi/technicians") return "technicians";
     if (path === "/dashboard/admin/actifs" || path === "/dashboard/dsi/actifs") return "actifs";
@@ -5661,6 +5662,32 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
         )}
         {userRole === "Admin" && (
           <div 
+            onClick={() => navigate(`${getRoutePrefix()}/groupes`)}
+            style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              gap: "12px", 
+              padding: "10px", 
+              cursor: "pointer",
+              color: "white",
+              borderRadius: "4px",
+              background: activeSection === "groupes" ? "hsl(25, 95%, 53%)" : "transparent",
+              marginBottom: "8px"
+            }}
+          >
+            <div style={{ width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={activeSection === "groupes" ? "white" : "rgba(180, 180, 180, 0.7)"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </div>
+            <div style={{ flex: 1 }}>Groupes</div>
+          </div>
+        )}
+        {userRole === "Admin" && (
+          <div 
             onClick={() => navigate(`${getRoutePrefix()}/roles`)}
             style={{ 
               display: "flex", 
@@ -6002,7 +6029,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
               color: "#111827",
               fontFamily: "system-ui, -apple-system, sans-serif"
             }}>
-              {activeSection === "roles" ? "Gestion des rôles" : activeSection === "users" ? "Gestion des utilisateurs" : activeSection === "tickets" ? "Tickets" : activeSection === "technicians" ? "Équipe" : activeSection === "reports" ? "Statistiques générales" : "Tableau de bord"}
+              {activeSection === "roles" ? "Gestion des rôles" : activeSection === "users" ? "Gestion des utilisateurs" : activeSection === "groupes" ? "Groupes" : activeSection === "tickets" ? "Tickets" : activeSection === "technicians" ? "Équipe" : activeSection === "reports" ? "Statistiques générales" : "Tableau de bord"}
             </div>
             <div style={{ 
               fontSize: "13px", 
@@ -6010,7 +6037,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
               color: "#6b7280",
               fontFamily: "system-ui, -apple-system, sans-serif"
             }}>
-              {activeSection === "roles" ? "Créez, modifiez et gérez les rôles et permissions" : activeSection === "users" ? "Créez, modifiez et gérez les comptes utilisateurs" : activeSection === "tickets" ? "Gérez tous vos tickets" : activeSection === "technicians" ? "Gestion des membres de l'équipe DSI et des techniciens" : activeSection === "reports" ? "Vue d'ensemble des tickets et de l'activité du support" : "Vue d'ensemble de votre activité"}
+              {activeSection === "roles" ? "Créez, modifiez et gérez les rôles et permissions" : activeSection === "users" ? "Créez, modifiez et gérez les comptes utilisateurs" : activeSection === "groupes" ? "Gestion des groupes" : activeSection === "tickets" ? "Gérez tous vos tickets" : activeSection === "technicians" ? "Gestion des membres de l'équipe DSI et des techniciens" : activeSection === "reports" ? "Vue d'ensemble des tickets et de l'activité du support" : "Vue d'ensemble de votre activité"}
             </div>
           </div>
           
@@ -10934,6 +10961,13 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                 </div>
               )}
              </>
+           )}
+
+           {activeSection === "groupes" && (
+             <div style={{ padding: "24px", background: "white", borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+               <h2 style={{ fontSize: "20px", fontWeight: "600", color: "#111827", marginBottom: "8px" }}>Groupes</h2>
+               <p style={{ color: "#6b7280", fontSize: "14px" }}>Gestion des groupes.</p>
+             </div>
            )}
 
            {activeSection === "users" && (() => {
