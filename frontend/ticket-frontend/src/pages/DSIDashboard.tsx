@@ -11325,7 +11325,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
           })()}
 
           {activeSection === "categories" && userRole === "Admin" && (
-            <div style={{ padding: "24px", background: "hsl(210, 20%, 98%)", minHeight: "100%" }}>
+            <div style={{ padding: "24px", background: "white", minHeight: "100%" }}>
               {/* Header */}
               <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", marginBottom: "24px" }}>
                 <button
@@ -11390,26 +11390,28 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                               <Monitor size={20} color="hsl(25, 95%, 53%)" />
                             )}
                           </div>
-                          <span style={{ fontSize: "16px", fontWeight: 500, color: "#111827", fontFamily: "system-ui, -apple-system, sans-serif", flex: 1 }}>
-                            {typeItem.label}
-                          </span>
-                          <span
-                            style={{
-                              minWidth: "24px",
-                              height: "24px",
-                              borderRadius: "9999px",
-                              backgroundColor: "hsl(25, 95%, 53%)",
-                              color: "white",
-                              fontSize: "14px",
-                              fontWeight: 500,
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              padding: "0 8px"
-                            }}
-                          >
-                            {count}
-                          </span>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
+                            <span style={{ fontSize: "16px", fontWeight: 500, color: "#111827", fontFamily: "system-ui, -apple-system, sans-serif" }}>
+                              {typeItem.label}
+                            </span>
+                            <span
+                              style={{
+                                minWidth: "24px",
+                                height: "24px",
+                                borderRadius: "9999px",
+                                backgroundColor: "hsl(25, 95%, 53%)",
+                                color: "white",
+                                fontSize: "14px",
+                                fontWeight: 500,
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                padding: "0 8px"
+                              }}
+                            >
+                              {count}
+                            </span>
+                          </div>
                           <div
                             style={{
                               display: "flex",
