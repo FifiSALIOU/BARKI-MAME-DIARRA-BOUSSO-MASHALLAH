@@ -102,7 +102,7 @@
 .rdp-root .rdp-range_start .rdp-day_button,
 .rdp-root .rdp-range_end .rdp-day_button,
 .rdp-root .rdp-range_start.rdp-range_end .rdp-day_button {
-  background-color: #ea580c !important;
+  background-color: #FF6B00 !important;
   color: #fff !important;
   border-radius: 6px;
   border: none !important;
