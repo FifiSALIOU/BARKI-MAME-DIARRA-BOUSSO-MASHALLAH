@@ -6871,20 +6871,20 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
           >
             <Clock3 size={20} color="#ff8a3c" />
           </div>
+          <div style={{ fontSize: "13px", fontWeight: 500, color: "#374151", marginBottom: "12px" }}>
+            Tickets à assigner
+          </div>
           <div
             style={{
               fontSize: "24px",
               fontWeight: 700,
               color: "#111827",
-              marginBottom: "4px",
+              marginBottom: "2px",
             }}
           >
             {pendingCount}
           </div>
-          <div style={{ fontSize: "12px", fontWeight: 500, color: "#374151" }}>
-            Tickets à assigner
-          </div>
-          <div style={{ marginTop: "3px", fontSize: "11px", color: "#6b7280" }}>
+          <div style={{ fontSize: "11px", color: "#6b7280" }}>
             Action requise
           </div>
         </div>
@@ -6945,20 +6945,20 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
           >
             <UserCheck size={20} color="#16a34a" />
           </div>
+          <div style={{ fontSize: "13px", fontWeight: 500, color: "#374151", marginBottom: "12px" }}>
+            Techniciens disponibles
+          </div>
           <div
             style={{
               fontSize: "24px",
               fontWeight: 700,
               color: "#111827",
-              marginBottom: "4px",
+              marginBottom: "2px",
             }}
           >
             {activeTechniciansCount}
           </div>
-          <div style={{ fontSize: "12px", fontWeight: 500, color: "#374151" }}>
-            Techniciens disponibles
-          </div>
-          <div style={{ marginTop: "3px", fontSize: "11px", color: "#6b7280" }}>
+          <div style={{ fontSize: "11px", color: "#6b7280" }}>
             Sur {technicians.length || 0} au total
           </div>
         </div>
@@ -7019,21 +7019,20 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
           >
             <Clock3 size={20} color="#8b5cf6" />
           </div>
+          <div style={{ fontSize: "13px", fontWeight: 500, color: "#374151", marginBottom: "12px" }}>
+            Temps moyen
+          </div>
           <div
             style={{
               fontSize: "24px",
               fontWeight: 700,
               color: "#111827",
-              marginBottom: "4px",
+              marginBottom: "2px",
             }}
           >
             {metrics.avgResolutionTime ?? "Chargement..."}
           </div>
-          <div style={{ fontSize: "12px", fontWeight: 500, color: "#374151" }}>
-            Temps moyen
-          </div>
-          <div style={{ marginTop: "3px", fontSize: "11px", color: "#16a34a" }}>
-            {/* Variation fictive pour l&apos;instant */}
+          <div style={{ fontSize: "11px", color: "#16a34a" }}>
             ↗ -15% ce mois
           </div>
         </div>
@@ -7094,21 +7093,20 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
           >
             <Star size={20} color="#eab308" />
           </div>
+          <div style={{ fontSize: "13px", fontWeight: 500, color: "#374151", marginBottom: "12px" }}>
+            Satisfaction client
+          </div>
           <div
             style={{
               fontSize: "24px",
               fontWeight: 700,
               color: "#111827",
-              marginBottom: "4px",
+              marginBottom: "2px",
             }}
           >
             {metrics.userSatisfaction ?? "Chargement..."}
           </div>
-          <div style={{ fontSize: "12px", fontWeight: 500, color: "#374151" }}>
-            Satisfaction client
-          </div>
-          <div style={{ marginTop: "3px", fontSize: "11px", color: "#16a34a" }}>
-            {/* Variation fictive pour l&apos;instant */}
+          <div style={{ fontSize: "11px", color: "#16a34a" }}>
             ↗ +0.3 ce mois
           </div>
         </div>
@@ -7169,20 +7167,20 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
           >
             <Clock3 size={20} color="#0284c7" />
           </div>
+          <div style={{ fontSize: "13px", fontWeight: 500, color: "#374151", marginBottom: "12px" }}>
+            Volume total
+          </div>
           <div
             style={{
               fontSize: "24px",
               fontWeight: 700,
               color: "#111827",
-              marginBottom: "4px",
+              marginBottom: "2px",
             }}
           >
             {totalTicketsCount}
           </div>
-          <div style={{ fontSize: "12px", fontWeight: 500, color: "#374151" }}>
-            Volume total
-          </div>
-          <div style={{ marginTop: "3px", fontSize: "11px", color: "#6b7280" }}>
+          <div style={{ fontSize: "11px", color: "#6b7280" }}>
             Ce mois
           </div>
         </div>
@@ -7243,20 +7241,20 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
           >
             <TrendingUp size={20} color="hsl(142, 76%, 36%)" />
           </div>
+          <div style={{ fontSize: "13px", fontWeight: 500, color: "#374151", marginBottom: "12px" }}>
+            Taux de résolution
+          </div>
           <div
             style={{
               fontSize: "24px",
               fontWeight: 700,
               color: "#111827",
-              marginBottom: "4px",
+              marginBottom: "2px",
             }}
           >
             {resolutionRate}
           </div>
-          <div style={{ fontSize: "12px", fontWeight: 500, color: "#374151" }}>
-            Taux de résolution
-          </div>
-          <div style={{ marginTop: "3px", fontSize: "11px", color: "#16a34a" }}>
+          <div style={{ fontSize: "11px", color: "#16a34a" }}>
             +2% (indicatif)
           </div>
         </div>
