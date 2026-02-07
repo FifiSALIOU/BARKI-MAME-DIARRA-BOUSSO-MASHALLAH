@@ -6806,30 +6806,37 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
         </div>
       </div>
 
-      {/* Métriques principales DSI */}
+      {/* Métriques principales DSI - 6 KPIs alignés sur une même rangée */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(3, minmax(200px, 1fr))",
-          gap: "10px",
+          gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
+          gap: "12px",
           margin: "20px 0",
         }}
       >
         {/* Tickets à assigner */}
         <div
+          className="kpi-card"
           style={{
-            background: "white",
-            borderRadius: "12px",
-            padding: "18px 20px",
-            boxShadow: "0 6px 18px rgba(15,23,42,0.08)",
+            background: "#fff",
+            borderRadius: "0.75rem",
+            padding: "1.5rem",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+            border: "1px solid rgba(229,231,235,0.5)",
             position: "relative",
             overflow: "hidden",
+            transition: "box-shadow 0.2s ease, transform 0.2s ease",
           }}
           onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)";
+            e.currentTarget.style.transform = "translateY(-4px)";
             const badge = e.currentTarget.querySelector('.kpi-badge') as HTMLElement;
             if (badge) badge.style.transform = "scale(1.5)";
           }}
           onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.08)";
+            e.currentTarget.style.transform = "translateY(0)";
             const badge = e.currentTarget.querySelector('.kpi-badge') as HTMLElement;
             if (badge) badge.style.transform = "scale(1)";
           }}
@@ -6838,10 +6845,10 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
             className="kpi-badge"
             style={{
               position: "absolute",
-              right: "-16px",
-              top: "-16px",
-              width: "96px",
-              height: "96px",
+              right: "-1rem",
+              top: "-1rem",
+              width: "6rem",
+              height: "6rem",
               borderRadius: "50%",
               background: "rgba(255, 138, 60, 0.05)",
               transition: "transform 500ms ease",
@@ -6883,19 +6890,26 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
 
         {/* Techniciens disponibles */}
         <div
+          className="kpi-card"
           style={{
-            background: "white",
-            borderRadius: "12px",
-            padding: "18px 20px",
-            boxShadow: "0 6px 18px rgba(15,23,42,0.08)",
+            background: "#fff",
+            borderRadius: "0.75rem",
+            padding: "1.5rem",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+            border: "1px solid rgba(229,231,235,0.5)",
             position: "relative",
             overflow: "hidden",
+            transition: "box-shadow 0.2s ease, transform 0.2s ease",
           }}
           onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)";
+            e.currentTarget.style.transform = "translateY(-4px)";
             const badge = e.currentTarget.querySelector('.kpi-badge') as HTMLElement;
             if (badge) badge.style.transform = "scale(1.5)";
           }}
           onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.08)";
+            e.currentTarget.style.transform = "translateY(0)";
             const badge = e.currentTarget.querySelector('.kpi-badge') as HTMLElement;
             if (badge) badge.style.transform = "scale(1)";
           }}
@@ -6904,10 +6918,10 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
             className="kpi-badge"
             style={{
               position: "absolute",
-              right: "-16px",
-              top: "-16px",
-              width: "96px",
-              height: "96px",
+              right: "-1rem",
+              top: "-1rem",
+              width: "6rem",
+              height: "6rem",
               borderRadius: "50%",
               background: "rgba(255, 138, 60, 0.05)",
               transition: "transform 500ms ease",
@@ -6949,19 +6963,26 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
 
         {/* Temps moyen */}
         <div
+          className="kpi-card"
           style={{
-            background: "white",
-            borderRadius: "12px",
-            padding: "18px 20px",
-            boxShadow: "0 6px 18px rgba(15,23,42,0.08)",
+            background: "#fff",
+            borderRadius: "0.75rem",
+            padding: "1.5rem",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+            border: "1px solid rgba(229,231,235,0.5)",
             position: "relative",
             overflow: "hidden",
+            transition: "box-shadow 0.2s ease, transform 0.2s ease",
           }}
           onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)";
+            e.currentTarget.style.transform = "translateY(-4px)";
             const badge = e.currentTarget.querySelector('.kpi-badge') as HTMLElement;
             if (badge) badge.style.transform = "scale(1.5)";
           }}
           onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.08)";
+            e.currentTarget.style.transform = "translateY(0)";
             const badge = e.currentTarget.querySelector('.kpi-badge') as HTMLElement;
             if (badge) badge.style.transform = "scale(1)";
           }}
@@ -6970,10 +6991,10 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
             className="kpi-badge"
             style={{
               position: "absolute",
-              right: "-16px",
-              top: "-16px",
-              width: "96px",
-              height: "96px",
+              right: "-1rem",
+              top: "-1rem",
+              width: "6rem",
+              height: "6rem",
               borderRadius: "50%",
               background: "rgba(255, 138, 60, 0.05)",
               transition: "transform 500ms ease",
@@ -7016,19 +7037,26 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
 
         {/* Satisfaction client (en %) */}
         <div
+          className="kpi-card"
           style={{
-            background: "white",
-            borderRadius: "12px",
-            padding: "18px 20px",
-            boxShadow: "0 6px 18px rgba(15,23,42,0.08)",
+            background: "#fff",
+            borderRadius: "0.75rem",
+            padding: "1.5rem",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+            border: "1px solid rgba(229,231,235,0.5)",
             position: "relative",
             overflow: "hidden",
+            transition: "box-shadow 0.2s ease, transform 0.2s ease",
           }}
           onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)";
+            e.currentTarget.style.transform = "translateY(-4px)";
             const badge = e.currentTarget.querySelector('.kpi-badge') as HTMLElement;
             if (badge) badge.style.transform = "scale(1.5)";
           }}
           onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.08)";
+            e.currentTarget.style.transform = "translateY(0)";
             const badge = e.currentTarget.querySelector('.kpi-badge') as HTMLElement;
             if (badge) badge.style.transform = "scale(1)";
           }}
@@ -7037,10 +7065,10 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
             className="kpi-badge"
             style={{
               position: "absolute",
-              right: "-16px",
-              top: "-16px",
-              width: "96px",
-              height: "96px",
+              right: "-1rem",
+              top: "-1rem",
+              width: "6rem",
+              height: "6rem",
               borderRadius: "50%",
               background: "rgba(255, 138, 60, 0.05)",
               transition: "transform 500ms ease",
@@ -7083,19 +7111,26 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
 
         {/* Volume total de tickets */}
         <div
+          className="kpi-card"
           style={{
-            background: "white",
-            borderRadius: "12px",
-            padding: "18px 20px",
-            boxShadow: "0 6px 18px rgba(15,23,42,0.08)",
+            background: "#fff",
+            borderRadius: "0.75rem",
+            padding: "1.5rem",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+            border: "1px solid rgba(229,231,235,0.5)",
             position: "relative",
             overflow: "hidden",
+            transition: "box-shadow 0.2s ease, transform 0.2s ease",
           }}
           onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)";
+            e.currentTarget.style.transform = "translateY(-4px)";
             const badge = e.currentTarget.querySelector('.kpi-badge') as HTMLElement;
             if (badge) badge.style.transform = "scale(1.5)";
           }}
           onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.08)";
+            e.currentTarget.style.transform = "translateY(0)";
             const badge = e.currentTarget.querySelector('.kpi-badge') as HTMLElement;
             if (badge) badge.style.transform = "scale(1)";
           }}
@@ -7104,10 +7139,10 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
             className="kpi-badge"
             style={{
               position: "absolute",
-              right: "-16px",
-              top: "-16px",
-              width: "96px",
-              height: "96px",
+              right: "-1rem",
+              top: "-1rem",
+              width: "6rem",
+              height: "6rem",
               borderRadius: "50%",
               background: "rgba(255, 138, 60, 0.05)",
               transition: "transform 500ms ease",
@@ -7149,19 +7184,26 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
 
         {/* Taux de résolution global */}
         <div
+          className="kpi-card"
           style={{
-            background: "white",
-            borderRadius: "12px",
-            padding: "18px 20px",
-            boxShadow: "0 6px 18px rgba(15,23,42,0.08)",
+            background: "#fff",
+            borderRadius: "0.75rem",
+            padding: "1.5rem",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+            border: "1px solid rgba(229,231,235,0.5)",
             position: "relative",
             overflow: "hidden",
+            transition: "box-shadow 0.2s ease, transform 0.2s ease",
           }}
           onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)";
+            e.currentTarget.style.transform = "translateY(-4px)";
             const badge = e.currentTarget.querySelector('.kpi-badge') as HTMLElement;
             if (badge) badge.style.transform = "scale(1.5)";
           }}
           onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.08)";
+            e.currentTarget.style.transform = "translateY(0)";
             const badge = e.currentTarget.querySelector('.kpi-badge') as HTMLElement;
             if (badge) badge.style.transform = "scale(1)";
           }}
@@ -7170,10 +7212,10 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
             className="kpi-badge"
             style={{
               position: "absolute",
-              right: "-16px",
-              top: "-16px",
-              width: "96px",
-              height: "96px",
+              right: "-1rem",
+              top: "-1rem",
+              width: "6rem",
+              height: "6rem",
               borderRadius: "50%",
               background: "rgba(255, 138, 60, 0.05)",
               transition: "transform 500ms ease",
