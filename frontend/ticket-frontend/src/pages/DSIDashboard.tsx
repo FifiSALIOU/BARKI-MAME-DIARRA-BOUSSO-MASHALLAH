@@ -18272,7 +18272,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
               <textarea
                 value={assignmentNotes}
                 onChange={(e) => setAssignmentNotes(e.target.value)}
-                placeholder="Exemple: Ce ticket nécessite une attention particulière..."
+                placeholder=""
                 rows={3}
                 style={{
                   width: "100%",
@@ -18459,7 +18459,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
               <textarea
                 value={assignmentNotes}
                 onChange={(e) => setAssignmentNotes(e.target.value)}
-                placeholder="Exemple: Ce ticket nécessite une attention particulière..."
+                placeholder=""
                 rows={3}
                 style={{
                   width: "100%",
