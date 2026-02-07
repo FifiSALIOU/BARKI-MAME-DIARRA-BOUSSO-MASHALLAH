@@ -256,3 +256,10 @@ p[style*="color: red"] {
 .dsi-period-filter-trigger:hover svg {
   color: #ea580c !important;
 }
+
+/* Listes déroulantes personnalisées DSI : option au survol / sélectionnée = orange */
+.dsi-orange-select-option:hover,
+.dsi-orange-select-option.dsi-orange-select-option-selected {
+  background-color: #fff7ed !important;
+  color: #ea580c !important;
+}
