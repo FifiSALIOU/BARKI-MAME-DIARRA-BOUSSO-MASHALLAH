@@ -8676,7 +8676,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                   border: "1px solid rgba(148, 163, 184, 0.5)",
                   borderRadius: "12px",
                   padding: "16px",
-                  marginBottom: "24px",
+                  marginBottom: "12px",
                   backgroundColor: "#ffffff",
                   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.02)",
                 }}
@@ -9242,23 +9242,13 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                 </div>
               </div>
 
-              <div style={{ 
-                display: "flex", 
-                gap: "16px", 
-                marginTop: "0px",
-                marginBottom: "24px", 
-                flexWrap: "wrap",
-                padding: "16px",
-                borderRadius: "8px"
-              }}>
-              </div>
-              
               {/* Compteur de tickets avec icône */}
               <div style={{ 
                 display: "flex", 
                 alignItems: "center", 
                 gap: "8px",
-                marginBottom: "16px"
+                marginTop: "12px",
+                marginBottom: "12px"
               }}>
                 <Ticket size={20} color="#4b5563" />
                 <span style={{ 
