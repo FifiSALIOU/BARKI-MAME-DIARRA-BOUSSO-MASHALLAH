@@ -526,6 +526,10 @@ function DSIDashboard({ token }: DSIDashboardProps) {
   const [reopenedTicketsCount, setReopenedTicketsCount] = useState<number>(0);
   const [reopeningCalculated, setReopeningCalculated] = useState<boolean>(false);
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
+  // Filtres visuels pour les actifs (DSI/Admin) – n'affectent pas la logique
+  const [assetStatusFilter, setAssetStatusFilter] = useState<string>("all");
+  const [assetTypeFilter, setAssetTypeFilter] = useState<string>("all");
+  const [assetDepartmentFilter, setAssetDepartmentFilter] = useState<string>("all");
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -9136,58 +9140,40 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
 
               {/* Tous les statuts */}
               <div style={{ flex: "0 0 190px", minWidth: "170px" }}>
-                <select
-                  defaultValue="all"
-                  style={{
-                    width: "100%",
-                    padding: "10px 14px",
-                    borderRadius: "999px",
-                    border: "1px solid rgba(209,213,219,0.8)",
-                    fontSize: "14px",
-                    backgroundColor: "#f9fafb",
-                  }}
-                >
-                  <option value="all">Tous les statuts</option>
-                  <option value="en_service">En service</option>
-                  <option value="en_maintenance">En maintenance</option>
-                  <option value="en_panne">En panne</option>
-                  <option value="reformes">Réformés</option>
-                  <option value="en_stock">En stock</option>
-                </select>
+                <DSIOrangeSelect
+                  value={assetStatusFilter}
+                  onChange={setAssetStatusFilter}
+                  options={[
+                    { value: "all", label: "Tous les statuts" },
+                    { value: "en_service", label: "En service" },
+                    { value: "en_maintenance", label: "En maintenance" },
+                    { value: "en_panne", label: "En panne" },
+                    { value: "reformes", label: "Réformés" },
+                    { value: "en_stock", label: "En stock" },
+                  ]}
+                />
               </div>
 
               {/* Tous les types */}
               <div style={{ flex: "0 0 190px", minWidth: "170px" }}>
-                <select
-                  defaultValue="all"
-                  style={{
-                    width: "100%",
-                    padding: "10px 14px",
-                    borderRadius: "999px",
-                    border: "1px solid rgba(209,213,219,0.8)",
-                    fontSize: "14px",
-                    backgroundColor: "#f9fafb",
-                  }}
-                >
-                  <option value="all">Tous les types</option>
-                </select>
+                <DSIOrangeSelect
+                  value={assetTypeFilter}
+                  onChange={setAssetTypeFilter}
+                  options={[
+                    { value: "all", label: "Tous les types" },
+                  ]}
+                />
               </div>
 
               {/* Tous les départements */}
               <div style={{ flex: "0 0 210px", minWidth: "180px" }}>
-                <select
-                  defaultValue="all"
-                  style={{
-                    width: "100%",
-                    padding: "10px 14px",
-                    borderRadius: "999px",
-                    border: "1px solid rgba(209,213,219,0.8)",
-                    fontSize: "14px",
-                    backgroundColor: "#f9fafb",
-                  }}
-                >
-                  <option value="all">Tous les départements</option>
-                </select>
+                <DSIOrangeSelect
+                  value={assetDepartmentFilter}
+                  onChange={setAssetDepartmentFilter}
+                  options={[
+                    { value: "all", label: "Tous les départements" },
+                  ]}
+                />
               </div>
             </div>
           </div>
