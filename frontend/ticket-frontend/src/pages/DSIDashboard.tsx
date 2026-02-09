@@ -7185,6 +7185,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
               fontWeight: 700,
               color: "#111827",
               marginBottom: "2px",
+              whiteSpace: "nowrap",
             }}
           >
             {metrics.avgResolutionTime ?? "Chargement..."}
