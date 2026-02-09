@@ -9695,7 +9695,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                         { value: "en_attente_analyse", label: "En attente d'assignation" },
                         { value: "en_traitement", label: "En traitement" },
                         { value: "resolu", label: "Résolus" },
-                        { value: "retraite", label: "Retraité" },
+                        { value: "retraite", label: "Retraités" },
                         { value: "cloture", label: "Clôturés" },
                         { value: "rejete", label: "Relancés" },
                       ]}

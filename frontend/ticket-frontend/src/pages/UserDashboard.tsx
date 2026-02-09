@@ -2905,7 +2905,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                     <option value="assigne_technicien">Assigné au technicien</option>
                     <option value="en_cours">En cours</option>
                     <option value="resolu">Résolu</option>
-                    <option value="retraite">Retraité</option>
+                    <option value="retraite">Retraités</option>
                     <option value="rejete">Relancé</option>
                     <option value="cloture">Clôturé</option>
                   </select>

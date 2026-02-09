@@ -7190,7 +7190,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                       <span style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "#6b7280" }}><CheckCircle size={12} /><span>Statut</span></span>
-                      <OrangeSelect value={statusFilter} onChange={setStatusFilter} options={[{ value: "all", label: "Tous" }, { value: "en_attente_analyse", label: "En attente d'assignation" }, { value: "en_traitement", label: "En traitement" }, { value: "resolu", label: "Résolus" }, { value: "retraite", label: "Retraité" }, { value: "cloture", label: "Clôturés" }, { value: "rejete", label: "Relancés" }]} />
+                      <OrangeSelect value={statusFilter} onChange={setStatusFilter} options={[{ value: "all", label: "Tous" }, { value: "en_attente_analyse", label: "En attente d'assignation" }, { value: "en_traitement", label: "En traitement" }, { value: "resolu", label: "Résolus" }, { value: "retraite", label: "Retraités" }, { value: "cloture", label: "Clôturés" }, { value: "rejete", label: "Relancés" }]} />
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                       <span style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "#6b7280" }}><Flag size={12} /><span>Priorité</span></span>
