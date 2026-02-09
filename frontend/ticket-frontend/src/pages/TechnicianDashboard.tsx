@@ -2493,7 +2493,7 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                     <option value="assigne_technicien">Assigné</option>
                     <option value="en_cours">En cours</option>
                     <option value="resolu">Résolu</option>
-                    <option value="rejete">Rejeté</option>
+                    <option value="rejete">Relancé</option>
                   </select>
 
                   <select
@@ -4157,7 +4157,7 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                                 color: "#991b1b",
                                 whiteSpace: "nowrap",
                               }}>
-                                Rejeté
+                                {getStatusLabel(t.status)}
                               </span>
 
                               {/* Badge Priorité */}
@@ -4609,7 +4609,7 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                             whiteSpace: "nowrap",
                             display: "inline-block"
                           }}>
-                            Rejeté
+                            Relancé
                           </span>
                         )}
                       </div>
@@ -4868,7 +4868,7 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                   color: "#991b1b",
                   border: "1px solid #fecaca"
                 }}>
-                  Rejeté
+                  Relancé
                 </span>
               )}
             </div>
@@ -5469,7 +5469,7 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                           color: "#991b1b",
                           border: "1px solid #fecaca"
                         }}>
-                          Rejeté
+                          Relancé
                         </span>
                       )}
                     </div>
