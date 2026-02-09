@@ -9056,7 +9056,6 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                   <div style={{ fontSize: "14px", color: "#6b7280", fontWeight: 500 }}>Valeur totale</div>
                 </div>
               </div>
-
               {/* Garanties expirant */}
               <div
                 style={{
@@ -9088,6 +9087,107 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                   <div style={{ fontSize: "14px", color: "#6b7280", fontWeight: 500 }}>Garanties expirant</div>
                   <div style={{ fontSize: "11px", color: "#9ca3af" }}>dans 30 jours</div>
                 </div>
+              </div>
+            </div>
+
+            {/* Barre de recherche et filtres Actifs */}
+            <div
+              style={{
+                marginTop: "24px",
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "12px",
+              }}
+            >
+              {/* Recherche actifs */}
+              <div
+                style={{
+                  flex: "1 1 260px",
+                  minWidth: "220px",
+                  position: "relative",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <Search
+                  size={18}
+                  color="#6b7280"
+                  style={{
+                    position: "absolute",
+                    left: "14px",
+                    pointerEvents: "none",
+                    zIndex: 1,
+                  }}
+                />
+                <input
+                  type="text"
+                  placeholder="Rechercher par nom, n° série, marque..."
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px 10px 40px",
+                    borderRadius: "999px",
+                    border: "1px solid rgba(209,213,219,0.8)",
+                    backgroundColor: "#f9fafb",
+                    fontSize: "14px",
+                    outline: "none",
+                  }}
+                />
+              </div>
+
+              {/* Tous les statuts */}
+              <div style={{ flex: "0 0 190px", minWidth: "170px" }}>
+                <select
+                  defaultValue="all"
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    borderRadius: "999px",
+                    border: "1px solid rgba(209,213,219,0.8)",
+                    fontSize: "14px",
+                    backgroundColor: "#f9fafb",
+                  }}
+                >
+                  <option value="all">Tous les statuts</option>
+                  <option value="en_service">En service</option>
+                  <option value="en_maintenance">En maintenance</option>
+                  <option value="en_panne">En panne</option>
+                  <option value="reformes">Réformés</option>
+                  <option value="en_stock">En stock</option>
+                </select>
+              </div>
+
+              {/* Tous les types */}
+              <div style={{ flex: "0 0 190px", minWidth: "170px" }}>
+                <select
+                  defaultValue="all"
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    borderRadius: "999px",
+                    border: "1px solid rgba(209,213,219,0.8)",
+                    fontSize: "14px",
+                    backgroundColor: "#f9fafb",
+                  }}
+                >
+                  <option value="all">Tous les types</option>
+                </select>
+              </div>
+
+              {/* Tous les départements */}
+              <div style={{ flex: "0 0 210px", minWidth: "180px" }}>
+                <select
+                  defaultValue="all"
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    borderRadius: "999px",
+                    border: "1px solid rgba(209,213,219,0.8)",
+                    fontSize: "14px",
+                    backgroundColor: "#f9fafb",
+                  }}
+                >
+                  <option value="all">Tous les départements</option>
+                </select>
               </div>
             </div>
           </div>
