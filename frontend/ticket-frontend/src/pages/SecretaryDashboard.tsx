@@ -5002,6 +5002,35 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                         </button>
                       )}
 
+                      {/* Bouton Réassigner (si assigné ou en cours) */}
+                      {(ticketDetails.status === "assigne_technicien" || ticketDetails.status === "en_cours") && (
+                        <button
+                          onClick={() => {
+                            handleReassignClick(ticketDetails.id);
+                          }}
+                          disabled={loading}
+                          style={{
+                            padding: "10px 20px",
+                            backgroundColor: loading ? "#d1d5db" : "#10b981",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "6px",
+                            cursor: loading ? "not-allowed" : "pointer",
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            opacity: loading ? 0.6 : 1
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!loading) e.currentTarget.style.backgroundColor = "#059669";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!loading) e.currentTarget.style.backgroundColor = "#10b981";
+                          }}
+                        >
+                          Réassigner
+                        </button>
+                      )}
+
                       {/* Bouton Réouvrir */}
                       {ticketDetails.status === "rejete" && (
                         <button
