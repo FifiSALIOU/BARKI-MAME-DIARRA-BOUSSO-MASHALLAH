@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams, useLocation, useNavigate } from "react-router-dom";
-import { ClipboardList, Clock3, CheckCircle2, LayoutDashboard, ChevronLeft, ChevronRight, Bell, Search, Box, Clock, Monitor, Wrench, FileText, UserCheck, RefreshCcw, Users, MessageCircle } from "lucide-react";
+import { ClipboardList, Clock3, CheckCircle2, CheckCircle, LayoutDashboard, ChevronLeft, ChevronRight, Bell, Search, Box, Clock, Monitor, Wrench, FileText, UserCheck, RefreshCcw, Users, MessageCircle, AlertTriangle, Package, Archive, Banknote, ChevronDown } from "lucide-react";
 import helpdeskLogo from "../assets/helpdesk-logo.png";
 
 interface Notification {
@@ -62,6 +62,102 @@ interface TicketHistory {
   } | null;
 }
 
+/** Liste déroulante des filtres (survol orange sur les options) – version Technicien */
+function OrangeSelect({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const h = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("click", h);
+    return () => document.removeEventListener("click", h);
+  }, []);
+  const selected = options.find((o) => o.value === value) || options[0];
+  return (
+    <div ref={ref} style={{ position: "relative", width: "100%" }}>
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => setOpen((o) => !o)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setOpen((o) => !o);
+          }
+        }}
+        className="dsi-orange-select-trigger"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "8px",
+          padding: "6px 10px",
+          borderRadius: "8px",
+          border: "1px solid #e5e7eb",
+          backgroundColor: "#f9fafb",
+          fontSize: "14px",
+          height: "36px",
+          cursor: "pointer",
+          color: "#111827",
+        }}
+      >
+        <span>{selected?.label ?? value}</span>
+        <ChevronDown size={16} color="#6b7280" />
+      </div>
+      {open && (
+        <div
+          className="dsi-orange-select-dropdown"
+          style={{
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            right: 0,
+            marginTop: "4px",
+            backgroundColor: "#fff",
+            border: "1px solid #e5e7eb",
+            borderRadius: "8px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            zIndex: 1000,
+            maxHeight: "240px",
+            overflowY: "auto",
+          }}
+        >
+          {options.map((opt) => (
+            <div
+              key={opt.value}
+              role="option"
+              aria-selected={value === opt.value}
+              className={`dsi-orange-select-option ${value === opt.value ? "dsi-orange-select-option-selected" : ""}`}
+              onClick={() => {
+                onChange(opt.value);
+                setOpen(false);
+              }}
+              style={{
+                padding: "8px 10px",
+                cursor: "pointer",
+                fontSize: "14px",
+                backgroundColor: "transparent",
+                color: "#111827",
+              }}
+            >
+              {opt.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TechnicianDashboard({ token }: TechnicianDashboardProps) {
   const [searchParams] = useSearchParams();
   const location = useLocation();
@@ -97,6 +193,10 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [openActionsMenuFor, setOpenActionsMenuFor] = useState<string | null>(null);
   const [ticketSearchQuery, setTicketSearchQuery] = useState<string>("");
+  // Filtres visuels pour les actifs (Technicien) – uniquement pour l'UI
+  const [assetStatusFilter, setAssetStatusFilter] = useState<string>("all");
+  const [assetTypeFilter, setAssetTypeFilter] = useState<string>("all");
+  const [assetDepartmentFilter, setAssetDepartmentFilter] = useState<string>("all");
 
   // Fonction pour déterminer la section active basée sur l'URL
   function getActiveSectionFromPath(): string {
@@ -2865,6 +2965,358 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                     )}
                 </div>
               </>
+            )}
+
+            {currentActiveSection === "actifs" && (
+              <div style={{ marginTop: "40px", marginBottom: "24px" }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+                    gap: "12px",
+                  }}
+                >
+                  {/* Total Actifs */}
+                  <div
+                    style={{
+                      background: "#ffffff",
+                      borderRadius: "12px",
+                      padding: "16px",
+                      boxShadow: "0 4px 12px rgba(15,23,42,0.06)",
+                      border: "1px solid rgba(229,231,235,0.8)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "12px",
+                        background: "hsl(220, 15%, 93%)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Monitor size={18} color="#4b5563" />
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                      <div style={{ fontSize: "22px", fontWeight: 700, color: "#111827" }}>0</div>
+                      <div style={{ fontSize: "14px", color: "#6b7280", fontWeight: 500 }}>Total Actifs</div>
+                    </div>
+                  </div>
+
+                  {/* En service */}
+                  <div
+                    style={{
+                      background: "#ffffff",
+                      borderRadius: "12px",
+                      padding: "16px",
+                      boxShadow: "0 4px 12px rgba(15,23,42,0.06)",
+                      border: "1px solid rgba(229,231,235,0.8)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "12px",
+                        background: "hsl(145, 60%, 90%)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <CheckCircle size={18} color="#16a34a" />
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                      <div style={{ fontSize: "22px", fontWeight: 700, color: "#111827" }}>0</div>
+                      <div style={{ fontSize: "14px", color: "#6b7280", fontWeight: 500 }}>En service</div>
+                    </div>
+                  </div>
+
+                  {/* En maintenance */}
+                  <div
+                    style={{
+                      background: "#ffffff",
+                      borderRadius: "12px",
+                      padding: "16px",
+                      boxShadow: "0 4px 12px rgba(15,23,42,0.06)",
+                      border: "1px solid rgba(229,231,235,0.8)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "12px",
+                        background: "hsl(45, 80%, 90%)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Wrench size={18} color="#f97316" />
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                      <div style={{ fontSize: "22px", fontWeight: 700, color: "#111827" }}>0</div>
+                      <div style={{ fontSize: "14px", color: "#6b7280", fontWeight: 500 }}>En maintenance</div>
+                    </div>
+                  </div>
+
+                  {/* En panne */}
+                  <div
+                    style={{
+                      background: "#ffffff",
+                      borderRadius: "12px",
+                      padding: "16px",
+                      boxShadow: "0 4px 12px rgba(15,23,42,0.06)",
+                      border: "1px solid rgba(229,231,235,0.8)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "12px",
+                        background: "hsl(0, 80%, 93%)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <AlertTriangle size={18} color="#ef4444" />
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                      <div style={{ fontSize: "22px", fontWeight: 700, color: "#111827" }}>0</div>
+                      <div style={{ fontSize: "14px", color: "#6b7280", fontWeight: 500 }}>En panne</div>
+                    </div>
+                  </div>
+
+                  {/* En stock */}
+                  <div
+                    style={{
+                      background: "#ffffff",
+                      borderRadius: "12px",
+                      padding: "16px",
+                      boxShadow: "0 4px 12px rgba(15,23,42,0.06)",
+                      border: "1px solid rgba(229,231,235,0.8)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "12px",
+                        background: "hsl(230, 60%, 93%)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Package size={18} color="#2563eb" />
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                      <div style={{ fontSize: "22px", fontWeight: 700, color: "#111827" }}>0</div>
+                      <div style={{ fontSize: "14px", color: "#6b7280", fontWeight: 500 }}>En stock</div>
+                    </div>
+                  </div>
+
+                  {/* Réformés */}
+                  <div
+                    style={{
+                      background: "#ffffff",
+                      borderRadius: "12px",
+                      padding: "16px",
+                      boxShadow: "0 4px 12px rgba(15,23,42,0.06)",
+                      border: "1px solid rgba(229,231,235,0.8)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "12px",
+                        background: "hsl(220, 15%, 93%)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Archive size={18} color="#4b5563" />
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                      <div style={{ fontSize: "22px", fontWeight: 700, color: "#111827" }}>0</div>
+                      <div style={{ fontSize: "14px", color: "#6b7280", fontWeight: 500 }}>Réformés</div>
+                    </div>
+                  </div>
+
+                  {/* Valeur totale */}
+                  <div
+                    style={{
+                      background: "#ffffff",
+                      borderRadius: "12px",
+                      padding: "16px",
+                      boxShadow: "0 4px 12px rgba(15,23,42,0.06)",
+                      border: "1px solid rgba(229,231,235,0.8)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "12px",
+                        background: "hsl(145, 60%, 90%)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Banknote size={18} color="#16a34a" />
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                      <div style={{ fontSize: "22px", fontWeight: 700, color: "#111827" }}>0 FCFA</div>
+                      <div style={{ fontSize: "14px", color: "#6b7280", fontWeight: 500 }}>Valeur totale</div>
+                    </div>
+                  </div>
+
+                  {/* Garanties expirant */}
+                  <div
+                    style={{
+                      background: "#ffffff",
+                      borderRadius: "12px",
+                      padding: "16px",
+                      boxShadow: "0 4px 12px rgba(15,23,42,0.06)",
+                      border: "1px solid rgba(229,231,235,0.8)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "12px",
+                        background: "hsl(25, 80%, 92%)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Clock size={18} color="#f97316" />
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                      <div style={{ fontSize: "22px", fontWeight: 700, color: "#111827" }}>0</div>
+                      <div style={{ fontSize: "14px", color: "#6b7280", fontWeight: 500 }}>Garanties expirant</div>
+                      <div style={{ fontSize: "11px", color: "#9ca3af" }}>dans 30 jours</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Barre de recherche et filtres Actifs (Technicien) */}
+                <div
+                  style={{
+                    marginTop: "24px",
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "12px",
+                  }}
+                >
+                  {/* Recherche actifs */}
+                  <div
+                    style={{
+                      flex: "1 1 260px",
+                      minWidth: "220px",
+                      position: "relative",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Search
+                      size={18}
+                      color="#6b7280"
+                      style={{
+                        position: "absolute",
+                        left: "14px",
+                        pointerEvents: "none",
+                        zIndex: 1,
+                      }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Rechercher par nom, n° série, marque..."
+                      style={{
+                        width: "100%",
+                        padding: "10px 14px 10px 40px",
+                        borderRadius: "999px",
+                        border: "1px solid rgba(209,213,219,0.8)",
+                        backgroundColor: "#f9fafb",
+                        fontSize: "14px",
+                        outline: "none",
+                      }}
+                    />
+                  </div>
+
+                  {/* Tous les statuts */}
+                  <div style={{ flex: "0 0 190px", minWidth: "170px" }}>
+                    <OrangeSelect
+                      value={assetStatusFilter}
+                      onChange={setAssetStatusFilter}
+                      options={[
+                        { value: "all", label: "Tous les statuts" },
+                        { value: "en_service", label: "En service" },
+                        { value: "en_maintenance", label: "En maintenance" },
+                        { value: "en_panne", label: "En panne" },
+                        { value: "reformes", label: "Réformés" },
+                        { value: "en_stock", label: "En stock" },
+                      ]}
+                    />
+                  </div>
+
+                  {/* Tous les types */}
+                  <div style={{ flex: "0 0 190px", minWidth: "170px" }}>
+                    <OrangeSelect
+                      value={assetTypeFilter}
+                      onChange={setAssetTypeFilter}
+                      options={[
+                        { value: "all", label: "Tous les types" },
+                      ]}
+                    />
+                  </div>
+
+                  {/* Tous les départements */}
+                  <div style={{ flex: "0 0 210px", minWidth: "180px" }}>
+                    <OrangeSelect
+                      value={assetDepartmentFilter}
+                      onChange={setAssetDepartmentFilter}
+                      options={[
+                        { value: "all", label: "Tous les départements" },
+                      ]}
+                    />
+                  </div>
+                </div>
+              </div>
             )}
 
             {/* Section Tickets en cours */}
