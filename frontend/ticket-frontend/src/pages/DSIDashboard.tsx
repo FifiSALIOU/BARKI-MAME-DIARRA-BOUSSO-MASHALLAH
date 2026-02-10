@@ -1,6 +1,68 @@
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams, useLocation, useNavigate } from "react-router-dom";
-import { Users, User, Clock3, TrendingUp, UserCheck, Star, LayoutDashboard, ChevronLeft, ChevronRight, Bell, BarChart3, Search, Ticket, Wrench, CheckCircle, CheckCircle2, AlertTriangle, Clock, Briefcase, Box, FileText, RefreshCcw, Plus, Pencil, Trash2, ChevronDown, UserX, UserCog, Shield, Check, Layers, Monitor, X, FolderTree, Tag, Settings, Mail, Building2, Filter, Calendar, FileSpreadsheet, MessageCircle, Flag, Share2, Package, DollarSign, Archive, Banknote, Download } from "lucide-react";
+import {
+  Users,
+  User,
+  Clock3,
+  TrendingUp,
+  UserCheck,
+  Star,
+  LayoutDashboard,
+  ChevronLeft,
+  ChevronRight,
+  Bell,
+  BarChart3,
+  Search,
+  Ticket,
+  Wrench,
+  CheckCircle,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  Briefcase,
+  Box,
+  FileText,
+  RefreshCcw,
+  Plus,
+  Pencil,
+  Trash2,
+  ChevronDown,
+  UserX,
+  UserCog,
+  Shield,
+  Check,
+  Layers,
+  Monitor,
+  X,
+  FolderTree,
+  Tag,
+  Settings,
+  Mail,
+  Building2,
+  Filter,
+  Calendar,
+  FileSpreadsheet,
+  MessageCircle,
+  Flag,
+  Share2,
+  Package,
+  DollarSign,
+  Archive,
+  Banknote,
+  Download,
+  HardDrive,
+  Laptop,
+  Printer,
+  Keyboard,
+  Mouse,
+  Phone,
+  Tablet,
+  Network,
+  QrCode,
+  MapPin,
+  Eye,
+  Edit
+} from "lucide-react";
 import React from "react";
 import helpdeskLogo from "../assets/helpdesk-logo.png";
 import jsPDF from "jspdf";
@@ -113,6 +175,110 @@ interface UserRead {
     name: string;
   } | null;
 }
+
+interface Asset {
+  id: number;
+  nom: string;
+  type: string;
+  numero_de_serie: string;
+  marque: string;
+  modele: string;
+  statut: string;
+  localisation: string;
+  departement: string;
+  date_d_achat: string;
+  date_de_fin_garantie?: string | null;
+  prix_d_achat?: number | null;
+  fournisseur?: string | null;
+  assigned_to_user_id?: number | null;
+  assigned_to_name?: string | null;
+  specifications?: any;
+  notes?: string | null;
+  qr_code?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  created_by?: number | null;
+}
+
+interface AssetFormState {
+  nom: string;
+  type: string;
+  statut: string;
+  numero_de_serie: string;
+  marque: string;
+  modele: string;
+  localisation: string;
+  departement: string;
+  assigned_to_user_id: string; // string pour gérer facilement le select HTML
+  date_d_achat: string;
+  date_de_fin_garantie: string;
+  prix_d_achat: string;
+  fournisseur: string;
+  notes: string;
+}
+
+const assetStatusLabels: Record<string, string> = {
+  in_service: "En service",
+  en_maintenance: "En maintenance",
+  en_panne: "En panne",
+  en_stock: "En stock",
+  reformes: "Réformés",
+};
+
+const assetStatusColors: Record<
+  string,
+  { badgeBg: string; badgeBorder: string; badgeText: string; chipBg: string; chipText: string }
+> = {
+  in_service: {
+    badgeBg: "rgba(16, 185, 129, 0.1)",
+    badgeBorder: "rgba(16, 185, 129, 0.3)",
+    badgeText: "#047857",
+    chipBg: "rgba(16, 185, 129, 0.1)",
+    chipText: "#047857",
+  },
+  en_maintenance: {
+    badgeBg: "rgba(245, 158, 11, 0.08)",
+    badgeBorder: "rgba(245, 158, 11, 0.3)",
+    badgeText: "#92400e",
+    chipBg: "rgba(245, 158, 11, 0.08)",
+    chipText: "#92400e",
+  },
+  en_panne: {
+    badgeBg: "rgba(248, 113, 113, 0.12)",
+    badgeBorder: "rgba(248, 113, 113, 0.3)",
+    badgeText: "#b91c1c",
+    chipBg: "rgba(248, 113, 113, 0.12)",
+    chipText: "#b91c1c",
+  },
+  en_stock: {
+    badgeBg: "rgba(59, 130, 246, 0.06)",
+    badgeBorder: "rgba(59, 130, 246, 0.3)",
+    badgeText: "#1d4ed8",
+    chipBg: "rgba(59, 130, 246, 0.06)",
+    chipText: "#1d4ed8",
+  },
+  reformes: {
+    badgeBg: "rgba(148, 163, 184, 0.12)",
+    badgeBorder: "rgba(148, 163, 184, 0.4)",
+    badgeText: "#4b5563",
+    chipBg: "rgba(148, 163, 184, 0.12)",
+    chipText: "#4b5563",
+  },
+};
+
+const assetTypeLabels: Record<string, string> = {
+  desktop: "Ordinateur fixe",
+  laptop: "Ordinateur portable",
+  printer: "Imprimante",
+  monitor: "Écran",
+  mobile: "Mobile",
+  tablet: "Tablette",
+  phone: "Téléphone",
+  network: "Équipement réseau",
+  keyboard: "Clavier",
+  mouse: "Souris",
+  other: "Autre",
+};
 
 // Composant Label personnalisé pour les donut charts avec labels externes et lignes de connexion
 const CustomLabel = ({ cx, cy, midAngle, outerRadius, percent, name, fill, value }: any) => {
@@ -547,6 +713,29 @@ function DSIDashboard({ token }: DSIDashboardProps) {
   const [assetStatusFilter, setAssetStatusFilter] = useState<string>("all");
   const [assetTypeFilter, setAssetTypeFilter] = useState<string>("all");
   const [assetDepartmentFilter, setAssetDepartmentFilter] = useState<string>("all");
+  const [assetSearchQuery, setAssetSearchQuery] = useState<string>("");
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [isLoadingAssets, setIsLoadingAssets] = useState<boolean>(false);
+  const [assetError, setAssetError] = useState<string | null>(null);
+  const [showAssetModal, setShowAssetModal] = useState<boolean>(false);
+  const [assetModalMode, setAssetModalMode] = useState<"create" | "edit">("create");
+  const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
+  const [assetForm, setAssetForm] = useState<AssetFormState>({
+    nom: "",
+    type: "desktop",
+    statut: "en_stock",
+    numero_de_serie: "",
+    marque: "",
+    modele: "",
+    localisation: "",
+    departement: "",
+    assigned_to_user_id: "",
+    date_d_achat: "",
+    date_de_fin_garantie: "",
+    prix_d_achat: "",
+    fournisseur: "",
+    notes: "",
+  });
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -598,7 +787,45 @@ function DSIDashboard({ token }: DSIDashboardProps) {
   const [advancedCreatorFilter, setAdvancedCreatorFilter] = useState<string>("");
   const [showSettingsDropdown, setShowSettingsDropdown] = useState<boolean>(false);
   const [userRole, setUserRole] = useState<string | null>(null);
-  
+
+  const canEditAssets =
+    userRole === "Admin" || userRole === "DSI" || userRole === "Adjoint DSI";
+
+  const filteredAssets: Asset[] = assets.filter((asset) => {
+    if (assetStatusFilter !== "all" && asset.statut !== assetStatusFilter) {
+      return false;
+    }
+    if (assetTypeFilter !== "all" && asset.type !== assetTypeFilter) {
+      return false;
+    }
+    if (
+      assetDepartmentFilter !== "all" &&
+      asset.departement &&
+      assetDepartmentFilter !== asset.departement
+    ) {
+      return false;
+    }
+    if (assetSearchQuery.trim()) {
+      const q = assetSearchQuery.trim().toLowerCase();
+      const haystack = [
+        asset.nom,
+        asset.numero_de_serie,
+        asset.marque,
+        asset.modele,
+        asset.localisation,
+        asset.departement,
+        asset.assigned_to_name || "",
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      if (!haystack.includes(q)) {
+        return false;
+      }
+    }
+    return true;
+  });
+
   // Fonction helper pour obtenir le préfixe de route selon le rôle
   const getRoutePrefix = (): string => {
     return userRole === "Admin" ? "/dashboard/admin" : "/dashboard/dsi";
@@ -2126,6 +2353,58 @@ function DSIDashboard({ token }: DSIDashboardProps) {
     }
   }
 
+  async function loadAssets(): Promise<void> {
+    if (!token || token.trim() === "") {
+      return;
+    }
+
+    // Ne charger les actifs que lorsque la section Actifs est affichée côté Admin/DSI
+    if (activeSection !== "actifs") {
+      return;
+    }
+
+    setIsLoadingAssets(true);
+    setAssetError(null);
+
+    try {
+      const url = new URL("http://localhost:8000/assets/", "http://localhost:8000");
+
+      if (assetStatusFilter !== "all") {
+        url.searchParams.append("status", assetStatusFilter);
+      }
+      if (assetTypeFilter !== "all") {
+        url.searchParams.append("type", assetTypeFilter);
+      }
+      if (assetDepartmentFilter !== "all") {
+        url.searchParams.append("department", assetDepartmentFilter);
+      }
+      if (assetSearchQuery.trim() !== "") {
+        url.searchParams.append("search", assetSearchQuery.trim());
+      }
+
+      const res = await fetch(url.toString(), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        console.error("Erreur HTTP chargement actifs:", res.status);
+        setAssetError("Erreur lors du chargement des actifs.");
+        setAssets([]);
+        return;
+      }
+
+      const data: Asset[] = await res.json();
+      setAssets(data || []);
+    } catch (err) {
+      console.error("Erreur lors du chargement des actifs:", err);
+      setAssetError("Erreur lors du chargement des actifs.");
+    } finally {
+      setIsLoadingAssets(false);
+    }
+  }
+
   useEffect(() => {
     async function loadData() {
       try {
@@ -2584,6 +2863,23 @@ function DSIDashboard({ token }: DSIDashboardProps) {
      
      return () => clearInterval(interval);
   }, [token, ticketSearchQuery]);
+
+  // Charger / recharger les actifs lorsque la section Actifs est visible ou que les filtres changent
+  useEffect(() => {
+    if (!token || token.trim() === "") return;
+    if (activeSection !== "actifs") return;
+    if (!(userRole === "Admin" || userRole === "DSI" || userRole === "Adjoint DSI")) return;
+
+    void loadAssets();
+  }, [
+    token,
+    activeSection,
+    userRole,
+    assetStatusFilter,
+    assetTypeFilter,
+    assetDepartmentFilter,
+    assetSearchQuery,
+  ]);
 
   // Debounce pour la recherche de tickets
   useEffect(() => {
@@ -8949,6 +9245,27 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
               </button>
               <button
                 type="button"
+                onClick={() => {
+                  setAssetModalMode("create");
+                  setEditingAsset(null);
+                  setAssetForm({
+                    nom: "",
+                    type: "desktop",
+                    statut: "en_stock",
+                    numero_de_serie: "",
+                    marque: "",
+                    modele: "",
+                    localisation: "",
+                    departement: "",
+                    assigned_to_user_id: "",
+                    date_d_achat: "",
+                    date_de_fin_garantie: "",
+                    prix_d_achat: "",
+                    fournisseur: "",
+                    notes: "",
+                  });
+                  setShowAssetModal(true);
+                }}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -9264,6 +9581,8 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                 <input
                   type="text"
                   placeholder="Rechercher par nom, n° série, marque..."
+                value={assetSearchQuery}
+                onChange={(e) => setAssetSearchQuery(e.target.value)}
                   style={{
                     width: "100%",
                     padding: "10px 14px 10px 40px",
@@ -9299,6 +9618,14 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                   onChange={setAssetTypeFilter}
                   options={[
                     { value: "all", label: "Tous les types" },
+                    { value: "desktop", label: "Ordinateur fixe" },
+                    { value: "laptop", label: "Ordinateur portable" },
+                    { value: "printer", label: "Imprimante" },
+                    { value: "monitor", label: "Écran" },
+                    { value: "mobile", label: "Mobile" },
+                    { value: "tablet", label: "Tablette" },
+                    { value: "phone", label: "Téléphone" },
+                    { value: "network", label: "Équipement réseau" },
                   ]}
                 />
               </div>
@@ -9313,6 +9640,478 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                   ]}
                 />
               </div>
+            </div>
+
+            {/* Liste des actifs sous forme de cartes */}
+            <div
+              style={{
+                marginTop: "24px",
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+                gap: "16px",
+              }}
+            >
+              {assetError && (
+                <div
+                  style={{
+                    gridColumn: "1 / -1",
+                    padding: "12px 16px",
+                    borderRadius: "12px",
+                    backgroundColor: "#fef2f2",
+                    border: "1px solid #fecaca",
+                    color: "#b91c1c",
+                    fontSize: "14px",
+                  }}
+                >
+                  {assetError}
+                </div>
+              )}
+
+              {isLoadingAssets && !assets.length ? (
+                <div
+                  style={{
+                    gridColumn: "1 / -1",
+                    padding: "32px",
+                    textAlign: "center",
+                    color: "#6b7280",
+                    fontSize: "14px",
+                  }}
+                >
+                  Chargement des actifs...
+                </div>
+              ) : null}
+
+              {!isLoadingAssets && filteredAssets.length === 0 && !assetError && (
+                <div
+                  style={{
+                    gridColumn: "1 / -1",
+                    padding: "32px",
+                    borderRadius: "16px",
+                    border: "1px dashed #e5e7eb",
+                    backgroundColor: "#f9fafb",
+                    textAlign: "center",
+                    fontSize: "14px",
+                    color: "#6b7280",
+                  }}
+                >
+                  Aucun actif trouvé pour les filtres actuels.
+                </div>
+              )}
+
+              {filteredAssets.map((asset) => {
+                const statusConfig =
+                  assetStatusColors[asset.statut] ||
+                  assetStatusColors.en_stock;
+
+                const AssetIcon =
+                  asset.type === "desktop"
+                    ? HardDrive
+                    : asset.type === "laptop"
+                    ? Laptop
+                    : asset.type === "printer"
+                    ? Printer
+                    : asset.type === "monitor"
+                    ? Monitor
+                    : asset.type === "keyboard"
+                    ? Keyboard
+                    : asset.type === "mouse"
+                    ? Mouse
+                    : asset.type === "phone"
+                    ? Phone
+                    : asset.type === "tablet"
+                    ? Tablet
+                    : asset.type === "network"
+                    ? Network
+                    : HardDrive;
+
+                const isWarrantyExpiring = (() => {
+                  if (!asset.date_de_fin_garantie) return false;
+                  const end = new Date(asset.date_de_fin_garantie);
+                  const now = new Date();
+                  const diffDays = Math.round(
+                    (end.getTime() - now.getTime()) /
+                      (1000 * 60 * 60 * 24)
+                  );
+                  return diffDays <= 30;
+                })();
+
+                const formattedWarranty = asset.date_de_fin_garantie
+                  ? new Date(asset.date_de_fin_garantie).toLocaleDateString(
+                      "fr-FR",
+                      {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      }
+                    )
+                  : null;
+
+                return (
+                  <div
+                    key={asset.id}
+                    className="asset-card group"
+                    style={{
+                      backgroundColor: "#ffffff",
+                      borderRadius: "16px",
+                      padding: "16px 16px 14px",
+                      border: "1px solid rgba(229,231,235,0.9)",
+                      boxShadow:
+                        "0 8px 24px rgba(15,23,42,0.04)",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "10px",
+                      cursor: "default",
+                      transition: "all 0.3s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLDivElement).style.boxShadow =
+                        "0 14px 35px rgba(15,23,42,0.12)";
+                      (e.currentTarget as HTMLDivElement).style.borderColor =
+                        "rgba(37,99,235,0.3)";
+                      (e.currentTarget as HTMLDivElement).style.transform =
+                        "translateY(-1px)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLDivElement).style.boxShadow =
+                        "0 8px 24px rgba(15,23,42,0.04)";
+                      (e.currentTarget as HTMLDivElement).style.borderColor =
+                        "rgba(229,231,235,0.9)";
+                      (e.currentTarget as HTMLDivElement).style.transform =
+                        "translateY(0)";
+                    }}
+                  >
+                    {/* En-tête */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        justifyContent: "space-between",
+                        paddingBottom: "6px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            padding: "10px",
+                            borderRadius: "14px",
+                            backgroundColor:
+                              asset.statut === "in_service"
+                                ? "rgba(37,99,235,0.08)"
+                                : "#f3f4f6",
+                            color:
+                              asset.statut === "in_service"
+                                ? "#1d4ed8"
+                                : "#6b7280",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <AssetIcon
+                            size={20}
+                            color={
+                              asset.statut === "in_service"
+                                ? "#1d4ed8"
+                                : "#4b5563"
+                            }
+                          />
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "2px",
+                            maxWidth: "210px",
+                          }}
+                        >
+                          <h3
+                            style={{
+                              margin: 0,
+                              fontSize: "15px",
+                              fontWeight: 600,
+                              color: "#111827",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {asset.nom}
+                          </h3>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: "13px",
+                              color: "#6b7280",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {asset.marque} {asset.modele}
+                          </p>
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          padding: "4px 8px",
+                          borderRadius: "999px",
+                          border: `1px solid ${statusConfig.badgeBorder}`,
+                          backgroundColor: statusConfig.badgeBg,
+                          fontSize: "11px",
+                          fontWeight: 500,
+                          color: statusConfig.badgeText,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {assetStatusLabels[asset.statut] ||
+                          asset.statut}
+                      </div>
+                    </div>
+
+                    {/* Contenu principal */}
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "6px 10px",
+                        fontSize: "12px",
+                        color: "#6b7280",
+                      }}
+                    >
+                      {/* N° de série */}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        <QrCode size={16} color="#9ca3af" />
+                        <span
+                          style={{
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {asset.numero_de_serie}
+                        </span>
+                      </div>
+
+                      {/* Type */}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          justifyContent: "flex-end",
+                        }}
+                      >
+                        <span
+                          style={{
+                            borderRadius: "999px",
+                            border: "1px solid #e5e7eb",
+                            padding: "2px 8px",
+                            fontSize: "11px",
+                            color: "#4b5563",
+                            backgroundColor: "#f9fafb",
+                          }}
+                        >
+                          {assetTypeLabels[asset.type] ||
+                            asset.type ||
+                            "Type inconnu"}
+                        </span>
+                      </div>
+
+                      {/* Localisation */}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        <MapPin size={16} color="#9ca3af" />
+                        <span
+                          style={{
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {asset.localisation}
+                        </span>
+                      </div>
+
+                      {/* Assignation */}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          justifyContent: "flex-end",
+                        }}
+                      >
+                        <User
+                          size={16}
+                          color={
+                            asset.assigned_to_name
+                              ? "#9ca3af"
+                              : "rgba(156,163,175,0.7)"
+                          }
+                        />
+                        <span
+                          style={{
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            fontStyle: asset.assigned_to_name
+                              ? "normal"
+                              : "italic",
+                            color: asset.assigned_to_name
+                              ? "#6b7280"
+                              : "rgba(156,163,175,0.8)",
+                          }}
+                        >
+                          {asset.assigned_to_name || "Non assigné"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Bandeau garantie */}
+                    {formattedWarranty && (
+                      <div
+                        style={{
+                          marginTop: "8px",
+                          padding: "7px 10px",
+                          borderRadius: "10px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          backgroundColor: isWarrantyExpiring
+                            ? "rgba(249,115,22,0.12)"
+                            : "#f3f4f6",
+                          color: isWarrantyExpiring
+                            ? "#c2410c"
+                            : "#4b5563",
+                          fontSize: "12px",
+                        }}
+                      >
+                        <Calendar
+                          size={16}
+                          color={
+                            isWarrantyExpiring ? "#ea580c" : "#6b7280"
+                          }
+                        />
+                        <span>
+                          Garantie jusqu&apos;au {formattedWarranty}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Boutons */}
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "8px",
+                        paddingTop: "8px",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        style={{
+                          flex: canEditAssets ? 1 : undefined,
+                          width: canEditAssets ? undefined : "100%",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "6px",
+                          padding: "7px 10px",
+                          borderRadius: "999px",
+                          border: "1px solid #e5e7eb",
+                          backgroundColor: "#ffffff",
+                          fontSize: "13px",
+                          fontWeight: 500,
+                          color: "#1d4ed8",
+                          cursor: "pointer",
+                        }}
+                        onClick={() => {
+                          // Placeholder pour un futur écran de détails
+                          alert(
+                            `Détails de l'actif: ${asset.nom} (${asset.numero_de_serie})`
+                          );
+                        }}
+                      >
+                        <Eye size={16} />
+                        <span>Détails</span>
+                      </button>
+
+                      {canEditAssets && (
+                        <button
+                          type="button"
+                          style={{
+                            flex: 1,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "6px",
+                            padding: "7px 10px",
+                            borderRadius: "999px",
+                            border: "none",
+                            backgroundColor: "#111827",
+                            fontSize: "13px",
+                            fontWeight: 500,
+                            color: "#ffffff",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => {
+                            setAssetModalMode("edit");
+                            setEditingAsset(asset);
+                            setAssetForm({
+                              nom: asset.nom || "",
+                              type: asset.type || "desktop",
+                              statut: asset.statut || "en_stock",
+                              numero_de_serie:
+                                asset.numero_de_serie || "",
+                              marque: asset.marque || "",
+                              modele: asset.modele || "",
+                              localisation: asset.localisation || "",
+                              departement: asset.departement || "",
+                              assigned_to_user_id: asset.assigned_to_user_id
+                                ? String(asset.assigned_to_user_id)
+                                : "",
+                              date_d_achat:
+                                asset.date_d_achat?.slice(0, 10) ||
+                                "",
+                              date_de_fin_garantie:
+                                asset.date_de_fin_garantie?.slice(
+                                  0,
+                                  10
+                                ) || "",
+                              prix_d_achat:
+                                asset.prix_d_achat != null
+                                  ? String(asset.prix_d_achat)
+                                  : "",
+                              fournisseur: asset.fournisseur || "",
+                              notes: asset.notes || "",
+                            });
+                            setShowAssetModal(true);
+                          }}
+                        >
+                          <Edit size={16} />
+                          <span>Modifier</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -17650,6 +18449,826 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                  >
                    [Enregistrer]
                  </button>
+              </div>
+            </div>
+          )}
+
+          {/* Modal Nouvel actif / Modifier l'actif */}
+          {showAssetModal && (
+            <div
+              style={{
+                position: "fixed",
+                inset: 0,
+                // Fond sombre plein écran derrière la modale (équivalent à bg-black/80 de Radix)
+                backgroundColor: "rgba(0, 0, 0, 0.80)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 1200,
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: "#ffffff",
+                  borderRadius: "16px",
+                  boxShadow: "0 24px 60px rgba(15,23,42,0.35)",
+                  width: "100%",
+                  maxWidth: "720px",
+                  maxHeight: "85vh",
+                  display: "flex",
+                  flexDirection: "column",
+                  overflow: "hidden",
+                  fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+                }}
+              >
+                {/* Header */}
+                <div
+                  style={{
+                    padding: "18px 22px 12px",
+                    borderBottom: "1px solid #e5e7eb",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "2px",
+                    }}
+                  >
+                    <h2
+                      style={{
+                        margin: 0,
+                        fontSize: "18px",
+                        fontWeight: 600,
+                        color: "#111827",
+                      }}
+                    >
+                      {assetModalMode === "create"
+                        ? "Nouvel actif"
+                        : "Modifier l'actif"}
+                    </h2>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: "13px",
+                        color: "#6b7280",
+                      }}
+                    >
+                      Renseignez les informations de l&apos;équipement
+                      informatique.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowAssetModal(false)}
+                    style={{
+                      border: "none",
+                      background: "transparent",
+                      borderRadius: "999px",
+                      width: "32px",
+                      height: "32px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      color: "#6b7280",
+                    }}
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {/* Contenu scrollable */}
+                <div
+                  style={{
+                    padding: "18px 22px 16px",
+                    overflowY: "auto",
+                  }}
+                >
+                  {/* Informations générales */}
+                  <div style={{ marginBottom: "18px" }}>
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        letterSpacing: "0.09em",
+                        textTransform: "uppercase",
+                        color: "#6b7280",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      Informations générales
+                    </div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "12px 16px",
+                      }}
+                    >
+                      <div style={{ gridColumn: "1 / -1" }}>
+                        <label
+                          style={{
+                            display: "block",
+                            marginBottom: "4px",
+                            fontSize: "13px",
+                            fontWeight: 500,
+                            color: "#111827",
+                          }}
+                        >
+                          Nom de l&apos;actif *
+                        </label>
+                        <input
+                          type="text"
+                          value={assetForm.nom}
+                          onChange={(e) =>
+                            setAssetForm((f) => ({
+                              ...f,
+                              nom: e.target.value,
+                            }))
+                          }
+                          placeholder="Ex: Dell OptiPlex 7090"
+                          style={{
+                            width: "100%",
+                            padding: "9px 11px",
+                            borderRadius: "10px",
+                            border: "1px solid #e5e7eb",
+                            fontSize: "14px",
+                            outline: "none",
+                          }}
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            marginBottom: "4px",
+                            fontSize: "13px",
+                            fontWeight: 500,
+                            color: "#111827",
+                          }}
+                        >
+                          Type *
+                        </label>
+                        <select
+                          value={assetForm.type}
+                          onChange={(e) =>
+                            setAssetForm((f) => ({
+                              ...f,
+                              type: e.target.value,
+                            }))
+                          }
+                          style={{
+                            width: "100%",
+                            padding: "9px 11px",
+                            borderRadius: "10px",
+                            border: "1px solid #e5e7eb",
+                            fontSize: "14px",
+                            backgroundColor: "#ffffff",
+                          }}
+                        >
+                          <option value="desktop">
+                            Ordinateur fixe
+                          </option>
+                          <option value="laptop">
+                            Ordinateur portable
+                          </option>
+                          <option value="printer">Imprimante</option>
+                          <option value="monitor">Écran</option>
+                          <option value="mobile">Mobile</option>
+                          <option value="tablet">Tablette</option>
+                          <option value="phone">Téléphone</option>
+                          <option value="network">
+                            Équipement réseau
+                          </option>
+                          <option value="other">Autre</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            marginBottom: "4px",
+                            fontSize: "13px",
+                            fontWeight: 500,
+                            color: "#111827",
+                          }}
+                        >
+                          Statut *
+                        </label>
+                        <select
+                          value={assetForm.statut}
+                          onChange={(e) =>
+                            setAssetForm((f) => ({
+                              ...f,
+                              statut: e.target.value,
+                            }))
+                          }
+                          style={{
+                            width: "100%",
+                            padding: "9px 11px",
+                            borderRadius: "10px",
+                            border: "1px solid #e5e7eb",
+                            fontSize: "14px",
+                            backgroundColor: "#ffffff",
+                          }}
+                        >
+                          <option value="en_stock">
+                            En stock
+                          </option>
+                          <option value="in_service">
+                            En service
+                          </option>
+                          <option value="en_maintenance">
+                            En maintenance
+                          </option>
+                          <option value="en_panne">
+                            En panne
+                          </option>
+                          <option value="reformes">
+                            Réformés
+                          </option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            marginBottom: "4px",
+                            fontSize: "13px",
+                            fontWeight: 500,
+                            color: "#111827",
+                          }}
+                        >
+                          N° de série *
+                        </label>
+                        <input
+                          type="text"
+                          value={assetForm.numero_de_serie}
+                          onChange={(e) =>
+                            setAssetForm((f) => ({
+                              ...f,
+                              numero_de_serie: e.target.value,
+                            }))
+                          }
+                          placeholder="Ex: DELL-7090-001"
+                          style={{
+                            width: "100%",
+                            padding: "9px 11px",
+                            borderRadius: "10px",
+                            border: "1px solid #e5e7eb",
+                            fontSize: "14px",
+                            outline: "none",
+                          }}
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            marginBottom: "4px",
+                            fontSize: "13px",
+                            fontWeight: 500,
+                            color: "#111827",
+                          }}
+                        >
+                          Marque *
+                        </label>
+                        <input
+                          type="text"
+                          value={assetForm.marque}
+                          onChange={(e) =>
+                            setAssetForm((f) => ({
+                              ...f,
+                              marque: e.target.value,
+                            }))
+                          }
+                          placeholder="Ex: Dell"
+                          style={{
+                            width: "100%",
+                            padding: "9px 11px",
+                            borderRadius: "10px",
+                            border: "1px solid #e5e7eb",
+                            fontSize: "14px",
+                            outline: "none",
+                          }}
+                        />
+                      </div>
+
+                      <div style={{ gridColumn: "1 / -1" }}>
+                        <label
+                          style={{
+                            display: "block",
+                            marginBottom: "4px",
+                            fontSize: "13px",
+                            fontWeight: 500,
+                            color: "#111827",
+                          }}
+                        >
+                          Modèle
+                        </label>
+                        <input
+                          type="text"
+                          value={assetForm.modele}
+                          onChange={(e) =>
+                            setAssetForm((f) => ({
+                              ...f,
+                              modele: e.target.value,
+                            }))
+                          }
+                          placeholder="Ex: Dell OptiPlex 7090"
+                          style={{
+                            width: "100%",
+                            padding: "9px 11px",
+                            borderRadius: "10px",
+                            border: "1px solid #e5e7eb",
+                            fontSize: "14px",
+                            outline: "none",
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Localisation & Attribution */}
+                  <div style={{ marginBottom: "18px" }}>
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        letterSpacing: "0.09em",
+                        textTransform: "uppercase",
+                        color: "#6b7280",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      Localisation & attribution
+                    </div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "12px 16px",
+                      }}
+                    >
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            marginBottom: "4px",
+                            fontSize: "13px",
+                            fontWeight: 500,
+                            color: "#111827",
+                          }}
+                        >
+                          Localisation
+                        </label>
+                        <input
+                          type="text"
+                          value={assetForm.localisation}
+                          onChange={(e) =>
+                            setAssetForm((f) => ({
+                              ...f,
+                              localisation: e.target.value,
+                            }))
+                          }
+                          placeholder="Ex: Bâtiment A - Étage 2"
+                          style={{
+                            width: "100%",
+                            padding: "9px 11px",
+                            borderRadius: "10px",
+                            border: "1px solid #e5e7eb",
+                            fontSize: "14px",
+                            outline: "none",
+                          }}
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            marginBottom: "4px",
+                            fontSize: "13px",
+                            fontWeight: 500,
+                            color: "#111827",
+                          }}
+                        >
+                          Département
+                        </label>
+                        <input
+                          type="text"
+                          value={assetForm.departement}
+                          onChange={(e) =>
+                            setAssetForm((f) => ({
+                              ...f,
+                              departement: e.target.value,
+                            }))
+                          }
+                          placeholder="Ex: Marketing"
+                          style={{
+                            width: "100%",
+                            padding: "9px 11px",
+                            borderRadius: "10px",
+                            border: "1px solid #e5e7eb",
+                            fontSize: "14px",
+                            outline: "none",
+                          }}
+                        />
+                      </div>
+
+                      <div style={{ gridColumn: "1 / -1" }}>
+                        <label
+                          style={{
+                            display: "block",
+                            marginBottom: "4px",
+                            fontSize: "13px",
+                            fontWeight: 500,
+                            color: "#111827",
+                          }}
+                        >
+                          Assigné à
+                        </label>
+                        <select
+                          value={assetForm.assigned_to_user_id}
+                          onChange={(e) =>
+                            setAssetForm((f) => ({
+                              ...f,
+                              assigned_to_user_id: e.target.value,
+                            }))
+                          }
+                          style={{
+                            width: "100%",
+                            padding: "9px 11px",
+                            borderRadius: "10px",
+                            border: "1px solid #e5e7eb",
+                            fontSize: "14px",
+                            backgroundColor: "#ffffff",
+                          }}
+                        >
+                          <option value="">Non assigné</option>
+                          {allUsers.map((u: any) => (
+                            <option key={u.id} value={u.id}>
+                              {u.full_name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Achat & Garantie */}
+                  <div style={{ marginBottom: "18px" }}>
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        letterSpacing: "0.09em",
+                        textTransform: "uppercase",
+                        color: "#6b7280",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      Achat & garantie
+                    </div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "12px 16px",
+                      }}
+                    >
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            marginBottom: "4px",
+                            fontSize: "13px",
+                            fontWeight: 500,
+                            color: "#111827",
+                          }}
+                        >
+                          Date d&apos;achat
+                        </label>
+                        <input
+                          type="date"
+                          value={assetForm.date_d_achat}
+                          onChange={(e) =>
+                            setAssetForm((f) => ({
+                              ...f,
+                              date_d_achat: e.target.value,
+                            }))
+                          }
+                          style={{
+                            width: "100%",
+                            padding: "9px 11px",
+                            borderRadius: "10px",
+                            border: "1px solid #e5e7eb",
+                            fontSize: "14px",
+                          }}
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            marginBottom: "4px",
+                            fontSize: "13px",
+                            fontWeight: 500,
+                            color: "#111827",
+                          }}
+                        >
+                          Fin de garantie
+                        </label>
+                        <input
+                          type="date"
+                          value={assetForm.date_de_fin_garantie}
+                          onChange={(e) =>
+                            setAssetForm((f) => ({
+                              ...f,
+                              date_de_fin_garantie: e.target.value,
+                            }))
+                          }
+                          style={{
+                            width: "100%",
+                            padding: "9px 11px",
+                            borderRadius: "10px",
+                            border: "1px solid #e5e7eb",
+                            fontSize: "14px",
+                          }}
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            marginBottom: "4px",
+                            fontSize: "13px",
+                            fontWeight: 500,
+                            color: "#111827",
+                          }}
+                        >
+                          Prix d&apos;achat (€)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={assetForm.prix_d_achat}
+                          onChange={(e) =>
+                            setAssetForm((f) => ({
+                              ...f,
+                              prix_d_achat: e.target.value,
+                            }))
+                          }
+                          placeholder="Ex: 850"
+                          style={{
+                            width: "100%",
+                            padding: "9px 11px",
+                            borderRadius: "10px",
+                            border: "1px solid #e5e7eb",
+                            fontSize: "14px",
+                            outline: "none",
+                          }}
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          style={{
+                            display: "block",
+                            marginBottom: "4px",
+                            fontSize: "13px",
+                            fontWeight: 500,
+                            color: "#111827",
+                          }}
+                        >
+                          Fournisseur
+                        </label>
+                        <input
+                          type="text"
+                          value={assetForm.fournisseur}
+                          onChange={(e) =>
+                            setAssetForm((f) => ({
+                              ...f,
+                              fournisseur: e.target.value,
+                            }))
+                          }
+                          placeholder="Ex: Dell Technologies"
+                          style={{
+                            width: "100%",
+                            padding: "9px 11px",
+                            borderRadius: "10px",
+                            border: "1px solid #e5e7eb",
+                            fontSize: "14px",
+                            outline: "none",
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Notes */}
+                  <div>
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        letterSpacing: "0.09em",
+                        textTransform: "uppercase",
+                        color: "#6b7280",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      Notes
+                    </div>
+                    <div>
+                      <label
+                        style={{
+                          display: "block",
+                          marginBottom: "4px",
+                          fontSize: "13px",
+                          fontWeight: 500,
+                          color: "#111827",
+                        }}
+                      >
+                        Informations supplémentaires
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={assetForm.notes}
+                        onChange={(e) =>
+                          setAssetForm((f) => ({
+                            ...f,
+                            notes: e.target.value,
+                          }))
+                        }
+                        placeholder="Informations supplémentaires..."
+                        style={{
+                          width: "100%",
+                          padding: "9px 11px",
+                          borderRadius: "10px",
+                          border: "1px solid #e5e7eb",
+                          fontSize: "14px",
+                          resize: "vertical",
+                          minHeight: "70px",
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div
+                  style={{
+                    padding: "12px 22px 16px",
+                    borderTop: "1px solid #e5e7eb",
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: "10px",
+                    backgroundColor: "#f9fafb",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setShowAssetModal(false)}
+                    style={{
+                      padding: "8px 16px",
+                      borderRadius: "999px",
+                      border: "1px solid #e5e7eb",
+                      backgroundColor: "#ffffff",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      // Texte du bouton Annuler en noir (comme demandé)
+                      color: "#111827",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!token) return;
+
+                      if (
+                        !assetForm.nom.trim() ||
+                        !assetForm.type ||
+                        !assetForm.statut ||
+                        !assetForm.numero_de_serie.trim() ||
+                        !assetForm.marque.trim() ||
+                        !assetForm.localisation.trim() ||
+                        !assetForm.departement.trim() ||
+                        !assetForm.date_d_achat
+                      ) {
+                        alert(
+                          "Merci de renseigner tous les champs obligatoires."
+                        );
+                        return;
+                      }
+
+                      const assignedUserId = assetForm.assigned_to_user_id
+                        ? Number(assetForm.assigned_to_user_id)
+                        : null;
+                      const assignedUser =
+                        allUsers.find(
+                          (u: any) => u.id === assignedUserId
+                        ) || null;
+
+                      const payload: any = {
+                        nom: assetForm.nom.trim(),
+                        type: assetForm.type,
+                        numero_de_serie:
+                          assetForm.numero_de_serie.trim(),
+                        marque: assetForm.marque.trim(),
+                        modele: assetForm.modele.trim(),
+                        statut: assetForm.statut,
+                        localisation: assetForm.localisation.trim(),
+                        departement: assetForm.departement.trim(),
+                        date_d_achat: assetForm.date_d_achat,
+                        date_de_fin_garantie:
+                          assetForm.date_de_fin_garantie || null,
+                        prix_d_achat: assetForm.prix_d_achat
+                          ? Number(assetForm.prix_d_achat)
+                          : null,
+                        fournisseur: assetForm.fournisseur || null,
+                        assigned_to_user_id: assignedUserId,
+                        assigned_to_name:
+                          assignedUser?.full_name || null,
+                        specifications: null,
+                        notes: assetForm.notes || null,
+                      };
+
+                      try {
+                        const endpoint =
+                          assetModalMode === "edit" && editingAsset
+                            ? `http://localhost:8000/assets/${editingAsset.id}`
+                            : "http://localhost:8000/assets/";
+                        const method =
+                          assetModalMode === "edit" && editingAsset
+                            ? "PUT"
+                            : "POST";
+
+                        const res = await fetch(endpoint, {
+                          method,
+                          headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                          },
+                          body: JSON.stringify(payload),
+                        });
+
+                        if (!res.ok) {
+                          const error = await res.json().catch(() => null);
+                          console.error(
+                            "Erreur création actif:",
+                            res.status,
+                            error
+                          );
+                          alert(
+                            error?.detail ||
+                              "Erreur lors de la création de l'actif."
+                          );
+                          return;
+                        }
+
+                        await loadAssets();
+                        setShowAssetModal(false);
+                      } catch (err) {
+                        console.error(
+                          "Erreur réseau création actif:",
+                          err
+                        );
+                        alert(
+                          "Erreur réseau lors de la création de l'actif."
+                        );
+                      }
+                    }}
+                    style={{
+                      padding: "8px 18px",
+                      borderRadius: "999px",
+                      border: "none",
+                      backgroundColor: "#111827",
+                      fontSize: "14px",
+                      fontWeight: 600,
+                      color: "#ffffff",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {assetModalMode === "create"
+                      ? "Créer l'actif"
+                      : "Enregistrer"}
+                  </button>
+                </div>
               </div>
             </div>
           )}

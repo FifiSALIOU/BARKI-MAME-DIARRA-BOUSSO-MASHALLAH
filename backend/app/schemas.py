@@ -1,5 +1,5 @@
-from datetime import datetime
-from typing import List, Optional
+from datetime import datetime, date
+from typing import List, Optional, Any
 
 from pydantic import BaseModel
 
@@ -258,6 +258,57 @@ class TicketHistoryRead(BaseModel):
     reason: Optional[str] = None
     changed_at: datetime
     user: Optional[UserRead] = None
+
+    class Config:
+        from_attributes = True
+
+
+class AssetBase(BaseModel):
+    """Champs communs pour un actif (table assets)."""
+
+    nom: str
+    type: str
+    numero_de_serie: str
+    marque: str
+    modele: str
+    statut: str = "in_stock"
+
+    localisation: str
+    departement: str
+
+    date_d_achat: date
+    date_de_fin_garantie: Optional[date] = None
+
+    prix_d_achat: Optional[float] = None
+    fournisseur: Optional[str] = None
+
+    assigned_to_user_id: Optional[int] = None
+    assigned_to_name: Optional[str] = None
+
+    notes: Optional[str] = None
+
+    # Champ libre JSON pour de futures extensions (carte réseau, specs techniques, etc.)
+    specifications: Optional[Any] = None
+
+
+class AssetCreate(AssetBase):
+    """Payload de création d'un actif.
+
+    Certains champs peuvent rester optionnels côté frontend (assignation, notes, garantie, etc.),
+    mais les champs NOT NULL en base doivent être présents ici.
+    """
+
+    pass
+
+
+class AssetRead(AssetBase):
+    """Schéma de lecture pour un actif complet."""
+
+    id: int
+    qr_code: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+    created_by: Optional[int] = None
 
     class Config:
         from_attributes = True
