@@ -9893,7 +9893,8 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                       boxShadow: "0 8px 20px rgba(15,23,42,0.06)",
                       display: "flex",
                       flexDirection: "column",
-                      gap: "12px",
+                      // Espacement vertical plus aéré entre les blocs (header, contenu, garantie, boutons)
+                      gap: "16px",
                       cursor: "default",
                       transition: "all 0.3s ease",
                       // Hauteur minimale pour garder une taille cohérente même avec plus de contenu
@@ -10017,7 +10018,8 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                       style={{
                         display: "grid",
                         gridTemplateColumns: "1fr 1fr",
-                        gap: "6px 10px",
+                        // Espacement vertical légèrement augmenté entre les lignes pour aérer le texte
+                        gap: "10px 10px",
                         fontSize: "12px",
                         color: "#6b7280",
                       }}
@@ -10127,7 +10129,8 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                     {formattedWarranty && (
                       <div
                         style={{
-                          marginTop: "8px",
+                          // Laisse un peu plus d'espace entre les infos et la garantie
+                          marginTop: "12px",
                           padding: "7px 10px",
                           borderRadius: "10px",
                           display: "flex",
@@ -10177,7 +10180,8 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                       style={{
                         display: "flex",
                         gap: "8px",
-                        paddingTop: "8px",
+                        // Descend un peu la zone de boutons pour qu'ils soient plus bas comme sur l'image
+                        paddingTop: "16px",
                       }}
                     >
                       <button
