@@ -324,3 +324,14 @@ class AssetTypeConfig(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class DepartmentConfig(BaseModel):
+    """Schéma de lecture pour un département (table departments)."""
+
+    id: int
+    name: str
+    is_active: bool
+
+    class Config:
+        from_attributes = True

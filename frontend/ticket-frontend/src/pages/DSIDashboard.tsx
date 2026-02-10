@@ -207,6 +207,12 @@ interface AssetTypeConfig {
   is_active: boolean;
 }
 
+interface DepartmentConfig {
+  id: number;
+  name: string;
+  is_active: boolean;
+}
+
 interface AssetFormState {
   nom: string;
   type: string;
@@ -757,6 +763,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
   });
 
   const [assetTypes, setAssetTypes] = useState<AssetTypeConfig[]>([]);
+  const [assetDepartments, setAssetDepartments] = useState<DepartmentConfig[]>([]);
 
   // KPIs calculés à partir des actifs chargés
   const totalAssets = assets.length;
@@ -2201,6 +2208,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
     if (!(userRole === "Admin" || userRole === "DSI" || userRole === "Adjoint DSI")) return;
 
     void loadAssetTypes();
+    void loadAssetDepartments();
   }, [token, userRole]);
 
   // Charger les types de tickets depuis la base de données (Admin et DSI)
@@ -2475,6 +2483,30 @@ function DSIDashboard({ token }: DSIDashboardProps) {
       setAssetTypes(data || []);
     } catch (err) {
       console.error("Erreur lors du chargement des types d'actifs:", err);
+    }
+  }
+
+  async function loadAssetDepartments(): Promise<void> {
+    if (!token || token.trim() === "") {
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:8000/departments", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        console.error("Erreur HTTP chargement départements:", res.status);
+        return;
+      }
+
+      const data: DepartmentConfig[] = await res.json();
+      setAssetDepartments(data || []);
+    } catch (err) {
+      console.error("Erreur lors du chargement des départements:", err);
     }
   }
 
@@ -9726,6 +9758,10 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                   onChange={setAssetDepartmentFilter}
                   options={[
                     { value: "all", label: "Tous les départements" },
+                    ...assetDepartments.map((d) => ({
+                      value: d.name,
+                      label: d.name,
+                    })),
                   ]}
                 />
               </div>

@@ -287,6 +287,37 @@ def list_asset_types(
     return [schemas.AssetTypeConfig(**row) for row in result]
 
 
+@router.get(
+    "/departments",
+    response_model=List[schemas.DepartmentConfig],
+    summary="Lister les départements associés aux actifs",
+)
+def list_departments(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+) -> List[schemas.DepartmentConfig]:
+    """
+    Retourne la liste des départements actifs.
+
+    - Lecture seule.
+    - N'altère aucune donnée existante.
+    """
+
+    _ensure_can_view_assets(current_user)
+
+    query = text(
+        """
+        SELECT id, name, is_active
+        FROM departments
+        WHERE is_active = TRUE
+        ORDER BY name ASC
+        """
+    )
+
+    result = db.execute(query).mappings().all()
+    return [schemas.DepartmentConfig(**row) for row in result]
+
+
 @router.put(
     "/assets/{asset_id}",
     response_model=schemas.AssetRead,
