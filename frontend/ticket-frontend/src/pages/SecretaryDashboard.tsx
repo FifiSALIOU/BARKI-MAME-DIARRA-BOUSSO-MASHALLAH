@@ -399,7 +399,13 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
   const [showReassignModal, setShowReassignModal] = useState<boolean>(false);
   const [reassignTicketId, setReassignTicketId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [roleName, setRoleName] = useState<string>("");
+  const [roleName, setRoleName] = useState<string>(() => {
+    try {
+      return localStorage.getItem("userRole") || "";
+    } catch {
+      return "";
+    }
+  });
   const [activeSection, setActiveSection] = useState<string>("dashboard");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [agencyFilter, setAgencyFilter] = useState<string>("all");
