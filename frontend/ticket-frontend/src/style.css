@@ -258,6 +258,12 @@ p[style*="color: red"] {
 }
 
 /* Listes déroulantes personnalisées DSI : option au survol uniquement = orange */
+.dsi-orange-select-dropdown {
+  min-width: max-content !important;
+}
+.dsi-orange-select-option {
+  white-space: nowrap;
+}
 .dsi-orange-select-option:hover {
   background-color: #fff7ed !important;
   color: #ea580c !important;

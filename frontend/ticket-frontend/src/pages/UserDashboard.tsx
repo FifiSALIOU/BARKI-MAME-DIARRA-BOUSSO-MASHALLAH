@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import type { FormEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Clock, CheckCircle, LayoutDashboard, PlusCircle, Ticket, ChevronLeft, ChevronRight, Bell, Wrench, Monitor, Search, Send, Info, CheckCircle2, AlertTriangle, XCircle, Check, Pencil, Trash2, RefreshCcw, FileText, UserCheck, Users, MessageCircle } from "lucide-react";
+import { Clock, CheckCircle, LayoutDashboard, PlusCircle, Ticket, ChevronLeft, ChevronRight, ChevronDown, Bell, Wrench, Monitor, Search, Send, Info, CheckCircle2, AlertTriangle, XCircle, Check, Pencil, Trash2, RefreshCcw, FileText, UserCheck, Users, MessageCircle } from "lucide-react";
 import helpdeskLogo from "../assets/helpdesk-logo.png";
 
 interface UserDashboardProps {
@@ -50,6 +50,102 @@ interface Notification {
   read: boolean;
   created_at: string;
   ticket_id?: string | null;
+}
+
+/** Liste déroulante des filtres (survol orange sur les options) – version Utilisateur */
+function OrangeSelect({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const h = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("click", h);
+    return () => document.removeEventListener("click", h);
+  }, []);
+  const selected = options.find((o) => o.value === value) || options[0];
+  return (
+    <div ref={ref} style={{ position: "relative", width: "100%" }}>
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => setOpen((o) => !o)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setOpen((o) => !o);
+          }
+        }}
+        className="dsi-orange-select-trigger"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "8px",
+          padding: "10px 12px",
+          borderRadius: "8px",
+          border: "1px solid #d1d5db",
+          backgroundColor: "transparent",
+          fontSize: "14px",
+          minHeight: "40px",
+          cursor: "pointer",
+          color: "#1f2937",
+        }}
+      >
+        <span>{selected?.label ?? value}</span>
+        <ChevronDown size={16} color="#6b7280" />
+      </div>
+      {open && (
+        <div
+          className="dsi-orange-select-dropdown"
+          style={{
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            right: 0,
+            marginTop: "4px",
+            backgroundColor: "#fff",
+            border: "1px solid #e5e7eb",
+            borderRadius: "8px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            zIndex: 1000,
+            maxHeight: "240px",
+            overflowY: "auto",
+          }}
+        >
+          {options.map((opt) => (
+            <div
+              key={opt.value || "__all__"}
+              role="option"
+              aria-selected={value === opt.value}
+              className={`dsi-orange-select-option ${value === opt.value ? "dsi-orange-select-option-selected" : ""}`}
+              onClick={() => {
+                onChange(opt.value);
+                setOpen(false);
+              }}
+              style={{
+                padding: "8px 10px",
+                cursor: "pointer",
+                fontSize: "14px",
+                backgroundColor: "transparent",
+                color: "#111827",
+              }}
+            >
+              {opt.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function UserDashboard({ token: tokenProp }: UserDashboardProps) {
@@ -2917,61 +3013,46 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                   alignItems: "center", 
                   gap: "12px"
                 }}>
-                  <select
-                    value={dashboardStatusFilter}
-                    onChange={(e) => setDashboardStatusFilter(e.target.value)}
-                    style={{ 
-                      padding: "10px 12px", 
-                      border: "1px solid #d1d5db", 
-                      borderRadius: "8px",
-                      fontSize: "14px",
-                      background: "transparent",
-                      minWidth: "160px"
-                    }}
-                  >
-                    <option value="">Tous les statuts</option>
-                    <option value="en_attente_analyse">En attente d'assignation</option>
-                    <option value="assigne_technicien">Assigné au technicien</option>
-                    <option value="en_cours">En cours</option>
-                    <option value="resolu">Résolu</option>
-                    <option value="retraite">Retraités</option>
-                    <option value="rejete">Relancé</option>
-                    <option value="cloture">Clôturé</option>
-                  </select>
-                  <select
-                    value={dashboardCategoryFilter}
-                    onChange={(e) => setDashboardCategoryFilter(e.target.value)}
-                    style={{ 
-                      padding: "10px 12px", 
-                      border: "1px solid #d1d5db", 
-                      borderRadius: "8px",
-                      fontSize: "14px",
-                      background: "transparent",
-                      minWidth: "140px"
-                    }}
-                  >
-                    <option value="">Tous types</option>
-                    <option value="materiel">Matériel</option>
-                    <option value="applicatif">Applicatif</option>
-                  </select>
-                  <select
-                    value={dashboardPriorityFilter}
-                    onChange={(e) => setDashboardPriorityFilter(e.target.value)}
-                    style={{ 
-                      padding: "10px 12px", 
-                      border: "1px solid #d1d5db", 
-                      borderRadius: "8px",
-                      fontSize: "14px",
-                      background: "transparent",
-                      minWidth: "140px"
-                    }}
-                  >
-                    <option value="">Toutes les priorités</option>
-                    <option value="critique">Critique</option>
-                    <option value="haute">Haute</option>
-                    <option value="moyenne">Moyenne</option>
-                    <option value="faible">Faible</option>
-                  </select>
+                  <div style={{ minWidth: "160px" }}>
+                    <OrangeSelect
+                      value={dashboardStatusFilter}
+                      onChange={setDashboardStatusFilter}
+                      options={[
+                        { value: "", label: "Tous les statuts" },
+                        { value: "en_attente_analyse", label: "En attente d'assignation" },
+                        { value: "assigne_technicien", label: "Assigné au technicien" },
+                        { value: "en_cours", label: "En cours" },
+                        { value: "resolu", label: "Résolu" },
+                        { value: "retraite", label: "Retraités" },
+                        { value: "rejete", label: "Relancé" },
+                        { value: "cloture", label: "Clôturé" },
+                      ]}
+                    />
+                  </div>
+                  <div style={{ minWidth: "140px" }}>
+                    <OrangeSelect
+                      value={dashboardCategoryFilter}
+                      onChange={setDashboardCategoryFilter}
+                      options={[
+                        { value: "", label: "Tous types" },
+                        { value: "materiel", label: "Matériel" },
+                        { value: "applicatif", label: "Applicatif" },
+                      ]}
+                    />
+                  </div>
+                  <div style={{ minWidth: "140px" }}>
+                    <OrangeSelect
+                      value={dashboardPriorityFilter}
+                      onChange={setDashboardPriorityFilter}
+                      options={[
+                        { value: "", label: "Toutes les priorités" },
+                        { value: "critique", label: "Critique" },
+                        { value: "haute", label: "Haute" },
+                        { value: "moyenne", label: "Moyenne" },
+                        { value: "faible", label: "Faible" },
+                      ]}
+                    />
+                  </div>
                 </div>
               </div>
             )}
