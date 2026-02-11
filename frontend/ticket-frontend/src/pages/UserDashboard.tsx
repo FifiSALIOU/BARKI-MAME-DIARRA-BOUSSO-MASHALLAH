@@ -274,16 +274,15 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
       return entry.user?.full_name ? `Relancé par ${entry.user.full_name}` : "Ticket relancé";
     }
 
-    // Cas spécifique: rejet de résolution par l'utilisateur (resolu → rejete avec Validation utilisateur: Rejeté)
+    // Cas spécifique: rejet de résolution par l'utilisateur (resolu ou retraite → rejete) : afficher "Ticket relancé"
     if (entry.old_status && entry.new_status) {
       const oldStatus = (entry.old_status || "").toLowerCase();
       const newStatus = (entry.new_status || "").toLowerCase();
       const reason = (entry.reason || "").toLowerCase();
       
-      // Détecter rejet de résolution : resolu → rejete avec "Validation utilisateur: Rejeté"
+      // Détecter rejet de résolution : resolu ou retraite → rejete
       if ((oldStatus.includes("resolu") || oldStatus.includes("résolu") || oldStatus.includes("retraite") || oldStatus.includes("retraité")) && 
-          (newStatus.includes("rejete") || newStatus.includes("rejeté")) &&
-          reason.includes("validation utilisateur: rejeté")) {
+          (newStatus.includes("rejete") || newStatus.includes("rejeté"))) {
         return "Ticket relancé";
       }
       

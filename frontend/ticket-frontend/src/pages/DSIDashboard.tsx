@@ -608,10 +608,9 @@ function DSIDashboard({ token }: DSIDashboardProps) {
       return "Ticket en cours de traitement";
     }
     
-    // Cas spécifique: rejet de résolution par l'utilisateur (resolu ou retraite → rejete avec "Validation utilisateur: Rejeté")
+    // Cas spécifique: rejet de résolution par l'utilisateur (resolu ou retraite → rejete) : afficher "Ticket relancé"
     if ((oldStatus.includes("resolu") || oldStatus.includes("résolu") || oldStatus.includes("retraite") || oldStatus.includes("retraité")) &&
-        (newStatus.includes("rejete") || newStatus.includes("rejeté")) &&
-        (reason.includes("validation utilisateur: rejeté") || reason.includes("validation utilisateur: rejeté"))) {
+        (newStatus.includes("rejete") || newStatus.includes("rejeté"))) {
       return "Ticket relancé";
     }
     

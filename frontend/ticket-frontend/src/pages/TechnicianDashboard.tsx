@@ -656,6 +656,12 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
       return "Retraité";
     }
     
+    // Cas spécifique: rejet de résolution (resolu ou retraite → rejete) : afficher "Ticket relancé"
+    if ((oldStatus.includes("resolu") || oldStatus.includes("résolu") || oldStatus.includes("retraite") || oldStatus.includes("retraité")) &&
+        (newStatus.includes("rejete") || newStatus.includes("rejeté"))) {
+      return "Ticket relancé";
+    }
+    
     // Format par défaut: "ancien → nouveau"
     return `${entry.old_status} → ${entry.new_status}`;
   };
