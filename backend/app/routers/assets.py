@@ -290,32 +290,195 @@ def list_asset_types(
 @router.get(
     "/departments",
     response_model=List[schemas.DepartmentConfig],
-    summary="Lister les départements associés aux actifs",
+    summary="Lister les départements",
 )
 def list_departments(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
+    include_inactive: bool = Query(False, description="Inclure les départements inactifs")
 ) -> List[schemas.DepartmentConfig]:
     """
-    Retourne la liste des départements actifs.
+    Retourne la liste des départements.
 
     - Lecture seule.
-    - N'altère aucune donnée existante.
+    - Par défaut, retourne uniquement les départements actifs.
     """
 
     _ensure_can_view_assets(current_user)
 
-    query = text(
-        """
-        SELECT id, name, is_active
-        FROM departments
-        WHERE is_active = TRUE
-        ORDER BY name ASC
-        """
-    )
+    if include_inactive:
+        query = text(
+            """
+            SELECT id, name, is_active
+            FROM departments
+            ORDER BY name ASC
+            """
+        )
+    else:
+        query = text(
+            """
+            SELECT id, name, is_active
+            FROM departments
+            WHERE is_active = TRUE
+            ORDER BY name ASC
+            """
+        )
 
     result = db.execute(query).mappings().all()
     return [schemas.DepartmentConfig(**row) for row in result]
+
+
+@router.post(
+    "/departments",
+    response_model=schemas.DepartmentConfig,
+    summary="Créer un nouveau département",
+)
+def create_department(
+    name: str = Query(..., description="Nom du département"),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_role("DSI", "Admin")),
+) -> schemas.DepartmentConfig:
+    """
+    Créer un nouveau département.
+
+    - Admin et DSI uniquement.
+    """
+
+    # Vérifier si le département existe déjà
+    existing = db.execute(
+        text("SELECT id FROM departments WHERE LOWER(name) = LOWER(:name)"),
+        {"name": name}
+    ).first()
+
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Un département avec ce nom existe déjà"
+        )
+
+    # Créer le département
+    result = db.execute(
+        text(
+            """
+            INSERT INTO departments (name, is_active)
+            VALUES (:name, TRUE)
+            RETURNING id, name, is_active
+            """
+        ),
+        {"name": name}
+    )
+    db.commit()
+
+    row = result.mappings().first()
+    return schemas.DepartmentConfig(**row)
+
+
+@router.put(
+    "/departments/{department_id}",
+    response_model=schemas.DepartmentConfig,
+    summary="Mettre à jour un département",
+)
+def update_department(
+    department_id: int,
+    name: str = Query(..., description="Nouveau nom du département"),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_role("DSI", "Admin")),
+) -> schemas.DepartmentConfig:
+    """
+    Mettre à jour le nom d'un département.
+
+    - Admin et DSI uniquement.
+    """
+
+    # Vérifier que le département existe
+    existing = db.execute(
+        text("SELECT id FROM departments WHERE id = :id"),
+        {"id": department_id}
+    ).first()
+
+    if not existing:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Département introuvable"
+        )
+
+    # Vérifier qu'aucun autre département n'a le même nom
+    duplicate = db.execute(
+        text("SELECT id FROM departments WHERE LOWER(name) = LOWER(:name) AND id != :id"),
+        {"name": name, "id": department_id}
+    ).first()
+
+    if duplicate:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Un autre département avec ce nom existe déjà"
+        )
+
+    # Mettre à jour le département
+    result = db.execute(
+        text(
+            """
+            UPDATE departments
+            SET name = :name
+            WHERE id = :id
+            RETURNING id, name, is_active
+            """
+        ),
+        {"name": name, "id": department_id}
+    )
+    db.commit()
+
+    row = result.mappings().first()
+    return schemas.DepartmentConfig(**row)
+
+
+@router.patch(
+    "/departments/{department_id}/toggle",
+    response_model=schemas.DepartmentConfig,
+    summary="Activer/Désactiver un département",
+)
+def toggle_department(
+    department_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_role("DSI", "Admin")),
+) -> schemas.DepartmentConfig:
+    """
+    Active ou désactive un département.
+
+    - Admin et DSI uniquement.
+    - Ne supprime pas le département, change seulement son statut.
+    """
+
+    # Vérifier que le département existe
+    existing = db.execute(
+        text("SELECT id, is_active FROM departments WHERE id = :id"),
+        {"id": department_id}
+    ).first()
+
+    if not existing:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Département introuvable"
+        )
+
+    # Inverser le statut
+    new_status = not existing[1]
+
+    result = db.execute(
+        text(
+            """
+            UPDATE departments
+            SET is_active = :is_active
+            WHERE id = :id
+            RETURNING id, name, is_active
+            """
+        ),
+        {"is_active": new_status, "id": department_id}
+    )
+    db.commit()
+
+    row = result.mappings().first()
+    return schemas.DepartmentConfig(**row)
 
 
 @router.put(

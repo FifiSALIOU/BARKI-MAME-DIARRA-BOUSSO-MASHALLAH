@@ -765,6 +765,11 @@ function DSIDashboard({ token }: DSIDashboardProps) {
   void assetTypes; // loaded from API for future use (e.g. type dropdowns)
   const [assetDepartments, setAssetDepartments] = useState<DepartmentConfig[]>([]);
 
+  // États pour la gestion des départements
+  const [showDepartmentModal, setShowDepartmentModal] = useState(false);
+  const [editingDepartment, setEditingDepartment] = useState<DepartmentConfig | null>(null);
+  const [departmentName, setDepartmentName] = useState("");
+
   // KPIs calculés à partir des actifs chargés
   const totalAssets = assets.length;
   const inServiceCount = assets.filter((a) => a.statut === "in_service").length;
@@ -2245,6 +2250,13 @@ function DSIDashboard({ token }: DSIDashboardProps) {
     }
   }, [activeSection, userRole, token]);
 
+  // Charger tous les départements (y compris inactifs) pour la section Départements
+  useEffect(() => {
+    if (activeSection === "departements" && (userRole === "Admin" || userRole === "DSI") && token) {
+      void loadAssetDepartments(true);
+    }
+  }, [activeSection, userRole, token]);
+
   // Charger types et catégories pour:
   // - la section Catégories (Admin et DSI)
   // - la section Tickets (DSI) pour alimenter le filtre Catégorie
@@ -2571,13 +2583,17 @@ function DSIDashboard({ token }: DSIDashboardProps) {
     }
   }
 
-  async function loadAssetDepartments(): Promise<void> {
+  async function loadAssetDepartments(includeInactive: boolean = false): Promise<void> {
     if (!token || token.trim() === "") {
       return;
     }
 
     try {
-      const res = await fetch("http://localhost:8000/departments", {
+      const url = includeInactive 
+        ? "http://localhost:8000/departments?include_inactive=true"
+        : "http://localhost:8000/departments";
+      
+      const res = await fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -2593,6 +2609,102 @@ function DSIDashboard({ token }: DSIDashboardProps) {
     } catch (err) {
       console.error("Erreur lors du chargement des départements:", err);
     }
+  }
+
+  // Fonctions de gestion des départements
+  async function handleCreateDepartment() {
+    if (!departmentName.trim()) {
+      alert("Le nom du département est requis");
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:8000/departments?name=${encodeURIComponent(departmentName.trim())}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        alert(error.detail || "Erreur lors de la création du département");
+        return;
+      }
+
+      alert("Département créé avec succès");
+      setShowDepartmentModal(false);
+      setDepartmentName("");
+      await loadAssetDepartments(true);
+    } catch (err) {
+      console.error("Erreur lors de la création du département:", err);
+      alert("Erreur lors de la création du département");
+    }
+  }
+
+  async function handleUpdateDepartment() {
+    if (!editingDepartment || !departmentName.trim()) {
+      alert("Le nom du département est requis");
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:8000/departments/${editingDepartment.id}?name=${encodeURIComponent(departmentName.trim())}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        alert(error.detail || "Erreur lors de la modification du département");
+        return;
+      }
+
+      alert("Département modifié avec succès");
+      setShowDepartmentModal(false);
+      setEditingDepartment(null);
+      setDepartmentName("");
+      await loadAssetDepartments(true);
+    } catch (err) {
+      console.error("Erreur lors de la modification du département:", err);
+      alert("Erreur lors de la modification du département");
+    }
+  }
+
+  async function handleToggleDepartment(departmentId: number) {
+    try {
+      const res = await fetch(`http://localhost:8000/departments/${departmentId}/toggle`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        alert(error.detail || "Erreur lors du changement de statut");
+        return;
+      }
+
+      await loadAssetDepartments(true);
+    } catch (err) {
+      console.error("Erreur lors du changement de statut:", err);
+      alert("Erreur lors du changement de statut");
+    }
+  }
+
+  function openAddDepartmentModal() {
+    setEditingDepartment(null);
+    setDepartmentName("");
+    setShowDepartmentModal(true);
+  }
+
+  function openEditDepartmentModal(dept: DepartmentConfig) {
+    setEditingDepartment(dept);
+    setDepartmentName(dept.name);
+    setShowDepartmentModal(true);
   }
 
   useEffect(() => {
@@ -19788,22 +19900,203 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
 
           {activeSection === "departements" && (
             <div style={{ padding: "24px" }}>
-              <h1 style={{ marginBottom: "24px", fontSize: "28px", fontWeight: "600", color: "#333" }}>
-                Départements
-              </h1>
-              <p style={{ color: "#666", marginBottom: "24px" }}>
-                Gestion des départements de l'organisation
-              </p>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+                <div>
+                  <h1 style={{ fontSize: "28px", fontWeight: "600", color: "#333", marginBottom: "8px" }}>
+                    Départements
+                  </h1>
+                  <p style={{ color: "#666", fontSize: "14px" }}>
+                    Gestion des départements de l'organisation
+                  </p>
+                </div>
+                <button
+                  onClick={openAddDepartmentModal}
+                  style={{
+                    padding: "10px 20px",
+                    background: "hsl(25, 95%, 53%)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px"
+                  }}
+                >
+                  <span style={{ fontSize: "18px" }}>+</span>
+                  Ajouter un département
+                </button>
+              </div>
+
               <div style={{ 
                 background: "white", 
                 borderRadius: "8px", 
                 boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                padding: "24px"
+                overflow: "hidden"
               }}>
-                <p style={{ color: "#999", fontSize: "14px", textAlign: "center", padding: "40px" }}>
-                  Section en cours de développement
-                </p>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ background: "#f9fafb", borderBottom: "1px solid #e5e7eb" }}>
+                      <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", fontSize: "14px", color: "#374151" }}>
+                        Nom du département
+                      </th>
+                      <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: "600", fontSize: "14px", color: "#374151" }}>
+                        Statut
+                      </th>
+                      <th style={{ padding: "12px 16px", textAlign: "right", fontWeight: "600", fontSize: "14px", color: "#374151" }}>
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {assetDepartments.length === 0 ? (
+                      <tr>
+                        <td colSpan={3} style={{ padding: "40px", textAlign: "center", color: "#999", fontSize: "14px" }}>
+                          Aucun département trouvé
+                        </td>
+                      </tr>
+                    ) : (
+                      assetDepartments.map((dept) => (
+                        <tr key={dept.id} style={{ borderBottom: "1px solid #e5e7eb" }}>
+                          <td style={{ padding: "12px 16px", fontSize: "14px", color: "#374151" }}>
+                            {dept.name}
+                          </td>
+                          <td style={{ padding: "12px 16px" }}>
+                            <span style={{
+                              padding: "4px 12px",
+                              borderRadius: "12px",
+                              fontSize: "12px",
+                              fontWeight: "500",
+                              background: dept.is_active ? "#d1fae5" : "#fee2e2",
+                              color: dept.is_active ? "#065f46" : "#991b1b"
+                            }}>
+                              {dept.is_active ? "Actif" : "Inactif"}
+                            </span>
+                          </td>
+                          <td style={{ padding: "12px 16px", textAlign: "right" }}>
+                            <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+                              <button
+                                onClick={() => openEditDepartmentModal(dept)}
+                                style={{
+                                  padding: "6px 12px",
+                                  background: "#3b82f6",
+                                  color: "white",
+                                  border: "none",
+                                  borderRadius: "6px",
+                                  fontSize: "13px",
+                                  cursor: "pointer"
+                                }}
+                              >
+                                Modifier
+                              </button>
+                              <button
+                                onClick={() => handleToggleDepartment(dept.id)}
+                                style={{
+                                  padding: "6px 12px",
+                                  background: dept.is_active ? "#ef4444" : "#10b981",
+                                  color: "white",
+                                  border: "none",
+                                  borderRadius: "6px",
+                                  fontSize: "13px",
+                                  cursor: "pointer"
+                                }}
+                              >
+                                {dept.is_active ? "Désactiver" : "Activer"}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
+
+              {/* Modale d'ajout/modification de département */}
+              {showDepartmentModal && (
+                <div style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: "rgba(0, 0, 0, 0.5)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 1000
+                }}>
+                  <div style={{
+                    background: "white",
+                    borderRadius: "12px",
+                    padding: "24px",
+                    width: "90%",
+                    maxWidth: "500px",
+                    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)"
+                  }}>
+                    <h2 style={{ fontSize: "20px", fontWeight: "600", color: "#333", marginBottom: "20px" }}>
+                      {editingDepartment ? "Modifier le département" : "Ajouter un département"}
+                    </h2>
+                    <div style={{ marginBottom: "20px" }}>
+                      <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: "500", color: "#374151" }}>
+                        Nom du département <span style={{ color: "#dc3545" }}>*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={departmentName}
+                        onChange={(e) => setDepartmentName(e.target.value)}
+                        placeholder="Ex: Ressources Humaines"
+                        style={{
+                          width: "100%",
+                          padding: "10px 12px",
+                          border: "1px solid #e5e7eb",
+                          borderRadius: "8px",
+                          fontSize: "14px",
+                          outline: "none"
+                        }}
+                      />
+                    </div>
+                    <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                      <button
+                        onClick={() => {
+                          setShowDepartmentModal(false);
+                          setEditingDepartment(null);
+                          setDepartmentName("");
+                        }}
+                        style={{
+                          padding: "10px 20px",
+                          background: "#e5e7eb",
+                          color: "#374151",
+                          border: "none",
+                          borderRadius: "8px",
+                          fontSize: "14px",
+                          fontWeight: "500",
+                          cursor: "pointer"
+                        }}
+                      >
+                        Annuler
+                      </button>
+                      <button
+                        onClick={editingDepartment ? handleUpdateDepartment : handleCreateDepartment}
+                        style={{
+                          padding: "10px 20px",
+                          background: "hsl(25, 95%, 53%)",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "8px",
+                          fontSize: "14px",
+                          fontWeight: "500",
+                          cursor: "pointer"
+                        }}
+                      >
+                        {editingDepartment ? "Modifier" : "Ajouter"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
