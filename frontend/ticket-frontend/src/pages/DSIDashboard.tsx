@@ -20311,22 +20311,17 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                    <label style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: "500", color: "#374151" }}>
                      Département <span style={{ color: "#dc3545" }}>*</span>
                    </label>
-                   <select
-                     required
-                     value={newUser.agency}
-                     onChange={(e) => setNewUser({ ...newUser, agency: e.target.value })}
-                     style={{ width: "100%", padding: "10px 12px", border: "1px solid #e5e7eb", borderRadius: "8px", fontSize: "14px", backgroundColor: "white", cursor: "pointer" }}
-                   >
-                     <option value="">Sélectionner un département</option>
-                     {Array.from(new Set(allUsers.map((u: any) => u.agency).filter(Boolean))).map((agency) => (
-                       <option key={agency} value={agency}>{agency}</option>
-                     ))}
-                     <option value="Marketing">Marketing</option>
-                     <option value="IT">IT</option>
-                     <option value="Ressources Humaines">Ressources Humaines</option>
-                     <option value="Finance">Finance</option>
-                     <option value="Ventes">Ventes</option>
-                   </select>
+                  <select
+                    required
+                    value={newUser.agency}
+                    onChange={(e) => setNewUser({ ...newUser, agency: e.target.value })}
+                    style={{ width: "100%", padding: "10px 12px", border: "1px solid #e5e7eb", borderRadius: "8px", fontSize: "14px", backgroundColor: "white", cursor: "pointer" }}
+                  >
+                    <option value="">Sélectionner un département</option>
+                    {assetDepartments.filter(d => d.is_active).map((dept) => (
+                      <option key={dept.id} value={dept.name}>{dept.name}</option>
+                    ))}
+                  </select>
                  </div>
                  <div>
                    <label style={{ display: "block", marginBottom: "6px", fontSize: "14px", fontWeight: "500", color: "#374151" }}>
@@ -20548,22 +20543,17 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                      <label style={{ display: "block", marginBottom: "8px", color: "#333", fontWeight: "500" }}>
                        Département <span style={{ color: "#dc3545" }}>*</span>
                      </label>
-                     <select
-                       required
-                       value={editUser.agency}
-                       onChange={(e) => setEditUser({ ...editUser, agency: e.target.value })}
-                       style={{ width: "100%", padding: "8px 12px", border: "1px solid #ddd", borderRadius: "4px", fontSize: "14px" }}
-                     >
-                       <option value="">Sélectionner un département</option>
-                       {Array.from(new Set(allUsers.map((u: any) => u.agency).filter(Boolean))).map((agency) => (
-                         <option key={agency} value={agency}>{agency}</option>
-                       ))}
-                       <option value="Marketing">Marketing</option>
-                       <option value="IT">IT</option>
-                       <option value="Ressources Humaines">Ressources Humaines</option>
-                       <option value="Finance">Finance</option>
-                       <option value="Ventes">Ventes</option>
-                     </select>
+                    <select
+                      required
+                      value={editUser.agency}
+                      onChange={(e) => setEditUser({ ...editUser, agency: e.target.value })}
+                      style={{ width: "100%", padding: "8px 12px", border: "1px solid #ddd", borderRadius: "4px", fontSize: "14px" }}
+                    >
+                      <option value="">Sélectionner un département</option>
+                      {assetDepartments.filter(d => d.is_active).map((dept) => (
+                        <option key={dept.id} value={dept.name}>{dept.name}</option>
+                      ))}
+                    </select>
                    </div>
                  </div>
                </div>
