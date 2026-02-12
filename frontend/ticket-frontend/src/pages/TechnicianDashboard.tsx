@@ -14,6 +14,7 @@ interface Notification {
 }
 
 interface UserRead {
+  id?: string;
   full_name: string;
   email: string;
   agency?: string | null;
@@ -922,6 +923,7 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
         if (meRes.ok) {
           const meData = await meRes.json();
           setUserInfo({
+            id: meData.id,
             full_name: meData.full_name,
             email: meData.email,
             agency: meData.agency,
