@@ -20681,43 +20681,9 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                           color: "#6b7280",
                         }}
                       >
-                        Statistiques des tables principales de votre instance PostgreSQL.
+                        Statistiques des tables principales de notre instance PostgreSQL.
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => void loadDatabaseTablesStats()}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        padding: "8px 14px",
-                        borderRadius: "9999px",
-                        border: "1px solid #e5e7eb",
-                        background: "#f9fafb",
-                        cursor: "pointer",
-                        fontSize: "13px",
-                        fontWeight: 500,
-                        color: "#111827",
-                      }}
-                    >
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          width: "20px",
-                          height: "20px",
-                          borderRadius: "9999px",
-                          background: "#f3f4ff",
-                          color: "#4f46e5",
-                          fontSize: "12px",
-                        }}
-                      >
-                        ↻
-                      </span>
-                      <span>Rafraîchir</span>
-                    </button>
                   </div>
 
                   {/* Cartes de synthèse (Tickets, Profils, Commentaires, Historiques) */}
@@ -20809,6 +20775,49 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                         </div>
                       );
                     })}
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: "16px",
+                      display: "flex",
+                      justifyContent: "flex-end",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => void loadDatabaseTablesStats()}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        padding: "8px 14px",
+                        borderRadius: "9999px",
+                        border: "1px solid #e5e7eb",
+                        background: "#f9fafb",
+                        cursor: "pointer",
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        color: "#111827",
+                      }}
+                    >
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          width: "20px",
+                          height: "20px",
+                          borderRadius: "9999px",
+                          background: "#f3f4ff",
+                          color: "#4f46e5",
+                          fontSize: "12px",
+                        }}
+                      >
+                        ↻
+                      </span>
+                      <span>Rafraîchir</span>
+                    </button>
                   </div>
 
                   {/* Messages d'état */}
