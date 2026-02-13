@@ -20355,16 +20355,17 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                               </span>
                               <span
                                 style={{
-                                    fontSize: "12px",
-                                    color: "#6b7280",
+                                  fontSize: "12px",
+                                  color: "#6b7280",
+                                  whiteSpace: "nowrap",
                                 }}
                               >
-                                  Disponibilité:{" "}
-                                  {service.id === "db"
-                                    ? formatAvailability(dbAvailability)
-                                    : service.id === "auth"
-                                    ? formatAvailability(authAvailability)
-                                    : formatAvailability(apiAvailability)}
+                                Disponibilité:{" "}
+                                {service.id === "db"
+                                  ? formatAvailability(dbAvailability)
+                                  : service.id === "auth"
+                                  ? formatAvailability(authAvailability)
+                                  : formatAvailability(apiAvailability)}
                               </span>
                             </div>
                           </div>
