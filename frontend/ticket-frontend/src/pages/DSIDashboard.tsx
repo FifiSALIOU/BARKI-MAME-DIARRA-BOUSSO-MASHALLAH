@@ -6958,10 +6958,11 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
             display: "flex", 
             alignItems: "center", 
             gap: "12px", 
-            padding: "12px", 
+            padding: "10px", 
             background: activeSection === "reports" ? "hsl(25, 95%, 53%)" : "transparent",
-            borderRadius: "8px",
-            cursor: "pointer"
+            borderRadius: "4px",
+            cursor: "pointer",
+            marginBottom: "8px"
           }}
         >
           <div style={{ width: "24px", height: "24px", display: "flex", alignItems: "center", justifyContent: "center" }}>
