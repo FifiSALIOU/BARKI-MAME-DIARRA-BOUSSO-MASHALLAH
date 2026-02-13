@@ -6,6 +6,7 @@ import UserDashboard from "./pages/UserDashboard";
 import SecretaryDashboard from "./pages/SecretaryDashboard";
 import TechnicianDashboard from "./pages/TechnicianDashboard";
 import DSIDashboard from "./pages/DSIDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function App() {
   const [token, setToken] = useState<string | null>(() => {
@@ -201,91 +202,91 @@ function App() {
         />
         <Route
           path="/dashboard/admin"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
         <Route
           path="/dashboard/admin/tickets"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
         <Route
           path="/dashboard/admin/actifs"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
         <Route
           path="/dashboard/admin/types"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
         <Route
           path="/dashboard/admin/categories"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
         <Route
           path="/dashboard/admin/technicians"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
         <Route
           path="/dashboard/admin/users"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
         <Route
           path="/dashboard/admin/roles"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
         <Route
           path="/dashboard/admin/groupes"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
         <Route
           path="/dashboard/admin/statistiques"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
         <Route
           path="/dashboard/admin/reports"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
         <Route
           path="/dashboard/admin/maintenance"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
         <Route
           path="/dashboard/admin/audit-et-logs"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
         <Route
           path="/dashboard/admin/audit-logs"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
         <Route
           path="/dashboard/admin/parametres"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
         <Route
           path="/dashboard/admin/parametres/apparence"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
         <Route
           path="/dashboard/admin/parametres/email"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
         <Route
           path="/dashboard/admin/parametres/securite"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
         <Route
           path="/dashboard/admin/parametres/types-de-tickets"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
         <Route
           path="/dashboard/admin/parametres/priorites"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
         <Route
           path="/dashboard/admin/departements"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
         <Route
           path="/dashboard/admin/notifications"
-          element={token ? <DSIDashboard token={token} /> : <Navigate to="/" replace />}
+          element={token ? <AdminDashboard token={token} /> : <Navigate to="/" replace />}
         />
       </Routes>
     </div>

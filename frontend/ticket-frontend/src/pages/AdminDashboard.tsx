@@ -93,7 +93,7 @@ import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
 import { fr } from "date-fns/locale";
 
-interface DSIDashboardProps {
+interface AdminDashboardProps {
   token: string;
 }
 
@@ -448,7 +448,7 @@ function DSIOrangeSelect({
   );
 }
 
-function DSIDashboard({ token }: DSIDashboardProps) {
+function AdminDashboard({ token }: AdminDashboardProps) {
   const [searchParams] = useSearchParams();
   
   // Fonction helper pour formater le numéro de ticket en "TKT-XXX"
@@ -791,22 +791,29 @@ function DSIDashboard({ token }: DSIDashboardProps) {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Déterminer activeSection depuis l'URL (DSI : uniquement routes /dashboard/dsi)
+  // Déterminer activeSection depuis l'URL (Admin : uniquement routes /dashboard/admin)
   const getActiveSection = (): string => {
     const path = location.pathname;
-    if (path === "/dashboard/dsi/notifications") return "notifications";
-    if (path === "/dashboard/dsi/audit-logs") return "audit-logs";
-    if (path === "/dashboard/dsi/maintenance") return "maintenance";
-    if (path === "/dashboard/dsi/reports") return "reports";
-    if (path === "/dashboard/dsi/users") return "users";
-    if (path === "/dashboard/dsi/roles") return "roles";
-    if (path === "/dashboard/dsi/technicians") return "technicians";
-    if (path === "/dashboard/dsi/actifs") return "actifs";
-    if (path === "/dashboard/dsi/types") return "types";
-    if (path === "/dashboard/dsi/categories") return "categories";
-    if (path === "/dashboard/dsi/tickets") return "tickets";
-    if (path === "/dashboard/dsi/departements") return "departements";
-    if (path === "/dashboard/dsi") return "dashboard";
+    if (path === "/dashboard/admin/notifications") return "notifications";
+    if (path === "/dashboard/admin/audit-logs" || path === "/dashboard/admin/audit-et-logs") return "audit-logs";
+    if (path === "/dashboard/admin/maintenance") return "maintenance";
+    if (path === "/dashboard/admin/reports" || path === "/dashboard/admin/statistiques") return "reports";
+    if (path === "/dashboard/admin/users") return "users";
+    if (path === "/dashboard/admin/groupes") return "groupes";
+    if (path === "/dashboard/admin/roles") return "roles";
+    if (path === "/dashboard/admin/technicians") return "technicians";
+    if (path === "/dashboard/admin/actifs") return "actifs";
+    if (path === "/dashboard/admin/types") return "types";
+    if (path === "/dashboard/admin/categories") return "categories";
+    if (path === "/dashboard/admin/tickets") return "tickets";
+    if (path === "/dashboard/admin/parametres/apparence") return "apparence";
+    if (path === "/dashboard/admin/parametres/email") return "email";
+    if (path === "/dashboard/admin/parametres/securite") return "securite";
+    if (path === "/dashboard/admin/parametres/types-de-tickets") return "types-tickets";
+    if (path === "/dashboard/admin/parametres/priorites") return "priorites";
+    if (path === "/dashboard/admin/departements") return "departements";
+    if (path === "/dashboard/admin/parametres") return "settings";
+    if (path === "/dashboard/admin") return "dashboard";
     return "dashboard";
   };
   const activeSection = getActiveSection();
@@ -867,9 +874,9 @@ function DSIDashboard({ token }: DSIDashboardProps) {
     return true;
   });
 
-  // Fonction helper pour obtenir le préfixe de route (DSI : toujours /dashboard/dsi)
+  // Fonction helper pour obtenir le préfixe de route (Admin : toujours /dashboard/admin)
   const getRoutePrefix = (): string => {
-    return "/dashboard/dsi";
+    return "/dashboard/admin";
   };
   const [selectedReport, setSelectedReport] = useState<string>("");
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -1276,7 +1283,7 @@ function DSIDashboard({ token }: DSIDashboardProps) {
   // Définir automatiquement "statistiques" comme rapport sélectionné quand on arrive sur la page reports
   useEffect(() => {
     const path = location.pathname;
-    if ((path === "/dashboard/dsi/reports") && !selectedReport) {
+    if ((path === "/dashboard/admin/reports" || path === "/dashboard/admin/statistiques") && !selectedReport) {
       setSelectedReport("statistiques");
     }
   }, [location.pathname]);
@@ -24599,4 +24606,4 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
   );
 }
 
-export default DSIDashboard;
+export default AdminDashboard;
