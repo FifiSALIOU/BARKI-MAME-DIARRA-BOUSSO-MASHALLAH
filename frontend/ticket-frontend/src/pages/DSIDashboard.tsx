@@ -7247,6 +7247,8 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                 ? "Catégories"
                 : activeSection === "technicians"
                 ? "Équipe"
+                : activeSection === "departements"
+                ? "Agences"
                 : activeSection === "reports"
                 ? "Statistiques générales"
                 : "Tableau de bord"}
@@ -7276,6 +7278,8 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                 ? "Gérez les catégories par type de ticket"
                 : activeSection === "technicians"
                 ? "Gestion des membres de l'équipe DSI et des techniciens"
+                : activeSection === "departements"
+                ? "Gestion des agences de l'organisation"
                 : activeSection === "reports"
                 ? "Vue d'ensemble des tickets et de l'activité du support"
                 : "Vue d'ensemble de votre activité"}
