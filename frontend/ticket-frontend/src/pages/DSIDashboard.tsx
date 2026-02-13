@@ -20663,27 +20663,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                       flexWrap: "wrap",
                     }}
                   >
-                    <div>
-                      <h2
-                        style={{
-                          margin: 0,
-                          fontSize: "20px",
-                          fontWeight: 600,
-                          color: "#111827",
-                        }}
-                      >
-                        Tables de la base de données
-                      </h2>
-                      <p
-                        style={{
-                          marginTop: "4px",
-                          fontSize: "13px",
-                          color: "#6b7280",
-                        }}
-                      >
-                        Statistiques des tables principales de notre instance PostgreSQL.
-                      </p>
-                    </div>
+                    <div />
                   </div>
 
                   {/* Cartes de synthèse (Tickets, Profils, Commentaires, Historiques) */}
