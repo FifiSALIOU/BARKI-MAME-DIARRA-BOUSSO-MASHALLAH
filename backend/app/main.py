@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-from .routers import auth, tickets, users, notifications, settings, ticket_config, assets
+from .routers import auth, tickets, users, notifications, settings, ticket_config, assets, maintenance
 from .scheduler import run_scheduled_tasks
 
 
@@ -34,6 +34,8 @@ def create_app() -> FastAPI:
     app.include_router(ticket_config.router)
     # Routes d'actifs : exposées directement sous /assets/ pour correspondre au frontend
     app.include_router(assets.router, tags=["assets"])
+    # Routes de maintenance (statistiques base de données, etc.)
+    app.include_router(maintenance.router, tags=["maintenance"])
 
     # Configurer le scheduler pour exécuter les tâches planifiées
     scheduler = BackgroundScheduler()

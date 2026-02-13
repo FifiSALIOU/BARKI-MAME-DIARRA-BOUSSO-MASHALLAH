@@ -946,6 +946,16 @@ function DSIDashboard({ token }: DSIDashboardProps) {
   const [maintenanceLogs, setMaintenanceLogs] = useState<Notification[]>([]);
   const [isLoadingMaintenanceLogs, setIsLoadingMaintenanceLogs] = useState<boolean>(false);
   const [maintenanceLogsError, setMaintenanceLogsError] = useState<string | null>(null);
+
+  // Statistiques de la base de données (onglet Base de données de la section Maintenance)
+  type DatabaseTableStat = {
+    name: string;
+    row_estimate: number;
+    rls_enabled: boolean;
+  };
+  const [databaseTables, setDatabaseTables] = useState<DatabaseTableStat[]>([]);
+  const [isLoadingDatabaseTables, setIsLoadingDatabaseTables] = useState<boolean>(false);
+  const [databaseTablesError, setDatabaseTablesError] = useState<string | null>(null);
   
   // États pour les paramètres d'apparence
   const [appName, setAppName] = useState<string>(() => {
@@ -2217,6 +2227,13 @@ function DSIDashboard({ token }: DSIDashboardProps) {
     }
   }, [activeSection, maintenanceTab, token]);
 
+  // Charger les statistiques de la base de données quand l'onglet Base de données est ouvert dans la section Maintenance
+  useEffect(() => {
+    if (activeSection === "maintenance" && maintenanceTab === "base-de-donnees") {
+      void loadDatabaseTablesStats();
+    }
+  }, [activeSection, maintenanceTab, token]);
+
   // Charger automatiquement les détails du ticket sélectionné dans la section notifications
   useEffect(() => {
     if (activeSection === "notifications" && selectedNotificationTicket) {
@@ -2656,6 +2673,39 @@ function DSIDashboard({ token }: DSIDashboardProps) {
       setAssetDepartments(data || []);
     } catch (err) {
       console.error("Erreur lors du chargement des départements:", err);
+    }
+  }
+
+  // Charger les statistiques des tables de la base de données (onglet Maintenance > Base de données)
+  async function loadDatabaseTablesStats(): Promise<void> {
+    if (!token || token.trim() === "") {
+      return;
+    }
+
+    try {
+      setIsLoadingDatabaseTables(true);
+      setDatabaseTablesError(null);
+
+      const res = await fetch("http://localhost:8000/maintenance/db-stats", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        console.error("Erreur HTTP chargement statistiques base de données:", res.status);
+        setDatabaseTablesError("Impossible de charger les statistiques de la base de données.");
+        setDatabaseTables([]);
+        return;
+      }
+
+      const data: DatabaseTableStat[] = await res.json();
+      setDatabaseTables(data || []);
+    } catch (err) {
+      console.error("Erreur lors du chargement des statistiques de la base de données:", err);
+      setDatabaseTablesError("Erreur lors du chargement des statistiques de la base de données.");
+    } finally {
+      setIsLoadingDatabaseTables(false);
     }
   }
 
@@ -20596,14 +20646,365 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                   style={{
                     background: "#ffffff",
                     borderRadius: "12px",
-                    padding: "32px",
+                    padding: "24px",
                     boxShadow: "0 2px 4px rgba(15,23,42,0.06)",
-                    textAlign: "center",
-                    color: "#6b7280",
-                    fontSize: "14px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "24px",
                   }}
                 >
-                  Cette sous-section Base de données sera développée ultérieurement.
+                  {/* En-tête et résumé */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: "16px",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <div>
+                      <h2
+                        style={{
+                          margin: 0,
+                          fontSize: "20px",
+                          fontWeight: 600,
+                          color: "#111827",
+                        }}
+                      >
+                        Tables de la base de données
+                      </h2>
+                      <p
+                        style={{
+                          marginTop: "4px",
+                          fontSize: "13px",
+                          color: "#6b7280",
+                        }}
+                      >
+                        Statistiques des tables principales de votre instance PostgreSQL.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void loadDatabaseTablesStats()}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        padding: "8px 14px",
+                        borderRadius: "9999px",
+                        border: "1px solid #e5e7eb",
+                        background: "#f9fafb",
+                        cursor: "pointer",
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        color: "#111827",
+                      }}
+                    >
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          width: "20px",
+                          height: "20px",
+                          borderRadius: "9999px",
+                          background: "#f3f4ff",
+                          color: "#4f46e5",
+                          fontSize: "12px",
+                        }}
+                      >
+                        ↻
+                      </span>
+                      <span>Rafraîchir</span>
+                    </button>
+                  </div>
+
+                  {/* Cartes de synthèse (Tickets, Profils, Commentaires, Historiques) */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                      gap: "16px",
+                    }}
+                  >
+                    {[
+                      {
+                        key: "tickets",
+                        label: "Tickets",
+                        color: "#f97316",
+                        background: "rgba(249,115,22,0.08)",
+                      },
+                      {
+                        key: "users",
+                        label: "Profils",
+                        color: "#2563eb",
+                        background: "rgba(37,99,235,0.08)",
+                      },
+                      {
+                        key: "comments",
+                        label: "Commentaires",
+                        color: "#10b981",
+                        background: "rgba(16,185,129,0.08)",
+                      },
+                      {
+                        key: "ticket_history",
+                        label: "Historiques",
+                        color: "#8b5cf6",
+                        background: "rgba(139,92,246,0.08)",
+                      },
+                    ].map((card) => {
+                      const table = databaseTables.find(
+                        (t) => t.name.toLowerCase() === card.key
+                      );
+                      const value = table ? table.row_estimate : 0;
+
+                      return (
+                        <div
+                          key={card.key}
+                          style={{
+                            padding: "16px",
+                            borderRadius: "12px",
+                            border: "1px solid rgba(148,163,184,0.3)",
+                            background: "#f9fafb",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: "12px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "4px",
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontSize: "12px",
+                                color: "#6b7280",
+                              }}
+                            >
+                              {card.label}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: "28px",
+                                fontWeight: 700,
+                                color: card.color,
+                              }}
+                            >
+                              {value}
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              width: "40px",
+                              height: "40px",
+                              borderRadius: "9999px",
+                              background: card.background,
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Messages d'état */}
+                  {databaseTablesError && (
+                    <div
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: "8px",
+                        background: "#fef2f2",
+                        color: "#b91c1c",
+                        fontSize: "13px",
+                      }}
+                    >
+                      {databaseTablesError}
+                    </div>
+                  )}
+
+                  {isLoadingDatabaseTables ? (
+                    <p
+                      style={{
+                        textAlign: "center",
+                        padding: "16px",
+                        color: "#6b7280",
+                        fontSize: "14px",
+                      }}
+                    >
+                      Chargement des statistiques de la base de données...
+                    </p>
+                  ) : (
+                    <div
+                      style={{
+                        borderRadius: "12px",
+                        border: "1px solid #e5e7eb",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div
+                        style={{
+                          padding: "12px 16px",
+                          borderBottom: "1px solid #e5e7eb",
+                          background: "#f9fafb",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          gap: "12px",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <div>
+                          <h3
+                            style={{
+                              margin: 0,
+                              fontSize: "15px",
+                              fontWeight: 600,
+                              color: "#111827",
+                            }}
+                          >
+                            Tables de la base de données
+                          </h3>
+                          <p
+                            style={{
+                              margin: 0,
+                              marginTop: "2px",
+                              fontSize: "12px",
+                              color: "#6b7280",
+                            }}
+                          >
+                            Statistiques pour{" "}
+                            {databaseTables.length > 0
+                              ? `${databaseTables.length} table(s)`
+                              : "aucune table détectée"}
+                            .
+                          </p>
+                        </div>
+                      </div>
+
+                      <div style={{ overflowX: "auto" }}>
+                        <table
+                          style={{
+                            width: "100%",
+                            borderCollapse: "collapse",
+                            fontSize: "13px",
+                          }}
+                        >
+                          <thead>
+                            <tr
+                              style={{
+                                background: "#f9fafb",
+                                textAlign: "left",
+                                color: "#6b7280",
+                              }}
+                            >
+                              <th
+                                style={{
+                                  padding: "10px 16px",
+                                  borderBottom: "1px solid #e5e7eb",
+                                  fontWeight: 500,
+                                }}
+                              >
+                                Table
+                              </th>
+                              <th
+                                style={{
+                                  padding: "10px 16px",
+                                  borderBottom: "1px solid #e5e7eb",
+                                  fontWeight: 500,
+                                }}
+                              >
+                                Enregistrements (estimation)
+                              </th>
+                              <th
+                                style={{
+                                  padding: "10px 16px",
+                                  borderBottom: "1px solid #e5e7eb",
+                                  fontWeight: 500,
+                                }}
+                              >
+                                Statut
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {databaseTables.length === 0 ? (
+                              <tr>
+                                <td
+                                  colSpan={3}
+                                  style={{
+                                    padding: "16px",
+                                    textAlign: "center",
+                                    color: "#6b7280",
+                                  }}
+                                >
+                                  Aucune table détectée dans la base de données.
+                                </td>
+                              </tr>
+                            ) : (
+                              databaseTables.map((table) => (
+                                <tr key={table.name}>
+                                  <td
+                                    style={{
+                                      padding: "10px 16px",
+                                      borderBottom: "1px solid #f3f4f6",
+                                      color: "#111827",
+                                      fontWeight: 500,
+                                      textTransform: "none",
+                                    }}
+                                  >
+                                    {table.name}
+                                  </td>
+                                  <td
+                                    style={{
+                                      padding: "10px 16px",
+                                      borderBottom: "1px solid #f3f4f6",
+                                      color: "#111827",
+                                    }}
+                                  >
+                                    {table.row_estimate}
+                                  </td>
+                                  <td
+                                    style={{
+                                      padding: "10px 16px",
+                                      borderBottom: "1px solid #f3f4f6",
+                                    }}
+                                  >
+                                    <span
+                                      style={{
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        padding: "4px 10px",
+                                        borderRadius: "9999px",
+                                        fontSize: "11px",
+                                        fontWeight: 600,
+                                        backgroundColor: table.rls_enabled
+                                          ? "rgba(16,185,129,0.1)"
+                                          : "rgba(148,163,184,0.12)",
+                                        color: table.rls_enabled
+                                          ? "#047857"
+                                          : "#4b5563",
+                                        border: `1px solid ${
+                                          table.rls_enabled
+                                            ? "rgba(16,185,129,0.3)"
+                                            : "rgba(148,163,184,0.5)"
+                                        }`,
+                                      }}
+                                    >
+                                      {table.rls_enabled ? "RLS Actif" : "RLS Inactif"}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
