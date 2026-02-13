@@ -1065,6 +1065,14 @@ function DSIDashboard({ token }: DSIDashboardProps) {
     is_active: boolean;
   } | null>(null);
   const [editPriorityForm, setEditPriorityForm] = useState({ label: "", color_hex: "", background_hex: "" });
+  const [showAddPriorityFromDbModal, setShowAddPriorityFromDbModal] = useState(false);
+  const [addPriorityForm, setAddPriorityForm] = useState({
+    code: "",
+    label: "",
+    color_hex: "#E53E3E",
+    background_hex: "rgba(229, 62, 62, 0.1)",
+    display_order: 1,
+  });
   const [showAddPriorityModal, setShowAddPriorityModal] = useState(false);
   const [editingPriority, setEditingPriority] = useState<number | null>(null);
   const [newPriority, setNewPriority] = useState({ 
@@ -17585,9 +17593,33 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
 
            {activeSection === "priorites" && (
              <div style={{ padding: "24px" }}>
-               <h1 style={{ marginBottom: "24px", fontSize: "28px", fontWeight: "600", color: "#333" }}>
-                 Priorités
-               </h1>
+               <div style={{ marginBottom: "20px", display: "flex", justifyContent: "flex-end" }}>
+                 <button
+                   type="button"
+                   onClick={() => {
+                     setAddPriorityForm({
+                       code: "",
+                       label: "",
+                       color_hex: "#E53E3E",
+                       background_hex: "rgba(229, 62, 62, 0.1)",
+                       display_order: Math.max(1, ...prioritiesFromDb.map((x) => x.display_order), 0) + 1,
+                     });
+                     setShowAddPriorityFromDbModal(true);
+                   }}
+                   style={{
+                     padding: "10px 20px",
+                     backgroundColor: "hsl(25, 95%, 53%)",
+                     color: "white",
+                     border: "1px solid hsl(25, 95%, 45%)",
+                     borderRadius: "6px",
+                     cursor: "pointer",
+                     fontSize: "14px",
+                     fontWeight: "500",
+                   }}
+                 >
+                   + Ajouter une priorité
+                 </button>
+               </div>
 
                {/* Tableau des priorités (design: Nom, Libellé, Couleur, SLA, Actif) */}
                <div style={{
@@ -17882,6 +17914,185 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                          }}
                        >
                          Enregistrer
+                       </button>
+                     </div>
+                   </div>
+                 </div>
+               )}
+
+               {/* Modal Ajouter une priorité (API) */}
+               {showAddPriorityFromDbModal && (
+                 <div
+                   style={{
+                     position: "fixed",
+                     top: 0,
+                     left: 0,
+                     right: 0,
+                     bottom: 0,
+                     background: "rgba(0,0,0,0.5)",
+                     display: "flex",
+                     alignItems: "center",
+                     justifyContent: "center",
+                     zIndex: 1000,
+                     padding: "20px",
+                   }}
+                   onClick={() => setShowAddPriorityFromDbModal(false)}
+                 >
+                   <div
+                     onClick={(e) => e.stopPropagation()}
+                     style={{
+                       background: "white",
+                       borderRadius: "12px",
+                       width: "100%",
+                       maxWidth: "440px",
+                       boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+                       padding: "24px",
+                     }}
+                   >
+                     <h2 style={{ marginBottom: "20px", fontSize: "20px", fontWeight: "600", color: "#333" }}>
+                       Ajouter une priorité
+                     </h2>
+                     <div style={{ marginBottom: "16px" }}>
+                       <label style={{ display: "block", marginBottom: "6px", color: "#374151", fontWeight: "500", fontSize: "14px" }}>Code (ex: critique, haute)</label>
+                       <input
+                         type="text"
+                         value={addPriorityForm.code}
+                         onChange={(e) => setAddPriorityForm((f) => ({ ...f, code: e.target.value }))}
+                         placeholder="ex: urgente"
+                         style={{
+                           width: "100%",
+                           padding: "10px 12px",
+                           border: "1px solid #d1d5db",
+                           borderRadius: "6px",
+                           fontSize: "14px",
+                           boxSizing: "border-box",
+                         }}
+                       />
+                     </div>
+                     <div style={{ marginBottom: "16px" }}>
+                       <label style={{ display: "block", marginBottom: "6px", color: "#374151", fontWeight: "500", fontSize: "14px" }}>Libellé</label>
+                       <input
+                         type="text"
+                         value={addPriorityForm.label}
+                         onChange={(e) => setAddPriorityForm((f) => ({ ...f, label: e.target.value }))}
+                         placeholder="ex: Urgente"
+                         style={{
+                           width: "100%",
+                           padding: "10px 12px",
+                           border: "1px solid #d1d5db",
+                           borderRadius: "6px",
+                           fontSize: "14px",
+                           boxSizing: "border-box",
+                         }}
+                       />
+                     </div>
+                     <div style={{ marginBottom: "16px" }}>
+                       <label style={{ display: "block", marginBottom: "6px", color: "#374151", fontWeight: "500", fontSize: "14px" }}>Couleur (hex)</label>
+                       <input
+                         type="text"
+                         value={addPriorityForm.color_hex}
+                         onChange={(e) => setAddPriorityForm((f) => ({ ...f, color_hex: e.target.value }))}
+                         placeholder="#E53E3E"
+                         style={{
+                           width: "100%",
+                           padding: "10px 12px",
+                           border: "1px solid #d1d5db",
+                           borderRadius: "6px",
+                           fontSize: "14px",
+                           boxSizing: "border-box",
+                         }}
+                       />
+                     </div>
+                     <div style={{ marginBottom: "16px" }}>
+                       <label style={{ display: "block", marginBottom: "6px", color: "#374151", fontWeight: "500", fontSize: "14px" }}>Fond (hex ou rgba)</label>
+                       <input
+                         type="text"
+                         value={addPriorityForm.background_hex}
+                         onChange={(e) => setAddPriorityForm((f) => ({ ...f, background_hex: e.target.value }))}
+                         placeholder="rgba(229, 62, 62, 0.1)"
+                         style={{
+                           width: "100%",
+                           padding: "10px 12px",
+                           border: "1px solid #d1d5db",
+                           borderRadius: "6px",
+                           fontSize: "14px",
+                           boxSizing: "border-box",
+                         }}
+                       />
+                     </div>
+                     <div style={{ marginBottom: "20px" }}>
+                       <label style={{ display: "block", marginBottom: "6px", color: "#374151", fontWeight: "500", fontSize: "14px" }}>Ordre d'affichage</label>
+                       <input
+                         type="number"
+                         min={1}
+                         value={addPriorityForm.display_order}
+                         onChange={(e) => setAddPriorityForm((f) => ({ ...f, display_order: parseInt(e.target.value, 10) || 1 }))}
+                         style={{
+                           width: "100%",
+                           padding: "10px 12px",
+                           border: "1px solid #d1d5db",
+                           borderRadius: "6px",
+                           fontSize: "14px",
+                           boxSizing: "border-box",
+                         }}
+                       />
+                     </div>
+                     <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                       <button
+                         type="button"
+                         onClick={() => setShowAddPriorityFromDbModal(false)}
+                         style={{
+                           padding: "10px 18px",
+                           fontSize: "14px",
+                           color: "#6b7280",
+                           background: "#f3f4f6",
+                           border: "1px solid #e5e7eb",
+                           borderRadius: "6px",
+                           cursor: "pointer",
+                         }}
+                       >
+                         Annuler
+                       </button>
+                       <button
+                         type="button"
+                         onClick={async () => {
+                           const code = addPriorityForm.code.trim().toLowerCase().replace(/\s+/g, "_");
+                           if (!code || !addPriorityForm.label.trim()) {
+                             alert("Veuillez remplir le code et le libellé.");
+                             return;
+                           }
+                           const res = await fetch("http://localhost:8000/ticket-config/priorities", {
+                             method: "POST",
+                             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                             body: JSON.stringify({
+                               code,
+                               label: addPriorityForm.label.trim(),
+                               color_hex: addPriorityForm.color_hex.trim() || null,
+                               background_hex: addPriorityForm.background_hex.trim() || null,
+                               display_order: addPriorityForm.display_order,
+                               is_active: true,
+                             }),
+                           });
+                           if (res.ok) {
+                             setShowAddPriorityFromDbModal(false);
+                             loadPrioritiesFromDb();
+                           } else {
+                             const err = await res.json().catch(() => ({}));
+                             alert(err.detail || "Erreur lors de l'ajout.");
+                           }
+                         }}
+                         style={{
+                           padding: "10px 18px",
+                           fontSize: "14px",
+                           fontWeight: "500",
+                           color: "white",
+                           background: "hsl(25, 95%, 53%)",
+                           border: "none",
+                           borderRadius: "6px",
+                           cursor: "pointer",
+                         }}
+                       >
+                         Ajouter
                        </button>
                      </div>
                    </div>

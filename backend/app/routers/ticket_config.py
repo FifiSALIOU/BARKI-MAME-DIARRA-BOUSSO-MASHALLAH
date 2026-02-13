@@ -57,6 +57,33 @@ def update_priority(
     return priority
 
 
+@router.post("/priorities", response_model=schemas.PriorityConfig)
+def create_priority(
+    body: schemas.PriorityCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """Crée une nouvelle priorité."""
+    code = body.code.strip().lower().replace(" ", "_")
+    if not code:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Le code est requis")
+    existing = db.query(models.Priority).filter(models.Priority.code == code).first()
+    if existing:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Une priorité avec le code '{code}' existe déjà")
+    priority = models.Priority(
+        code=code,
+        label=body.label.strip(),
+        color_hex=(body.color_hex or "").strip() or None,
+        background_hex=(body.background_hex or "").strip() or None,
+        display_order=body.display_order,
+        is_active=body.is_active,
+    )
+    db.add(priority)
+    db.commit()
+    db.refresh(priority)
+    return priority
+
+
 @router.get("/types", response_model=List[schemas.TicketTypeConfig])
 def get_ticket_types(
     db: Session = Depends(get_db),

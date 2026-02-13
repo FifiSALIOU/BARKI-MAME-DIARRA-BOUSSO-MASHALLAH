@@ -195,6 +195,16 @@ class PriorityUpdate(BaseModel):
     display_order: Optional[int] = None
 
 
+class PriorityCreate(BaseModel):
+    """Schéma de création d'une priorité."""
+    code: str
+    label: str
+    color_hex: Optional[str] = None
+    background_hex: Optional[str] = None
+    display_order: int = 0
+    is_active: bool = True
+
+
 class CommentCreate(BaseModel):
     content: str
     type: CommentType = CommentType.TECHNIQUE
