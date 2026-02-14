@@ -1328,6 +1328,56 @@ Cordialement,
 """
         return self.send_email([to_email.strip()], subject, body, html_body)
 
+    def send_registration_welcome(
+        self,
+        to_email: str,
+        full_name: str,
+        username: str,
+        password: str
+    ) -> bool:
+        """
+        Envoie un email de bienvenue et confirmation d'inscription avec les identifiants (nom d'utilisateur et mot de passe).
+        """
+        if not to_email or not to_email.strip():
+            return False
+        login_url = f"{self.app_base_url}/login"
+        subject = "Bienvenue - Confirmation de votre inscription - HelpDesk"
+        body = f"""Bonjour {full_name},
+
+Bienvenue ! Votre inscription a bien été enregistrée.
+
+Ce message confirme la création de votre compte sur le système HelpDesk (Caisse de Sécurité Sociale).
+
+Vos identifiants de connexion :
+- Nom d'utilisateur : {username}
+- Mot de passe : {password}
+
+Vous pouvez vous connecter à l'application ici : {login_url}
+
+Nous vous conseillons de modifier votre mot de passe après votre première connexion.
+
+Cordialement,
+{self.sender_name}
+"""
+        html_body = f"""
+<html>
+<body style="font-family: sans-serif; line-height: 1.6; color: #333;">
+    <p>Bonjour <strong>{full_name}</strong>,</p>
+    <p><strong>Bienvenue !</strong> Votre inscription a bien été enregistrée.</p>
+    <p>Ce message confirme la création de votre compte sur le système HelpDesk (Caisse de Sécurité Sociale).</p>
+    <p><strong>Vos identifiants de connexion :</strong></p>
+    <ul>
+        <li>Nom d'utilisateur : <code>{username}</code></li>
+        <li>Mot de passe : <code>{password}</code></li>
+    </ul>
+    <p>Vous pouvez vous connecter à l'application <a href="{login_url}">ici</a>.</p>
+    <p>Nous vous conseillons de modifier votre mot de passe après votre première connexion.</p>
+    <p>Cordialement,<br>{self.sender_name}</p>
+</body>
+</html>
+"""
+        return self.send_email([to_email.strip()], subject, body, html_body)
+
 
 # Instance globale du service email
 email_service = EmailService()

@@ -1,13 +1,14 @@
 from datetime import timedelta
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from .. import models, schemas
 from ..database import get_db
+from ..email_service import email_service
 from ..security import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
     authenticate_user,
@@ -37,7 +38,11 @@ def get_register_info(db: Session = Depends(get_db)):
 
 
 @router.post("/register", response_model=schemas.UserRead)
-def register_user(user_in: schemas.UserCreate, db: Session = Depends(get_db)):
+def register_user(
+    user_in: schemas.UserCreate,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
     existing = (
         db.query(models.User)
         .filter(
@@ -64,6 +69,17 @@ def register_user(user_in: schemas.UserCreate, db: Session = Depends(get_db)):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+
+    # Envoyer l'email de bienvenue / confirmation avec identifiants en arrière-plan
+    if user_in.email and user_in.email.strip():
+        background_tasks.add_task(
+            email_service.send_registration_welcome,
+            to_email=user_in.email.strip(),
+            full_name=user_in.full_name,
+            username=user_in.username,
+            password=user_in.password,
+        )
+
     return db_user
 
 
