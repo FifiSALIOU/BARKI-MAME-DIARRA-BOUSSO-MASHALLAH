@@ -38,3 +38,4 @@ export { RolesSection } from "./RolesSection.tsx";
 export { EmailSection } from "./EmailSection.tsx";
 export { ReportsSection } from "./ReportsSection.tsx";
 export { SecuriteSection } from "./SecuriteSection.tsx";
+export { DashboardSection } from "./DashboardSection.tsx";
