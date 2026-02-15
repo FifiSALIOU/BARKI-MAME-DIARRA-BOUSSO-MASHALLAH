@@ -521,6 +521,7 @@ function AdminDashboard({ token }: AdminDashboardProps) {
   const [newTicketDescription, setNewTicketDescription] = useState<string>("");
   const [newTicketType, setNewTicketType] = useState<string>("materiel");
   const [newTicketCategory, setNewTicketCategory] = useState<string>("");
+  const [newTicketPriority, setNewTicketPriority] = useState<string>("");
   const [createTicketError, setCreateTicketError] = useState<string | null>(null);
   const [validationTicket, setValidationTicket] = useState<string | null>(null);
   const [validationRejectionReason, setValidationRejectionReason] = useState<string>("");
@@ -1998,19 +1999,21 @@ function AdminDashboard({ token }: AdminDashboardProps) {
     loadPrioritiesFromDb();
   }, [activeSection, token]);
 
-  // Charger types et catégories quand le modal de création de ticket s'ouvre (DSI et Admin)
+  // Charger types, catégories et priorités quand le modal de création de ticket s'ouvre (DSI et Admin)
   useEffect(() => {
     if (showCreateTicketModal && (userRole === "DSI" || userRole === "Admin") && token) {
       (async () => {
         try {
-          const [typesRes, categoriesRes] = await Promise.all([
+          const [typesRes, categoriesRes, prioritiesRes] = await Promise.all([
             fetch("http://localhost:8000/ticket-config/types", { headers: { Authorization: `Bearer ${token}` } }),
             fetch("http://localhost:8000/ticket-config/categories", { headers: { Authorization: `Bearer ${token}` } }),
+            fetch("http://localhost:8000/ticket-config/priorities", { headers: { Authorization: `Bearer ${token}` } }),
           ]);
           if (typesRes.ok) setTicketTypes((await typesRes.json()) || []);
           if (categoriesRes.ok) setCategoriesList((await categoriesRes.json()) || []);
+          if (prioritiesRes.ok) setActivePrioritiesForAssign((await prioritiesRes.json()) || []);
         } catch (e) {
-          console.error("Erreur chargement types/catégories pour création:", e);
+          console.error("Erreur chargement types/catégories/priorités pour création:", e);
         }
       })();
     }
@@ -2126,12 +2129,13 @@ function AdminDashboard({ token }: AdminDashboardProps) {
     }
     
     try {
-      const requestBody = {
+      const requestBody: Record<string, unknown> = {
         title: newTicketTitle.trim(),
         description: newTicketDescription.trim(),
         type: newTicketType.toLowerCase(),
         category: newTicketCategory.trim() || undefined,
       };
+      if (newTicketPriority.trim()) requestBody.priority = newTicketPriority.trim();
       
       const res = await fetch("http://localhost:8000/tickets/", {
         method: "POST",
@@ -2160,6 +2164,7 @@ function AdminDashboard({ token }: AdminDashboardProps) {
       setNewTicketDescription("");
       setNewTicketType("materiel");
       setNewTicketCategory("");
+      setNewTicketPriority("");
       setShowCreateTicketModal(false);
       navigate(getRoutePrefix());
       void loadTickets();
@@ -12359,6 +12364,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
             setNewTicketDescription("");
             setNewTicketType("materiel");
             setNewTicketCategory("");
+            setNewTicketPriority("");
             setCreateTicketError(null);
           }}
           style={{
@@ -12398,6 +12404,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                   setNewTicketDescription("");
                   setNewTicketType("materiel");
                   setNewTicketCategory("");
+                  setNewTicketPriority("");
                   setCreateTicketError(null);
                 }}
                 style={{ background: "none", border: "none", fontSize: "24px", cursor: "pointer", color: "#999" }}
@@ -12476,6 +12483,25 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                     ))}
                 </select>
               </div>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>Définir la priorité</label>
+                <select
+                  value={newTicketPriority}
+                  onChange={(e) => setNewTicketPriority(e.target.value)}
+                  disabled={loading}
+                  style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}
+                >
+                  <option value="">Sélectionner une priorité...</option>
+                  {activePrioritiesForAssign
+                    .slice()
+                    .sort((a, b) => a.display_order - b.display_order)
+                    .map((p) => (
+                      <option key={p.id} value={p.code}>
+                        {p.label}
+                      </option>
+                    ))}
+                </select>
+              </div>
               
               <div style={{ display: "flex", gap: "12px", marginTop: "24px" }}>
                 <button 
@@ -12510,6 +12536,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                     setNewTicketDescription("");
                     setNewTicketType("materiel");
                     setNewTicketCategory("");
+                    setNewTicketPriority("");
                     setCreateTicketError(null);
                   }}
                   style={{
