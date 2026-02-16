@@ -6027,7 +6027,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                     const isExpanded = expandedFaqCategories[key];
                     const answers = [
                       "Cliquez sur « Nouveau ticket » dans le menu latéral. Remplissez le titre, la description détaillée, type de problème (Matériel ou Applicatif), et cliquer ensuite sur « Soumettre le ticket ».",
-                      "",
+                      "Rendez-vous dans la section « Tickets » du menu. Vous verrez la liste de tous vos tickets avec leur statut actuel. Cliquez sur un ticket pour voir les détails, l'historique des actions et les commentaires.",
                       "",
                       "",
                       ""
