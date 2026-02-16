@@ -23,6 +23,7 @@ export default function RegistrationPage() {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("http://localhost:8000/auth/register-info")
@@ -50,6 +51,7 @@ export default function RegistrationPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    setSuccessMessage(null);
     if (!defaultRoleId) {
       setError("Inscription temporairement indisponible.");
       return;
@@ -73,7 +75,8 @@ export default function RegistrationPage() {
         const msg = data.detail || "Erreur lors de l'inscription.";
         throw new Error(Array.isArray(msg) ? msg[0]?.msg || msg : msg);
       }
-      navigate("/login", { state: { registered: true } });
+      setSuccessMessage("Inscription réussie. Vérifiez votre boîte mail pour recevoir vos identifiants de connexion.");
+      setTimeout(() => navigate("/login", { state: { registered: true } }), 2500);
     } catch (err: any) {
       setError(err?.message ?? "Erreur lors de l'inscription.");
     } finally {
@@ -153,6 +156,11 @@ export default function RegistrationPage() {
           {error && (
             <div style={{ marginBottom: "16px", padding: "12px", background: "#fef2f2", color: "#b91c1c", borderRadius: "8px", fontSize: "14px" }}>
               {error}
+            </div>
+          )}
+          {successMessage && (
+            <div style={{ marginBottom: "16px", padding: "12px", background: "#dcfce7", color: "#166534", borderRadius: "8px", fontSize: "14px" }}>
+              {successMessage}
             </div>
           )}
 
