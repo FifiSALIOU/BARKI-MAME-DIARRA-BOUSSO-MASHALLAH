@@ -409,6 +409,7 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
   const [reassignTicketId, setReassignTicketId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [ticketsSectionReady, setTicketsSectionReady] = useState(false);
+  const ticketsSectionReadyRef = useRef<number | null>(null);
   const [roleName, setRoleName] = useState<string>(() => {
     try {
       return localStorage.getItem("userRole") || "";
@@ -592,20 +593,47 @@ function SecretaryDashboard({ token }: SecretaryDashboardProps) {
   const showTicketsPlaceholder = currentActiveSection === "tickets" && !ticketsSectionReady;
 
   // Afficher la section Tickets : d'abord "En chargement", puis le contenu au frame suivant (Adjoint DSI / Secrétaire DSI)
+  // Le chargement ne bloque pas la navigation - on peut changer de section même pendant "En chargement"
   useEffect(() => {
+    // Annuler immédiatement tout requestAnimationFrame en cours quand on change de section
+    if (ticketsSectionReadyRef.current !== null) {
+      cancelAnimationFrame(ticketsSectionReadyRef.current);
+      ticketsSectionReadyRef.current = null;
+    }
+    
     if (currentActiveSection === "tickets") {
-      const id = requestAnimationFrame(() => setTicketsSectionReady(true));
+      // Utiliser requestAnimationFrame pour afficher "En chargement" brièvement
+      // Mais la navigation reste possible même pendant ce temps
+      ticketsSectionReadyRef.current = requestAnimationFrame(() => {
+        // Vérifier qu'on est toujours sur la section Tickets avant de mettre à jour
+        if (currentActiveSection === "tickets") {
+          setTicketsSectionReady(true);
+        }
+        ticketsSectionReadyRef.current = null;
+      });
       return () => {
-        cancelAnimationFrame(id);
+        if (ticketsSectionReadyRef.current !== null) {
+          cancelAnimationFrame(ticketsSectionReadyRef.current);
+          ticketsSectionReadyRef.current = null;
+        }
         setTicketsSectionReady(false);
       };
     } else {
+      // Réinitialiser immédiatement quand on quitte la section Tickets
       setTicketsSectionReady(false);
     }
   }, [currentActiveSection]);
 
   // Fonction helper pour changer de section (Adjoint DSI) - désactive la synchronisation URL temporairement
   const changeSectionForAdjointDSI = (section: string) => {
+    // Annuler immédiatement tout chargement en cours de la section Tickets
+    if (ticketsSectionReadyRef.current !== null) {
+      cancelAnimationFrame(ticketsSectionReadyRef.current);
+      ticketsSectionReadyRef.current = null;
+    }
+    setTicketsSectionReady(false);
+    
+    // Changer de section immédiatement
     isInternalNavigationRef.current = true;
     setActiveSection(section);
     // Réactiver la synchronisation après un court délai pour permettre les changements d'URL externes
