@@ -329,6 +329,7 @@ function AdminDashboard({ token }: AdminDashboardProps) {
   const [selectedAdjoint, setSelectedAdjoint] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [ticketsSectionReady, setTicketsSectionReady] = useState(false);
+  const ticketsSectionReadyRef = useRef<number | null>(null);
   const [metrics, setMetrics] = useState<{
     openTickets: number;
     avgResolutionTime: string | null;
@@ -401,8 +402,34 @@ function AdminDashboard({ token }: AdminDashboardProps) {
   // Déclarer userRole avant son utilisation
   const [userRole, setUserRole] = useState<string | null>(null);
   
+  // Fonction pour déterminer la section depuis l'URL au montage
+  const getInitialSection = (): string => {
+    const path = location.pathname;
+    if (path === "/dashboard/admin/notifications") return "notifications";
+    if (path === "/dashboard/admin/audit-logs" || path === "/dashboard/admin/audit-et-logs") return "audit-logs";
+    if (path === "/dashboard/admin/maintenance") return "maintenance";
+    if (path === "/dashboard/admin/reports" || path === "/dashboard/admin/statistiques") return "reports";
+    if (path === "/dashboard/admin/users") return "users";
+    if (path === "/dashboard/admin/groupes") return "groupes";
+    if (path === "/dashboard/admin/roles") return "roles";
+    if (path === "/dashboard/admin/technicians") return "technicians";
+    if (path === "/dashboard/admin/actifs") return "actifs";
+    if (path === "/dashboard/admin/types") return "types";
+    if (path === "/dashboard/admin/categories") return "categories";
+    if (path === "/dashboard/admin/tickets") return "tickets";
+    if (path === "/dashboard/admin/parametres/apparence") return "apparence";
+    if (path === "/dashboard/admin/parametres/email") return "email";
+    if (path === "/dashboard/admin/parametres/securite") return "securite";
+    if (path === "/dashboard/admin/parametres/types-de-tickets") return "types-tickets";
+    if (path === "/dashboard/admin/parametres/priorites") return "priorites";
+    if (path === "/dashboard/admin/departements") return "departements";
+    if (path === "/dashboard/admin/parametres") return "settings";
+    if (path === "/dashboard/admin") return "dashboard";
+    return "dashboard";
+  };
+  
   // État local pour la navigation instantanée (Admin uniquement)
-  const [activeSectionState, setActiveSectionState] = useState<string>("dashboard");
+  const [activeSectionState, setActiveSectionState] = useState<string>(getInitialSection());
   // Flag pour désactiver la synchronisation URL lors des clics internes (Admin uniquement)
   const isInternalNavigationRef = useRef(false);
   
@@ -436,8 +463,49 @@ function AdminDashboard({ token }: AdminDashboardProps) {
   // La synchronisation avec l'URL se fait uniquement au montage ou si l'URL change depuis l'extérieur
   const activeSection = userRole === "Admin" ? activeSectionState : getActiveSectionFromPath();
   
+  const showTicketsPlaceholder = activeSection === "tickets" && !ticketsSectionReady;
+
+  // Afficher la section Tickets : d'abord "En chargement", puis le contenu au frame suivant (Admin)
+  // Le chargement ne bloque pas la navigation - on peut changer de section même pendant "En chargement"
+  useEffect(() => {
+    // Annuler immédiatement tout requestAnimationFrame en cours quand on change de section
+    if (ticketsSectionReadyRef.current !== null) {
+      cancelAnimationFrame(ticketsSectionReadyRef.current);
+      ticketsSectionReadyRef.current = null;
+    }
+    
+    if (activeSection === "tickets") {
+      // Utiliser requestAnimationFrame pour afficher "En chargement" brièvement
+      // Mais la navigation reste possible même pendant ce temps
+      ticketsSectionReadyRef.current = requestAnimationFrame(() => {
+        // Vérifier qu'on est toujours sur la section Tickets avant de mettre à jour
+        if (activeSection === "tickets") {
+          setTicketsSectionReady(true);
+        }
+        ticketsSectionReadyRef.current = null;
+      });
+      return () => {
+        if (ticketsSectionReadyRef.current !== null) {
+          cancelAnimationFrame(ticketsSectionReadyRef.current);
+          ticketsSectionReadyRef.current = null;
+        }
+        setTicketsSectionReady(false);
+      };
+    } else {
+      // Réinitialiser immédiatement quand on quitte la section Tickets
+      setTicketsSectionReady(false);
+    }
+  }, [activeSection]);
+  
   // Fonction helper pour changer de section (Admin) - désactive la synchronisation URL temporairement
   const changeSectionForAdmin = (section: string) => {
+    // Annuler immédiatement tout chargement en cours de la section Tickets
+    if (ticketsSectionReadyRef.current !== null) {
+      cancelAnimationFrame(ticketsSectionReadyRef.current);
+      ticketsSectionReadyRef.current = null;
+    }
+    setTicketsSectionReady(false);
+    
     // Changer de section immédiatement
     isInternalNavigationRef.current = true;
     setActiveSectionState(section);
@@ -6572,7 +6640,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
         )}
         {userRole === "Admin" && (
           <div 
-            onClick={() => navigate(`${getRoutePrefix()}/users`)}
+            onClick={() => changeSectionForAdmin("users")}
             style={{ 
               display: "flex", 
               alignItems: "center", 
@@ -6598,7 +6666,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
         )}
         {userRole === "Admin" && (
           <div 
-            onClick={() => navigate(`${getRoutePrefix()}/groupes`)}
+            onClick={() => changeSectionForAdmin("groupes")}
             style={{ 
               display: "flex", 
               alignItems: "center", 
@@ -6624,7 +6692,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
         )}
         {userRole === "Admin" && (
           <div 
-            onClick={() => navigate(`${getRoutePrefix()}/roles`)}
+            onClick={() => changeSectionForAdmin("roles")}
             style={{ 
               display: "flex", 
               alignItems: "center", 
@@ -6645,7 +6713,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
         )}
         {/* Agences (déplacé au-dessus de Statistiques) */}
         <div 
-          onClick={() => navigate(`${getRoutePrefix()}/departements`)}
+          onClick={() => changeSectionForAdmin("departements")}
           style={{ 
             display: "flex", 
             alignItems: "center", 
@@ -6667,7 +6735,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
         <div 
           onClick={() => {
             setSelectedReport("statistiques");
-            navigate(`${getRoutePrefix()}/reports`);
+            changeSectionForAdmin("reports");
           }}
           style={{ 
             display: "flex", 
@@ -6687,7 +6755,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
         </div>
         {userRole === "Admin" && (
           <div 
-            onClick={() => navigate(`${getRoutePrefix()}/maintenance`)}
+            onClick={() => changeSectionForAdmin("maintenance")}
             style={{ 
               display: "flex", 
               alignItems: "center", 
@@ -6710,7 +6778,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
         )}
         {userRole === "Admin" && (
           <div 
-            onClick={() => navigate(`${getRoutePrefix()}/audit-logs`)}
+            onClick={() => changeSectionForAdmin("audit-logs")}
             style={{ 
               display: "flex", 
               alignItems: "center", 
@@ -6772,7 +6840,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                 gap: "4px"
               }}>
                 <div
-                  onClick={() => navigate(`${getRoutePrefix()}/parametres/apparence`)}
+                  onClick={() => changeSectionForAdmin("apparence")}
                   style={{
                     padding: "8px 12px",
                     cursor: "pointer",
@@ -6785,7 +6853,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                   Apparence
                 </div>
                 <div
-                  onClick={() => navigate(`${getRoutePrefix()}/parametres/email`)}
+                  onClick={() => changeSectionForAdmin("email")}
                   style={{
                     padding: "8px 12px",
                     cursor: "pointer",
@@ -6798,7 +6866,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                   Email
                 </div>
                 <div
-                  onClick={() => navigate(`${getRoutePrefix()}/parametres/securite`)}
+                  onClick={() => changeSectionForAdmin("securite")}
                   style={{
                     padding: "8px 12px",
                     cursor: "pointer",
@@ -6826,7 +6894,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
           }} />
           {/* Bouton Notifications */}
           <div
-            onClick={() => navigate(`${getRoutePrefix()}/notifications`)}
+            onClick={() => changeSectionForAdmin("notifications")}
             style={{
               display: "flex",
               alignItems: "center",
@@ -9746,7 +9814,7 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                     </h3>
                     <button
                       onClick={() => {
-                        navigate(getRoutePrefix());
+                        changeSectionForAdmin("dashboard");
                         setSelectedNotificationTicket(null);
                         setSelectedNotificationTicketDetails(null);
                       }}
