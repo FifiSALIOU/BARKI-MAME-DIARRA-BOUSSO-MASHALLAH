@@ -1,4 +1,5 @@
 import os
+import secrets
 from datetime import timedelta
 from typing import List
 
@@ -15,7 +16,9 @@ from ..security import (
     authenticate_user,
     create_access_token,
     create_password_reset_token,
+    create_set_initial_password_token,
     decode_password_reset_token,
+    decode_set_initial_password_token,
     get_password_hash,
     get_current_user,
 )
@@ -60,27 +63,32 @@ def register_user(
             detail="User with same email or username already exists",
         )
 
+    # Mot de passe temporaire : l'utilisateur définira le sien via le lien envoyé par email (pas d'envoi en clair)
+    temporary_password = secrets.token_urlsafe(32)
     db_user = models.User(
         full_name=user_in.full_name,
         email=user_in.email,
         agency=user_in.agency,
         phone=user_in.phone,
         username=user_in.username,
-        password_hash=get_password_hash(user_in.password),
+        password_hash=get_password_hash(temporary_password),
         role_id=user_in.role_id,
     )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
 
-    # Envoyer l'email de bienvenue / confirmation avec identifiants en arrière-plan
+    # Envoyer l'email de bienvenue avec lien « première connexion / définition du mot de passe » (sans mot de passe)
     if user_in.email and user_in.email.strip():
+        token = create_set_initial_password_token(db_user.id)
+        app_base_url = os.getenv("APP_BASE_URL", "http://localhost:5173")
+        set_password_link = f"{app_base_url}/reset-password?token={token}"
         background_tasks.add_task(
             email_service.send_registration_welcome,
             to_email=user_in.email.strip(),
             full_name=user_in.full_name,
             username=user_in.username,
-            password=user_in.password,
+            set_password_link=set_password_link,
         )
 
     return db_user
@@ -159,8 +167,10 @@ def reset_password(
     body: schemas.ResetPasswordWithToken,
     db: Session = Depends(get_db),
 ):
-    """Définit un nouveau mot de passe via le token reçu par email."""
+    """Définit un nouveau mot de passe via le token reçu par email (réinitialisation ou première connexion)."""
     user_id = decode_password_reset_token(body.token)
+    if user_id is None:
+        user_id = decode_set_initial_password_token(body.token)
     if user_id is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
