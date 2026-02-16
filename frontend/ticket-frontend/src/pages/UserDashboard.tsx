@@ -6022,36 +6022,65 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                     "Que signifient les différents statuts ?",
                     "Puis-je modifier un ticket après l'avoir soumis ?",
                     "Comment relancer un ticket résolu ?"
-                  ].map((question, index) => (
-                    <div key={index} style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "12px 0",
-                      borderBottom: index < 4 ? "1px solid #f3f4f6" : "none",
-                      cursor: "pointer"
-                    }}
-                    onClick={() => {
-                      const key = `tickets-${index}`;
-                      setExpandedFaqCategories(prev => ({
-                        ...prev,
-                        [key]: !prev[key]
-                      }));
-                    }}
-                    >
-                      <span style={{
-                        fontSize: "15px",
-                        color: "#374151",
-                        fontFamily: "'Inter', system-ui, sans-serif"
-                      }}>
-                        {question}
-                      </span>
-                      <ChevronDown size={18} color="#6b7280" style={{
-                        transform: expandedFaqCategories[`tickets-${index}`] ? "rotate(180deg)" : "rotate(0deg)",
-                        transition: "transform 0.2s"
-                      }} />
-                    </div>
-                  ))}
+                  ].map((question, index) => {
+                    const key = `tickets-${index}`;
+                    const isExpanded = expandedFaqCategories[key];
+                    const answers = [
+                      "Cliquez sur « Nouveau ticket » dans le menu latéral. Remplissez le titre, la description détaillée, type de problème (Matériel ou Applicatif), et cliquer ensuite sur « Soumettre le ticket ».",
+                      "",
+                      "",
+                      "",
+                      ""
+                    ];
+                    
+                    return (
+                      <div key={index}>
+                        <div style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          padding: "12px 0",
+                          borderBottom: index < 4 ? "1px solid #f3f4f6" : "none",
+                          cursor: "pointer"
+                        }}
+                        onClick={() => {
+                          setExpandedFaqCategories(prev => ({
+                            ...prev,
+                            [key]: !prev[key]
+                          }));
+                        }}
+                        >
+                          <span style={{
+                            fontSize: "15px",
+                            color: "#374151",
+                            fontFamily: "'Inter', system-ui, sans-serif"
+                          }}>
+                            {question}
+                          </span>
+                          <ChevronDown size={18} color="#6b7280" style={{
+                            transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                            transition: "transform 0.2s"
+                          }} />
+                        </div>
+                        {isExpanded && answers[index] && (
+                          <div style={{
+                            padding: "12px 0 12px 0",
+                            borderBottom: index < 4 ? "1px solid #f3f4f6" : "none"
+                          }}>
+                            <p style={{
+                              fontSize: "14px",
+                              color: "#6b7280",
+                              lineHeight: "1.6",
+                              margin: 0,
+                              fontFamily: "'Inter', system-ui, sans-serif"
+                            }}>
+                              {answers[index]}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
