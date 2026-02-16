@@ -6134,7 +6134,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                     const isExpanded = expandedFaqCategories[key];
                     const typeAnswers = [
                       "• Matériel (Hardware) : Concerne les équipements physiques — ordinateurs, imprimantes, écrans, claviers, souris, câbles réseau, etc.\n• Applicatif (Software) : Concerne les logiciels et applications — bugs, erreurs, installation, mise à jour, accès aux outils, etc.",
-                      ""
+                      "Si le problème est lié à un câble ou un équipement réseau physique, choisissez « Matériel ». Si c'est un problème de connexion logicielle (VPN, Wi-Fi, configuration), choisissez « Applicatif »."
                     ];
                     return (
                       <div key={index}>
