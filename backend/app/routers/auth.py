@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta
 from typing import List
 
@@ -13,6 +14,8 @@ from ..security import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
     authenticate_user,
     create_access_token,
+    create_password_reset_token,
+    decode_password_reset_token,
     get_password_hash,
     get_current_user,
 )
@@ -117,6 +120,66 @@ def login_for_access_token(
         data={"sub": str(user.id)}, expires_delta=access_token_expires
     )
     return schemas.Token(access_token=access_token)
+
+
+@router.post("/forgot-password")
+def forgot_password(
+    body: schemas.ForgotPasswordRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    """Envoie un lien de réinitialisation par email si l'adresse existe."""
+    email = (body.email or "").strip().lower()
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email requis",
+        )
+    user = db.query(models.User).filter(models.User.email.ilike(email)).first()
+    if not user:
+        # Ne pas révéler si l'email existe ou non
+        return {"message": "Si cet email est associé à un compte, un lien de réinitialisation a été envoyé."}
+    if not user.actif:
+        return {"message": "Si cet email est associé à un compte, un lien de réinitialisation a été envoyé."}
+    token = create_password_reset_token(user.id)
+    app_base_url = os.getenv("APP_BASE_URL", "http://localhost:5173")
+    reset_link = f"{app_base_url}/reset-password?token={token}"
+    if user.email and user.email.strip():
+        background_tasks.add_task(
+            email_service.send_password_reset_link,
+            to_email=user.email.strip(),
+            reset_link=reset_link,
+            full_name=user.full_name,
+        )
+    return {"message": "Si cet email est associé à un compte, un lien de réinitialisation a été envoyé."}
+
+
+@router.post("/reset-password")
+def reset_password(
+    body: schemas.ResetPasswordWithToken,
+    db: Session = Depends(get_db),
+):
+    """Définit un nouveau mot de passe via le token reçu par email."""
+    user_id = decode_password_reset_token(body.token)
+    if user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Lien invalide ou expiré. Veuillez refaire une demande de réinitialisation.",
+        )
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Utilisateur introuvable",
+        )
+    if not body.new_password or len(body.new_password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Le mot de passe doit contenir au moins 6 caractères",
+        )
+    user.password_hash = get_password_hash(body.new_password)
+    db.commit()
+    return {"message": "Mot de passe mis à jour. Vous pouvez vous connecter."}
 
 
 @router.get("/me", response_model=schemas.UserRead)

@@ -53,6 +53,27 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     return encoded_jwt
 
 
+RESET_TOKEN_EXPIRE_MINUTES = 60
+
+
+def create_password_reset_token(user_id: int) -> str:
+    to_encode = {"sub": str(user_id), "type": "password_reset"}
+    expire = datetime.now(timezone.utc) + timedelta(minutes=RESET_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def decode_password_reset_token(token: str) -> Optional[int]:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("type") != "password_reset":
+            return None
+        user_id = payload.get("sub")
+        return int(user_id) if user_id is not None else None
+    except (JWTError, ValueError):
+        return None
+
+
 def get_user_by_username(db: Session, username: str) -> Optional[models.User]:
     return db.query(models.User).filter(models.User.username == username).first()
 

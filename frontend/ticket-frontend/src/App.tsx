@@ -4,6 +4,8 @@ import { getMe } from "./services/auth.ts";
 import { useToken } from "./hooks/useToken.ts";
 import LoginPage from "./pages/LoginPage";
 import RegistrationPage from "./pages/RegistrationPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import UserDashboard from "./pages/UserDashboard";
 import SecretaryDashboard from "./pages/SecretaryDashboard";
 import TechnicianDashboard from "./pages/TechnicianDashboard";
@@ -70,6 +72,8 @@ function App() {
         <Route path="/" element={<LoginPage onLogin={setToken} />} />
         <Route path="/login" element={<LoginPage onLogin={setToken} />} />
         <Route path="/inscription" element={<RegistrationPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/dashboard" element={getDashboard()} />
         <Route
           path="/dashboard/user"

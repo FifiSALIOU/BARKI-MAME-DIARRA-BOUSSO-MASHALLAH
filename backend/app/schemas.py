@@ -67,6 +67,15 @@ class PasswordReset(BaseModel):
     new_password: Optional[str] = None  # Si None, génère un mot de passe aléatoire
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+
+class ResetPasswordWithToken(BaseModel):
+    token: str
+    new_password: str
+
+
 class TicketBase(BaseModel):
     title: str
     description: str

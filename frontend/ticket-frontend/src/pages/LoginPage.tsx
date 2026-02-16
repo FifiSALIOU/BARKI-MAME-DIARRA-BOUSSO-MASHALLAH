@@ -539,10 +539,10 @@ function LoginPage({ onLogin }: LoginPageProps) {
               </div>
             </div>
 
-            {/* Options : Se souvenir + Mot de passe oublié */}
+            {/* Option : Se souvenir de moi */}
             <div style={{
               display: "flex",
-              justifyContent: "space-between",
+              justifyContent: "flex-start",
               alignItems: "center",
               marginBottom: "24px"
             }}>
@@ -567,18 +567,6 @@ function LoginPage({ onLogin }: LoginPageProps) {
                 />
                 Se souvenir de moi
               </label>
-              <a href="#" style={{
-                fontSize: "13px",
-                color: primaryOrange,
-                textDecoration: "none",
-                fontWeight: "500",
-                transition: "color 0.2s ease"
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = "#ea580c"}
-              onMouseLeave={(e) => e.currentTarget.style.color = primaryOrange}
-              >
-                Mot de passe oublié ?
-              </a>
             </div>
 
             {/* Message d'erreur */}
@@ -638,6 +626,29 @@ function LoginPage({ onLogin }: LoginPageProps) {
                 </>
               )}
             </button>
+
+            {/* Mot de passe oublié - sous le bouton de connexion */}
+            <div style={{ textAlign: "center", marginTop: "16px" }}>
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                style={{
+                  background: "none",
+                  border: "none",
+                  padding: 0,
+                  fontSize: "14px",
+                  color: primaryOrange,
+                  fontWeight: "500",
+                  cursor: "pointer",
+                  textDecoration: "none",
+                  transition: "color 0.2s ease"
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "#ea580c"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = primaryOrange; }}
+              >
+                Mot de passe oublié ?
+              </button>
+            </div>
           </form>
 
           {/* Inscription */}

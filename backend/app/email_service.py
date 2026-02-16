@@ -1378,6 +1378,43 @@ Cordialement,
 """
         return self.send_email([to_email.strip()], subject, body, html_body)
 
+    def send_password_reset_link(
+        self,
+        to_email: str,
+        reset_link: str,
+        full_name: Optional[str] = None,
+    ) -> bool:
+        """Envoie un email avec le lien de réinitialisation du mot de passe."""
+        if not to_email or not to_email.strip():
+            return False
+        name = full_name or "Utilisateur"
+        subject = "Réinitialisation de votre mot de passe - HelpDesk"
+        body = f"""Bonjour {name},
+
+Vous avez demandé la réinitialisation de votre mot de passe.
+
+Cliquez sur le lien suivant pour définir un nouveau mot de passe (lien valide 1 heure) :
+{reset_link}
+
+Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.
+
+Cordialement,
+{self.sender_name}
+"""
+        html_body = f"""
+<html>
+<body style="font-family: sans-serif; line-height: 1.6; color: #333;">
+    <p>Bonjour <strong>{name}</strong>,</p>
+    <p>Vous avez demandé la réinitialisation de votre mot de passe.</p>
+    <p>Cliquez sur le lien suivant pour définir un nouveau mot de passe (lien valide 1 heure) :<br>
+    <a href="{reset_link}" style="color: #ea580c; font-weight: 600;">Réinitialiser mon mot de passe</a></p>
+    <p>Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.</p>
+    <p>Cordialement,<br>{self.sender_name}</p>
+</body>
+</html>
+"""
+        return self.send_email([to_email.strip()], subject, body, html_body)
+
 
 # Instance globale du service email
 email_service = EmailService()
