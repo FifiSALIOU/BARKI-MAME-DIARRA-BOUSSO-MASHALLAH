@@ -6028,7 +6028,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                     const answers = [
                       "Cliquez sur « Nouveau ticket » dans le menu latéral. Remplissez le titre, la description détaillée, type de problème (Matériel ou Applicatif), et cliquer ensuite sur « Soumettre le ticket ».",
                       "Rendez-vous dans la section « Tickets » du menu. Vous verrez la liste de tous vos tickets avec leur statut actuel. Cliquez sur un ticket pour voir les détails, l'historique des actions et les commentaires.",
-                      "",
+                      "• En attente d'assignation : Le ticket est créé et en attente. L'équipe DSI ne l'a pas encore assigné à un technicien.\n• Assigné : Un technicien a été désigné. Le ticket attend sa prise en charge.\n• En cours : Un technicien travaille sur votre demande.\n• Résolu : Une solution a été proposée. Vous devez la valider ou la rejeter (relancer le ticket).\n• Relancé (Rejeté) : Vous avez rejeté la résolution. Le ticket est renvoyé au technicien pour un nouveau traitement.\n• Retraité : Après une relance de votre part, le technicien a à nouveau marqué le ticket comme résolu. Vous pouvez à nouveau valider ou rejeter.\n• Clôturé : Vous avez validé la résolution. Le ticket est terminé et archivé.",
                       "",
                       ""
                     ];
@@ -6072,7 +6072,8 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                               color: "#6b7280",
                               lineHeight: "1.6",
                               margin: 0,
-                              fontFamily: "'Inter', system-ui, sans-serif"
+                              fontFamily: "'Inter', system-ui, sans-serif",
+                              whiteSpace: "pre-line"
                             }}>
                               {answers[index]}
                             </p>
