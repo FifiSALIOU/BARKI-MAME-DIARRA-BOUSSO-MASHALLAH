@@ -6238,7 +6238,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                     const isExpanded = expandedFaqCategories[key];
                     const compteAnswers: (string | ReactNode)[] = [
                       <>Utilisez l'adresse e-mail et le mot de passe qui vous ont été fournis par votre administrateur ou par email. Si vous n'avez pas encore de compte, au niveau de l'application (<a href="/inscription" style={{ color: "hsl(25, 95%, 53%)", fontWeight: 600, textDecoration: "none" }}>lien d'inscription</a>) ou contactez votre responsable informatique.</>,
-                      "",
+                      "Sur la page de connexion, cliquez sur « Mot de passe oublié ». Un e-mail de réinitialisation vous sera envoyé. Si vous ne le recevez pas, vérifiez vos spams ou contactez l'administrateur.",
                       ""
                     ];
                     return (
