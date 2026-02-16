@@ -7018,7 +7018,7 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
               <button
                 onClick={() => handleAddComment(selectedTicket)}
                 disabled={loading || !commentText.trim()}
-                style={{ flex: 1, padding: "10px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+                style={{ flex: 1, padding: "10px", backgroundColor: "hsl(25, 95%, 53%)", color: "white", border: "none", borderRadius: "4px", cursor: loading || !commentText.trim() ? "not-allowed" : "pointer", opacity: loading || !commentText.trim() ? 0.7 : 1 }}
               >
                 Ajouter
               </button>
@@ -7027,7 +7027,7 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                   setSelectedTicket(null);
                   setCommentText("");
                 }}
-                style={{ flex: 1, padding: "10px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+                style={{ flex: 1, padding: "10px", backgroundColor: "white", color: "black", border: "1px solid #ddd", borderRadius: "4px", cursor: "pointer" }}
               >
                 Annuler
               </button>
