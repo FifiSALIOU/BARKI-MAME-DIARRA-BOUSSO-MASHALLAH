@@ -3378,7 +3378,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                         { value: "en_attente_analyse", label: "En attente d'assignation" },
                         { value: "assigne_technicien", label: "Assigné au technicien" },
                         { value: "en_cours", label: "En cours" },
-                        { value: "resolu", label: "Résolu" },
+                        { value: "resolu", label: "Résolus" },
                         { value: "retraite", label: "Retraités" },
                         { value: "rejete", label: "Relancé" },
                         { value: "cloture", label: "Clôturé" },
