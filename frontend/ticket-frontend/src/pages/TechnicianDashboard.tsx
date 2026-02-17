@@ -2018,6 +2018,8 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                   ? "Gestion des Actifs" 
                   : currentActiveSection === "tickets-en-cours"
                   ? "Tickets en cours"
+                  : currentActiveSection === "tickets-resolus"
+                  ? "Tickets Résolus"
                   : "Tableau de bord"}
               </div>
               <div style={{ 
@@ -2035,6 +2037,8 @@ function TechnicianDashboard({ token }: TechnicianDashboardProps) {
                   ? "Gérez l'inventaire des équipements informatiques"
                   : currentActiveSection === "tickets-en-cours"
                   ? "Suivez et gérez vos tickets en cours de traitement"
+                  : currentActiveSection === "tickets-resolus"
+                  ? "Consultez l'historique de vos tickets résolus et clôturés"
                   : "Vue d'ensemble de votre activité"}
               </div>
             </div>
