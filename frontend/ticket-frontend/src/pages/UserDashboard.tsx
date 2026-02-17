@@ -3380,7 +3380,7 @@ function UserDashboard({ token: tokenProp }: UserDashboardProps) {
                         { value: "en_cours", label: "En cours" },
                         { value: "resolu", label: "Résolus" },
                         { value: "retraite", label: "Retraités" },
-                        { value: "rejete", label: "Relancé" },
+                        { value: "rejete", label: "Relancés" },
                         { value: "cloture", label: "Clôturé" },
                       ]}
                     />
