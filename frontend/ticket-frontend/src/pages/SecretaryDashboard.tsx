@@ -3837,33 +3837,29 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
 
       const tickets = (await Promise.all(ticketsPromises)).filter(t => t !== null) as Ticket[];
       setNotificationsTickets(tickets);
-      
-      // Si un ticket est déjà sélectionné, charger ses détails
-      if (selectedNotificationTicket) {
-        const ticket = tickets.find(t => t.id === selectedNotificationTicket);
-        if (ticket) {
-          setSelectedNotificationTicketDetails(ticket);
-          await loadTicketHistory(selectedNotificationTicket);
-        } else {
-          // Si le ticket sélectionné n'est pas dans la liste, le charger séparément
-          try {
-            const res = await fetch(`http://localhost:8000/tickets/${selectedNotificationTicket}`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-            if (res.ok) {
-              const data = await res.json();
-              setSelectedNotificationTicketDetails(data);
-              await loadTicketHistory(selectedNotificationTicket);
-            }
-          } catch (err) {
-            console.error("Erreur chargement détails:", err);
-          }
-        }
-      }
     } catch (err) {
       console.error("Erreur lors du chargement des tickets avec notifications:", err);
+    }
+  }
+
+  // Fonction pour charger les détails complets d'un ticket (détails + historique + commentaires)
+  async function loadTicketFullDetails(ticketId: string) {
+    if (!ticketId || !token) return;
+    
+    try {
+      const res = await fetch(`http://localhost:8000/tickets/${ticketId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSelectedNotificationTicketDetails(data);
+        // Charger l'historique et les commentaires en parallèle
+        await Promise.all([loadTicketHistory(ticketId), loadTicketComments(ticketId)]);
+      }
+    } catch (err) {
+      console.error("Erreur chargement détails:", err);
     }
   }
 
@@ -3875,57 +3871,50 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
       await markNotificationAsRead(notification.id);
     }
     
-    // Ouvrir la vue des tickets avec notifications dans le contenu principal
+    // Fermer le panneau de notifications d'abord
     setShowNotifications(false);
+    
+    // Définir le ticket sélectionné AVANT de changer la section pour éviter les chargements multiples
+    setSelectedNotificationTicket(notification.ticket_id);
+    
+    // Changer la section active
     if (roleName === "Adjoint DSI") {
-      setActiveSection("notifications");
+      changeSectionForAdjointDSI("notifications");
     } else {
       setActiveSection("notifications");
     }
-    setSelectedNotificationTicket(notification.ticket_id);
     
-    // Charger les tickets avec notifications
-    await loadNotificationsTickets();
+    // Attendre un court instant pour que la section soit rendue, puis charger les données
+    // Utiliser requestAnimationFrame pour s'assurer que le DOM est prêt
+    requestAnimationFrame(async () => {
+      // Charger d'abord la liste des tickets avec notifications
+      await loadNotificationsTickets();
+      
+      // Ensuite charger les détails complets du ticket sélectionné
+      await loadTicketFullDetails(notification.ticket_id);
+      
+      // Marquer les notifications du ticket comme lues
+      await markTicketNotificationsAsRead(notification.ticket_id);
+    });
   }
 
   // Charger les tickets avec notifications quand la vue s'ouvre
   useEffect(() => {
-    if ((currentActiveSection === "notifications" || showNotificationsTicketsView) && notifications.length > 0) {
+    if (currentActiveSection === "notifications" && notifications.length > 0) {
       void loadNotificationsTickets();
     }
-  }, [activeSection, location.pathname, roleName, showNotificationsTicketsView, notifications.length]);
-
-  // Scroller vers le haut quand le panneau de notifications s'ouvre
-  useEffect(() => {
-    if (showNotificationsTicketsView) {
-      window.scrollTo({ top: 0, behavior: "instant" });
-    }
-  }, [showNotificationsTicketsView]);
+  }, [currentActiveSection, notifications.length]);
 
   // Charger automatiquement les détails du ticket sélectionné dans la section notifications
+  // Seulement si les tickets sont déjà chargés pour éviter les chargements multiples
   useEffect(() => {
-    if (currentActiveSection === "notifications" && selectedNotificationTicket) {
-      async function loadDetails() {
-        try {
-          const res = await fetch(`http://localhost:8000/tickets/${selectedNotificationTicket}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          if (res.ok) {
-            const data = await res.json();
-            setSelectedNotificationTicketDetails(data);
-            if (selectedNotificationTicket) {
-              await Promise.all([loadTicketHistory(selectedNotificationTicket), loadTicketComments(selectedNotificationTicket)]);
-            }
-          }
-        } catch (err) {
-          console.error("Erreur chargement détails:", err);
-        }
+    if (currentActiveSection === "notifications" && selectedNotificationTicket && notificationsTickets.length > 0) {
+      // Ne charger les détails que si ils ne sont pas déjà chargés pour ce ticket
+      if (!selectedNotificationTicketDetails || selectedNotificationTicketDetails.id !== selectedNotificationTicket) {
+        void loadTicketFullDetails(selectedNotificationTicket);
       }
-      void loadDetails();
     }
-  }, [activeSection, location.pathname, roleName, selectedNotificationTicket, token]);
+  }, [currentActiveSection, selectedNotificationTicket]);
 
   function handleReassignClick(ticketId: string) {
     setReassignTicketId(ticketId);
@@ -5095,21 +5084,10 @@ Les données détaillées seront disponibles dans une prochaine version.</pre>
                         key={ticket.id}
                         onClick={async () => {
                           setSelectedNotificationTicket(ticket.id);
-                          try {
-                            const res = await fetch(`http://localhost:8000/tickets/${ticket.id}`, {
-                              headers: {
-                                Authorization: `Bearer ${token}`,
-                              },
-                            });
-                            if (res.ok) {
-                              const data = await res.json();
-                              setSelectedNotificationTicketDetails(data);
-                              await Promise.all([loadTicketHistory(ticket.id), loadTicketComments(ticket.id)]);
-                              await markTicketNotificationsAsRead(ticket.id);
-                            }
-                          } catch (err) {
-                            console.error("Erreur chargement détails:", err);
-                          }
+                          // Charger les détails complets du ticket
+                          await loadTicketFullDetails(ticket.id);
+                          // Marquer les notifications comme lues
+                          await markTicketNotificationsAsRead(ticket.id);
                         }}
                         style={{
                           padding: "12px 12px 12px 30px",
